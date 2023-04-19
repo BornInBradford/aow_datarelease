@@ -76,9 +76,14 @@ denom <- denom_all |> transmute(upn = UPN_con,
                                 withdrawn = Withdrawn,
                                 withdrawal_date = WithdrawnDate)
 
-
+# create ID lookup
+lkup <- denom |> select(upn, aow_id) |> unique()
 
 # export
 saveRDS(denom, file.path(output_path, "denom.rds"))
 write_dta(denom, file.path(output_path, "denom.dta"))
 write_csv(denom, file.path(output_path, "denom.csv"), na = "")
+
+saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
+write_dta(lkup, file.path(output_path, "id_lookup.dta"))
+write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
