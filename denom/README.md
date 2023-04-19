@@ -10,4 +10,3 @@ Pupil personal information is dropped, apart from UPN and postcode as we might n
 Pseudo'd versions of the school identifiers will need to be generated for publishing, and a person ID in place of UPN.
 
 Consent information is currently included in full but maybe needs to be separated in future. Some recoding will be needed as all fields are present as binaries yet not all are options under all consent scenarios.
-
