@@ -1,8 +1,12 @@
 
 library(haven)
 library(dplyr)
+library(lubridate)
+library(readr)
 
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
+output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
+
 
 consent <- read_dta(file.path(input_path, "AOW_Consent.dta"))
 schoolrec <- read_dta(file.path(input_path, "AOW_School_RecruitmentList.dta"))
@@ -18,10 +22,14 @@ denom_all <- consent |> inner_join(schoolrec, by = "AoWRecruitmentID", suffix = 
 nrow(denom_all)
 
 # check conflicts between school recruitment and consent tables
-conflicts <- function(x, y) {
+conflicts <- function(x, y, which = FALSE) {
   con <- which(x != y)
   output <- paste0(x[con], " : ", y[con])
-  return(output)
+  if(which) {
+    return(con)
+  } else {
+    return(output)
+  }
 }
 
 conflicts(denom_all$EstablishmentNumber_con, denom_all$EstablishmentNumber_rec) |> head()
@@ -32,4 +40,45 @@ conflicts(denom_all$CreatedDateTime_con, denom_all$CreatedDateTime_rec) |> head(
 conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> head()
 
 
+# start sorting fields to keep and renaming
 
+denom <- denom_all |> transmute(upn = UPN_con,
+                                aow_id = AoWRecruitmentID,
+                                birth_date = DateOfBirth,
+                                postcode = Postcode,
+                                recruitment_era = Era,
+                                recruitment_date = as.Date(CreatedDateTime_rec),
+                                recruitment_year = year(recruitment_date),
+                                recruitment_month = month(recruitment_date),
+                                age_recruitment_y = (birth_date %--% recruitment_date) %/% years(1),
+                                age_recruitment_m = (birth_date %--% recruitment_date) %/% months(1),
+                                school_establishment_no = EstablishmentNumber_con,
+                                school = School_con,
+                                year_group = YearGroup_rec,
+                                form_tutor = FormTutor_rec,
+                                gender = Gender,
+                                ethnicity = Ethnicity,
+                                fsm = FSM,
+                                sen = SEN,
+                                consent_form = Consent_Form,
+                                consent_form_type = FormType,
+                                consent_scenario = ConScenario,
+                                consent_parental = ParConsent,
+                                consent_survey = ConQuest,
+                                consent_cogmot = ConMotCog,
+                                consent_hgtwgt = ConHgtWgt,
+                                consent_bioimp = ConBioImp,
+                                consent_sknthk = ConSkinThick,
+                                consent_bp = ConBP,
+                                consent_bloods = ConBlood,
+                                consent_bldst1 = ConBloodStor1,
+                                consent_bldst2 = ConBloodStor2,
+                                withdrawn = Withdrawn,
+                                withdrawal_date = WithdrawnDate)
+
+
+
+# export
+saveRDS(denom, file.path(output_path, "denom.rds"))
+write_dta(denom, file.path(output_path, "denom.dta"))
+write_csv(denom, file.path(output_path, "denom.csv"), na = "")
