@@ -4,6 +4,11 @@ library(dplyr)
 library(lubridate)
 library(readr)
 
+
+source("config/set_aow_salt.R")
+
+salt <- getOption("aow_salt")
+
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
 
@@ -40,11 +45,14 @@ conflicts(denom_all$CreatedDateTime_con, denom_all$CreatedDateTime_rec) |> head(
 conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> head()
 
 
-# start sorting fields to keep and renaming
+# start sorting fields to keep and renaming, add pseudo columns
 
-denom <- denom_all |> transmute(upn = UPN_con,
-                                aow_id = AoWRecruitmentID,
+denom <- denom_all |> transmute(aow_person_id = digest::digest(object = paste0(UPN_con, salt), "sha1", serialize = FALSE),
+                                upn = UPN_con,
+                                aow_recruitment_id = AoWRecruitmentID,
                                 birth_date = DateOfBirth,
+                                birth_year = year(birth_date),
+                                birth_month = month(birth_date),
                                 postcode = Postcode,
                                 recruitment_era = Era,
                                 recruitment_date = as.Date(CreatedDateTime_rec),
@@ -54,8 +62,10 @@ denom <- denom_all |> transmute(upn = UPN_con,
                                 age_recruitment_m = (birth_date %--% recruitment_date) %/% months(1),
                                 school_establishment_no = EstablishmentNumber_con,
                                 school = School_con,
+                                school_id = digest::digest(object = paste0(EstablishmentNumber_con, salt), "sha1", serialize = FALSE),
                                 year_group = YearGroup_rec,
                                 form_tutor = FormTutor_rec,
+                                form_tutor_id = digest::digest(object = paste0(FormTutor_rec, salt), "sha1", serialize = FALSE),
                                 gender = Gender,
                                 ethnicity = Ethnicity,
                                 fsm = FSM,
@@ -76,13 +86,25 @@ denom <- denom_all |> transmute(upn = UPN_con,
                                 withdrawn = Withdrawn,
                                 withdrawal_date = WithdrawnDate)
 
+# create pseudo only version
+denom_pseudo <- denom |> select(-upn,
+                                -birth_date,
+                                -postcode,
+                                -school,
+                                -school_establishment_no,
+                                -form_tutor)
+
 # create ID lookup
-lkup <- denom |> select(upn, aow_id) |> unique()
+lkup <- denom |> select(aow_person_id, aow_recruitment_id) |> unique()
 
 # export
-saveRDS(denom, file.path(output_path, "denom.rds"))
-write_dta(denom, file.path(output_path, "denom.dta"))
-write_csv(denom, file.path(output_path, "denom.csv"), na = "")
+saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
+write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
+write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
+
+saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
+write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
+write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
 
 saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
 write_dta(lkup, file.path(output_path, "id_lookup.dta"))
