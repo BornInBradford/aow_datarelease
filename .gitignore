@@ -44,5 +44,5 @@ vignettes/*.pdf
 *.dta
 
 # config
-conf/
+config/
 
