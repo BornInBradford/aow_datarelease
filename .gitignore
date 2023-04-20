@@ -43,3 +43,6 @@ vignettes/*.pdf
 *.rda
 *.dta
 
+# config
+conf/
+
