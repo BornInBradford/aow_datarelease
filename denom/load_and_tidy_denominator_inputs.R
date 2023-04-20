@@ -62,7 +62,7 @@ denom <- denom_all |> transmute(aow_person_id = digest::digest(object = paste0(U
                                 age_recruitment_m = (birth_date %--% recruitment_date) %/% months(1),
                                 school_establishment_no = EstablishmentNumber_con,
                                 school = School_con,
-                                school_id = digest::digest(object = paste0(School_con, salt), "sha1", serialize = FALSE),
+                                school_id = digest::digest(object = paste0(EstablishmentNumber_con, salt), "sha1", serialize = FALSE),
                                 year_group = YearGroup_rec,
                                 form_tutor = FormTutor_rec,
                                 form_tutor_id = digest::digest(object = paste0(FormTutor_rec, salt), "sha1", serialize = FALSE),
@@ -91,6 +91,7 @@ denom_pseudo <- denom |> select(-upn,
                                 -birth_date,
                                 -postcode,
                                 -school,
+                                -school_establishment_no,
                                 -form_tutor)
 
 # create ID lookup
