@@ -22,7 +22,7 @@ off_col <- as.data.frame(colnames(offline))
 off_col <- off_col %>% rename(names = `colnames(offline)`) %>% mutate(has_off = 1)
 on_off <- full_join(on_col, off_col, by = "names")
 on_off <- on_off %>% mutate_at(vars(2:3), ~replace(., is.na(.), 0)) %>% mutate(has_1 = ifelse(has_on == 1 & has_off == 1,0,1))
-
+on_off <- on_off %>% filter(!has_1 == 0)
 # change variable names
 online <- online %>%
   rename(aow_id = redcap_survey_identifier) %>%
@@ -215,7 +215,7 @@ mod1 <- mod1 %>%
                       awb3_2_homes_2_gmthr_12 = "98) How many of your grandmothers live in this home?",
                       awb3_2_homes_2_gfthr_13 = "99) How many of your grandfathers live in this home?",
                       awb3_2_homes_2_cus_14 = "100) How many of your cousins live in this home?",
-                      awb_2_6_family_brth_n_a5 = "102) Select your birth order",
+                      awb2_6_family_brth_n_a5 = "102) Select your birth order",
                       awb2_6_family_rltnshp_1_a5 = "103) How often does your family get along together?",
                       awb2_6_family_rltnshp_2_a5 = "104) How often do you get along with siblings?",
                       awb3_3_home_1_jb = "105) Do any adults in first home have a job?",
@@ -230,7 +230,6 @@ mod1 <- mod1 %>%
                       awb3_3_home_1_jb_relatn_3 = "117) Adult 3: What is their relation to you?",
                       awb3_3_home_1_jb_othr_3 = "118) Adult 3: Other relation, specify",
                       awb3_3_home_1_jb_work_3 = "119) Adult 3: What is their place of work?",
-                      awb3_3_home_1_jb_job_23 = "120) Adult 3: What job do they do?",
                       awb3_3_home_1_jb_no___1 = "121) Why adults in 1st home not work: Sick/retired/student",
                       awb3_3_home_1_jb_no___2 = "121) Why adults in 1st home not work: Looking for job",
                       awb3_3_home_1_jb_no___3 = "121) Why adults in 1st home not work: Care for others",
@@ -312,13 +311,19 @@ mod1 <- mod1 %>%
                       awb3_activities_18_r5 = "201) Did you make your own videos in past month?")
                       
 
+
 mod1 <- mod1 %>%
-  mutate(national_identity = rowSums(14:19)) %>%
-  relocate(national_identity, .before = awb1_2_uknation_idntty_1___1)
+  set_value_labels(survey_type = c("Online" = 1,
+                                   "Offline" = 2)) %>%
+  set_variable_labels(survey_type = "Was survey completed online or offline?")
+
+# mod1 <- mod1 %>%
+#   mutate(national_identity = rowSums(14:19)) %>%
+#   relocate(national_identity, .before = awb1_2_uknation_idntty_1___1)
 
 
 # save dataset
-
+write_dta(mod1, path = "U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\survey\\data\\Survey_Module_1.dta")
 
 
 
