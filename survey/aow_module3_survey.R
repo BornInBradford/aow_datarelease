@@ -326,6 +326,21 @@ mod3 <- mod3 %>%
                       module_3_complete = "230) Module 3 complete?",
                       survey_type = "Online or offline survey?")
                       
+
+
+# add pseudo id 
+pseudo <- read_csv("U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\denom\\data\\denom_pseudo.csv")
+pseudo <- pseudo %>% select(aow_person_id, aow_recruitment_id) %>% rename(aow_id = aow_recruitment_id)
+m3 <- left_join(mod3, pseudo, by = "aow_id")
+mod3 <- m3 %>%
+  relocate(aow_person_id, .before = aow_id) %>%
+  relocate(survey_type, .after = date_time_collection)
+mod3 <- mod3 %>%
+  set_variable_labels(aow_person_id = "Age of Wonder Person Identifier")
+
+
+# if date time == [not completed], NA
+mod3 <- mod3 %>% replace_with_na(replace = list(date_time_collection = "[not completed]"))
                       
 # save dataset
 write_dta(mod3, path = "U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\survey\\data\\Survey_Module_3.dta")
