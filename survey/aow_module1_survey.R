@@ -322,6 +322,20 @@ mod1 <- mod1 %>%
 #   relocate(national_identity, .before = awb1_2_uknation_idntty_1___1)
 
 
+# add pseudo id 
+pseudo <- read_csv("U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\denom\\data\\denom_pseudo.csv")
+pseudo <- pseudo %>% select(aow_person_id, aow_recruitment_id) %>% rename(aow_id = aow_recruitment_id)
+m1 <- left_join(mod1, pseudo, by = "aow_id")
+mod1 <- m1 %>%
+  relocate(aow_person_id, .before = aow_id) %>%
+  relocate(survey_type, .after = date_time_collection)
+mod1 <- mod1 %>%
+  set_variable_labels(aow_person_id = "Age of Wonder Person Identifier")
+
+
+# save dataset
+write_dta(mod1, path = "U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\survey\\data\\Survey_Module_1.dta")
+
 # save dataset
 write_dta(mod1, path = "U:\\Born In Bradford - Confidential - Data\\BiB\\processing\\AoW\\survey\\data\\Survey_Module_1.dta")
 
