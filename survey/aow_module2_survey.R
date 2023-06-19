@@ -37,10 +37,6 @@ online_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\d
 offline_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data_dictionary\\AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = dict_name)
 
-# which columns are in online but not offline
-online_only <- online_dict |> anti_join(offline_dict, by = "variable")
-offline_only <- offline_dict |> anti_join(online_dict, by = "variable")
-
 # which columns have value label conflicts
 vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_categories = categories),
                                              by = "variable") |>
@@ -72,17 +68,25 @@ add_online <- online_dict |> filter(variable %in% grep(a_exp, offline_dict$varia
 # it removes the ___n from the end of the name
 # only the stem is in the data dictionary i.e. not including the ___ and checkbox value
 online_dict <- online_dict |> mutate(added = case_when(grepl(a_exp_1, variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                       grepl(a_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D", "")),
+                                                       grepl(a_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
                                      revised = case_when(grepl(r_exp_1, variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(r_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D", ""))
+                                                         grepl(r_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                                     hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
+                                     year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+")),
+                                     online_only = case_when(!variable %in% offline_dict$variable ~ "online only",
+                                                             TRUE ~ "in both")
 )
 offline_dict <- offline_dict |> mutate(added = case_when(grepl(a_exp_1, variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(a_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D", "")),
+                                                         grepl(a_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
                                        revised = case_when(grepl(r_exp_1, variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                           grepl(r_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D", ""))
+                                                           grepl(r_exp_n, variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                                       hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
+                                       year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+")),
+                                       offline_only = case_when(!variable %in% online_dict$variable ~ "offline only",
+                                                               TRUE ~ "in both")
 )
 
-# add hidden column for version var is hidden from
-# process categories to add missing values for added from, revised from, removed from
-# for checkbox variables add a new variable named for the stem just containing the added/revised/hidden categories
-# maybe add a present catregory to these ones
+# process categories to add missing values for added from, revised from, removed from, not in yr group, not online
+# for checkbox variables add a new variable named for the stem just containing the added/revised/etc categories
+# > maybe add a present category to these ones
+
