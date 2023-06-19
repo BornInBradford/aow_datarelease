@@ -32,9 +32,9 @@ online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Offline.dta")
 
 # data dictionary
-online_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data_dictionary\\AoWModule2OnlineSurvey_DataDictionary_2023-06-15.csv",
+online_dict <- read_csv("survey/redcap/AoWModule2OnlineSurvey_DataDictionary_2023-06-15.csv",
                         col_names = dict_name)
-offline_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data_dictionary\\AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
+offline_dict <- read_csv("survey/redcap/AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = dict_name)
 
 # which columns have value label conflicts
