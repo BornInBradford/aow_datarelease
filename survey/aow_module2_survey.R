@@ -6,36 +6,45 @@ library(haven)
 library(labelled)
 
 # revised or added varname regexp
-ra_exp <- "_[ar][0-9]{1,2}$|_[ar][0-9]{1,2}___[0-9]{1,3}$"
+ra_exp <<- "_[ar][0-9]{1,2}$|_[ar][0-9]{1,2}___[0-9]{1,3}$"
 # revised or added select-one varname regexp
-ra_exp_1 <- "_[ar][0-9]{1,2}$"
+ra_exp_1 <<- "_[ar][0-9]{1,2}$"
 # revised or added select-any varname regexp
-ra_exp_n <- "_[ar][0-9]{1,2}___[0-9]{1,3}$"
+ra_exp_n <<- "_[ar][0-9]{1,2}___[0-9]{1,3}$"
 # revised varname regexp
-r_exp <- "_r[0-9]{1,2}$|_r[0-9]{1,2}___[0-9]{1,3}$"
+r_exp <<- "_r[0-9]{1,2}$|_r[0-9]{1,2}___[0-9]{1,3}$"
 # revised select-one varname regexp
-r_exp_1 <- "_r[0-9]{1,2}$"
+r_exp_1 <<- "_r[0-9]{1,2}$"
 # revised select-any varname regexp
-r_exp_n <- "_r[0-9]{1,2}___[0-9]{1,3}$"
+r_exp_n <<- "_r[0-9]{1,2}___[0-9]{1,3}$"
 # added varname regexp
-a_exp <- "_a[0-9]{1,2}$|_a[0-9]{1,2}___[0-9]{1,3}$"
+a_exp <<- "_a[0-9]{1,2}$|_a[0-9]{1,2}___[0-9]{1,3}$"
 # added select-one varname regexp
-a_exp_1 <- "_a[0-9]{1,2}$"
+a_exp_1 <<- "_a[0-9]{1,2}$"
 # added select-any varname regexp
-a_exp_n <- "_a[0-9]{1,2}___[0-9]{1,3}$"
+a_exp_n <<- "_a[0-9]{1,2}___[0-9]{1,3}$"
+
+missing_labels <<- list(added = c("Added in version " = -1),
+                       revised = c("Revised in version " = -2),
+                       removed = c("Removed in version " = -3),
+                       year_group = c("Only present for year group " = -4),
+                       on_only = c("Not present in offline version" = -5),
+                       off_only = c("Not present in online version" = -5)
+)
 
 # new data dictionary column names
-dict_name <- c("variable", "form", "section", "type", "label", "categories", "note", "validation_type", "validation_min", "validation_max",
+dict_name <<- c("variable", "form", "section", "type", "label", "categories", "note", "validation_type", "validation_min", "validation_max",
                "identifier", "branching", "required", "alignment", "question_num", "matrix_name", "matrix_rank", "annotation")
+
 # data
 online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Online.dta")
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Offline.dta")
 
 # data dictionary
 online_dict <- read_csv("survey/redcap/AoWModule2OnlineSurvey_DataDictionary_2023-06-15.csv",
-                        col_names = dict_name)
+                        col_names = dict_name, skip = 1)
 offline_dict <- read_csv("survey/redcap/AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
-                         col_names = dict_name)
+                         col_names = dict_name, skip = 1)
 
 # which columns have value label conflicts
 vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_categories = categories),
@@ -48,8 +57,8 @@ vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_
 # there's an extra space in one of the offline labels so this is fine
 
 # add survey indicator to each dataset --- label values once appended 
-online <- online %>% mutate(survey_type = 1) # 1=online
-offline <- offline %>% mutate(survey_type = 2) # 2=offline
+online <- online %>% mutate(survey_mode = 1) # 1=online
+offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
 # merge online and offline
 mod2_allcols <- online |> bind_rows(offline)
@@ -85,6 +94,110 @@ offline_dict <- offline_dict |> mutate(added = case_when(grepl(a_exp_1, variable
                                        offline_only = case_when(!variable %in% online_dict$variable ~ "offline only",
                                                                TRUE ~ "in both")
 )
+
+# for testing 
+tmp_merge <- mod2_allcols
+
+# add online/offline missing vars
+off_only <- offline_dict |> 
+  filter(type %in% c("radio", "checkbox", "text") & offline_only != "in both") |> 
+  select(variable, type)
+on_only <- online_dict |> 
+  filter(type %in% c("radio", "checkbox", "text") & online_only != "in both") |> 
+  select(variable, type)
+
+
+
+aow_miss_radio_offline <- function(df, var) {
+  
+  var <- sym(var)
+  df <- df |> mutate(!!var := case_when(survey_mode == 1 & is.na(!!var) ~ missing_labels$off_only,
+                                        TRUE ~ !!var))
+  df <- df |> add_value_labels(!!var := missing_labels$off_only)
+  
+  return(df)
+  
+}
+
+aow_miss_radio_online <- function(df, var) {
+  
+  var <- sym(var)
+  df <- df |> mutate(!!var := case_when(survey_mode == 2 & is.na(!!var) ~ missing_labels$on_only,
+                                        TRUE ~ !!var))
+  df <- df |> add_value_labels(!!var := missing_labels$on_only)
+  
+  return(df)
+  
+}
+
+aow_miss_checkbox_offline <- function(df, var) {
+  
+  # should work for checkbox as well in online/offline case
+  df <- aow_miss_radio_offline(df, var)
+
+  return(df)
+  
+}
+
+aow_miss_checkbox_online <- function(df, var) {
+  
+  # should work for checkbox as well in online/offline case
+  df <- aow_miss_radio_online(df, var)
+  
+  return(df)
+  
+}
+
+aow_miss_text_offline <- function(df, var) {
+  
+  var <- sym(var)
+  df <- df |> mutate(!!var := case_when(survey_mode == 1 & is.na(!!var) ~ paste0("[", names(missing_labels$off_only) , "]"),
+                                        TRUE ~ !!var))
+  
+  return(df)
+  
+}
+
+aow_miss_text_online <- function(df, var) {
+  
+  var <- sym(var)
+  df <- df |> mutate(!!var := case_when(survey_mode == 2 & is.na(!!var) ~ paste0("[", names(missing_labels$on_only) , "]"),
+                                        TRUE ~ !!var))
+  
+  return(df)
+  
+}
+
+
+off_only_text <- off_only |> filter(type == "text") |> pull(variable)
+on_only_text <- on_only |> filter(type == "text") |> pull(variable)
+off_only_radio <- off_only |> filter(type == "radio") |> pull(variable)
+on_only_radio <- on_only |> filter(type == "radio") |> pull(variable)
+off_only_checkbox <- off_only |> filter(type == "checkbox") |> pull(variable)
+on_only_checkbox <- on_only |> filter(type == "checkbox") |> pull(variable)
+
+# loop through variables - radio
+for(var in off_only_radio) {
+  tmp_merge <- tmp_merge |> aow_miss_radio_offline(var)
+}
+for(var in on_only_radio) {
+  tmp_merge <- tmp_merge |> aow_miss_radio_online(var)
+}
+# loop through variables - text
+for(var in off_only_text) {
+  tmp_merge <- tmp_merge |> aow_miss_text_offline(var)
+}
+for(var in on_only_text) {
+  tmp_merge <- tmp_merge |> aow_miss_text_online(var)
+}
+
+# add "added" missing values
+# merge online and offline for this
+off_tmp <- offline_dict |> select(variable, added) |> filter(!is.na(added))
+on_tmp <- online_dict |> select(variable, added) |> filter(!is.na(added))
+added_vars <- off_tmp |> bind_rows(on_tmp) |> unique()
+
+
 
 # process categories to add missing values for added from, revised from, removed from, not in yr group, not online
 # for checkbox variables add a new variable named for the stem just containing the added/revised/etc categories
