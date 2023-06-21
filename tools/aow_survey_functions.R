@@ -4,7 +4,7 @@ library(haven)
 library(labelled)
 
 # set values that need to be controlled across survey scripts
-aow_srv_regexp <- function(type = character(0)) {
+aow_srv_regexp <- function(type) {
   
   exp <- case_when(type == "rev_cat" ~ "_r[0-9]{1,2}$|_r[0-9]{1,2}___[0-9]{1,3}$",
                    type == "rev_rad" ~ "_r[0-9]{1,2}$",
@@ -20,7 +20,7 @@ aow_srv_regexp <- function(type = character(0)) {
 }
 
 
-aow_miss_label <- function(type = character(0)) {
+aow_miss_label <- function(type) {
   
   lab <- case_when(type == "added" ~ c("Added in version " = -1),
                    type == "revised" ~ c("Revised in version " = -2),
@@ -45,6 +45,22 @@ aow_dict_colnames <- function() {
                  "identifier", "branching", "required", "alignment", "question_num", "matrix_name", "matrix_rank", "annotation")
   
   return(dict_name)
+  
+}
+
+aow_redcap_cat_type <- function() {
+  
+  types <- c("radio", "checkbox", "yesno", "dropdown")
+  
+  return(types)
+  
+}
+
+aow_redcap_txt_type <- function() {
+  
+  types <- c("text", "notes")
+  
+  return(types)
   
 }
 
@@ -96,20 +112,22 @@ aow_miss_cat_online <- function(df, var) {
   
 }
 
-aow_miss_text_offline <- function(df, var) {
+aow_miss_txt_offline <- function(df, var) {
   
   var <- sym(var)
-  df <- df |> mutate(!!var := case_when(survey_mode == 1 & is.na(!!var) ~ paste0("[", names(aow_miss_label("off_only")) , "]"),
+  df <- df |> mutate(!!var := as.character(!!var), # when all values are NA, can be imported as numeric
+                     !!var := case_when(survey_mode == 1 & is.na(!!var) ~ paste0("[", names(aow_miss_label("off_only")) , "]"),
                                         TRUE ~ !!var))
   
   return(df)
   
 }
 
-aow_miss_text_online <- function(df, var) {
+aow_miss_txt_online <- function(df, var) {
   
   var <- sym(var)
-  df <- df |> mutate(!!var := case_when(survey_mode == 2 & is.na(!!var) ~ paste0("[", names(aow_miss_label("on_only")) , "]"),
+  df <- df |> mutate(!!var := as.character(!!var), # when all values are NA, can be imported as numeric
+                     !!var := case_when(survey_mode == 2 & is.na(!!var) ~ paste0("[", names(aow_miss_label("on_only")) , "]"),
                                         TRUE ~ !!var))
   
   return(df)
@@ -123,7 +141,9 @@ aow_miss_cat_yrgrp <- function(df, var, yrgrp) {
   
   var <- sym(var)
   
-  df <- df |> mutate(!!var := case_when(year_group != yrgrp ~ aow_miss_label(paste0("year_gp_", yrgrp)),
+  yrgrp_lab <- aow_miss_label(paste0("year_gp_", yrgrp))
+                 
+  df <- df |> mutate(!!var := case_when(as.integer(year_group) != as.integer(yrgrp) ~ yrgrp_lab,
                                         TRUE ~ !!var))
   df <- df |> add_value_labels(!!var := yrgrp_lab)
   
@@ -131,10 +151,11 @@ aow_miss_cat_yrgrp <- function(df, var, yrgrp) {
   
 }
 
-aow_miss_text_yrgrp <- function(df, var) {
+aow_miss_txt_yrgrp <- function(df, var, yrgrp) {
 
   var <- sym(var)
-  df <- df |> mutate(!!var := case_when(year_group != yrgrp ~ paste0("[", names(aow_miss_label(paste0("year_gp_", yrgrp))) , "]"),
+  df <- df |> mutate(!!var := as.character(!!var), # when all values are NA, can be imported as numeric
+                     !!var := case_when(as.integer(year_group) != as.integer(yrgrp) ~ paste0("[", names(aow_miss_label(paste0("year_gp_", yrgrp))) , "]"),
                                         TRUE ~ !!var))
   
   return(df)

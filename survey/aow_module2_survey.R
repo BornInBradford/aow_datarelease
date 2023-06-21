@@ -27,7 +27,8 @@ online <- online %>% mutate(survey_mode = 1) # 1=online
 offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
 # merge online and offline
-mod_allcols <- online |> bind_rows(offline)
+mod_allcols <- online |> bind_rows(offline) |>
+  set_value_labels(survey_mode = c("Online" = 1, "Offline" = 2))
 
 # check conflicting value labels
 warnings()
@@ -63,16 +64,16 @@ offline_dict <- offline_dict |> mutate(added = case_when(grepl(aow_srv_regexp("a
 
 # add online/offline missing vars
 off_only <- offline_dict |> 
-  filter(type %in% c("radio", "checkbox", "text") & offline_only != "in both") |> 
+  filter(!type == "descriptive" & offline_only != "in both") |> 
   select(variable, type)
 on_only <- online_dict |> 
-  filter(type %in% c("radio", "checkbox", "text") & online_only != "in both") |> 
+  filter(!type == "descriptive" & online_only != "in both") |> 
   select(variable, type)
 
-off_only_text <- off_only |> filter(type %in% c("text", "notes")) |> pull(variable)
-on_only_text <- on_only |> filter(type %in% c("text", "notes")) |> pull(variable)
-off_only_cat <- off_only |> filter(type %in% c("radio", "checkbox")) |> pull(variable)
-on_only_cat <- on_only |> filter(type %in% c("radio", "checkbox")) |> pull(variable)
+off_only_txt <- off_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
+on_only_txt <- on_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
+off_only_cat <- off_only |> filter(type %in% aow_redcap_cat_type()) |> pull(variable)
+on_only_cat <- on_only |> filter(type %in% aow_redcap_cat_type()) |> pull(variable)
 
 # loop through variables - categorical
 for(var in off_only_cat) {
@@ -82,11 +83,11 @@ for(var in on_only_cat) {
   mod_allcols <- mod_allcols |> aow_miss_cat_online(var)
 }
 # loop through variables - text
-for(var in off_only_text) {
-  mod_allcols <- mod_allcols |> aow_miss_text_offline(var)
+for(var in off_only_txt) {
+  mod_allcols <- mod_allcols |> aow_miss_txt_offline(var)
 }
-for(var in on_only_text) {
-  mod_allcols <- mod_allcols |> aow_miss_text_online(var)
+for(var in on_only_txt) {
+  mod_allcols <- mod_allcols |> aow_miss_txt_online(var)
 }
 
 # add year group missing vars
@@ -94,6 +95,24 @@ year_group <- offline_dict |> bind_rows(online_dict) |>
   filter(!is.na(year_group)) |>
   select(variable, type, year_group) |>
   unique()
+year_group_cat <- year_group |> filter(type %in% aow_redcap_cat_type()) |>
+  select(variable, year_group) |> unique()
+year_group_txt <- year_group |> filter(type %in% aow_redcap_txt_type()) |>
+  select(variable, year_group) |> unique()
+
+# loop through variables - categorical
+if(nrow(year_group_cat > 0)) {
+  for(v in 1:nrow(year_group_cat)) {
+    mod_allcols <- mod_allcols |> aow_miss_cat_yrgrp(year_group_cat$variable[v], year_group_cat$year_group[v])
+  }
+}
+# loop through variables - text
+if(nrow(year_group_txt > 0)) {
+  for(v in 1:nrow(year_group_txt)) {
+    mod_allcols <- mod_allcols |> aow_miss_txt_yrgrp(year_group_txt$variable[v], year_group_txt$year_group[v])
+  }
+}
+
 
 # 
 # # add "added" missing values
