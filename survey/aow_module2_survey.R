@@ -26,9 +26,10 @@ vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_
 online <- online %>% mutate(survey_mode = 1) # 1=online
 offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
-# merge online and offline
+# merge online and offline, do some renaming needed for processing
 mod_allcols <- online |> bind_rows(offline) |>
-  set_value_labels(survey_mode = c("Online" = 1, "Offline" = 2))
+  set_value_labels(survey_mode = c("Online" = 1, "Offline" = 2)) |>
+  rename(survey_version = mod2_version)
 
 # check conflicting value labels
 warnings()
@@ -114,21 +115,78 @@ if(nrow(year_group_txt > 0)) {
 }
 
 
-# 
-# # add "added" missing values
-# # merge online and offline for this
-# off_tmp <- offline_dict |> select(variable, added) |> filter(!is.na(added))
-# on_tmp <- online_dict |> select(variable, added) |> filter(!is.na(added))
-# added_vars <- off_tmp |> bind_rows(on_tmp) |> unique()
-# 
+# add version when added missing vars
+added <- offline_dict |> bind_rows(online_dict) |>
+  filter(!is.na(added)) |>
+  select(variable, type, added) |>
+  unique()
+added_cat <- added |> filter(type %in% aow_redcap_cat_type()) |>
+  select(variable, added) |> unique()
+added_txt <- added |> filter(type %in% aow_redcap_txt_type()) |>
+  select(variable, added) |> unique()
+
+
+# loop through variables - categorical
+if(nrow(added_cat > 0)) {
+  for(v in 1:nrow(added_cat)) {
+    mod_allcols <- mod_allcols |> aow_miss_cat_added(added_cat$variable[v], added_cat$added[v])
+  }
+}
+# loop through variables - text
+if(nrow(added_txt > 0)) {
+  for(v in 1:nrow(added_txt)) {
+    mod_allcols <- mod_allcols |> aow_miss_txt_added(added_txt$variable[v], added_txt$added[v])
+  }
+}
+
+
+# add version when revised missing vars
+revised <- offline_dict |> bind_rows(online_dict) |>
+  filter(!is.na(revised)) |>
+  select(variable, type, revised) |>
+  unique()
+revised_cat <- revised |> filter(type %in% aow_redcap_cat_type()) |>
+  select(variable, revised) |> unique()
+revised_txt <- revised |> filter(type %in% aow_redcap_txt_type()) |>
+  select(variable, revised) |> unique()
+
+
+# loop through variables - categorical
+if(nrow(revised_cat > 0)) {
+  for(v in 1:nrow(revised_cat)) {
+    mod_allcols <- mod_allcols |> aow_miss_cat_revised(revised_cat$variable[v], revised_cat$revised[v])
+  }
+}
+# loop through variables - text
+if(nrow(revised_txt > 0)) {
+  for(v in 1:nrow(revised_txt)) {
+    mod_allcols <- mod_allcols |> aow_miss_txt_revised(revised_txt$variable[v], revised_txt$revised[v])
+  }
+}
 
 
 
-# process categories to add missing values for on/off, year group, added, revised, removed
-# for checkbox variables add a new variable named for the stem just containing the added/revised/etc categories
-# > maybe add a present category to these ones
-#
-# may need to always add checkbox header variable at the start
-# makes processing them simpler if they are always there
-# also might be the only place for the question to go?
+# add version when removed missing vars
+removed <- offline_dict |> bind_rows(online_dict) |>
+  filter(!is.na(hidden)) |>
+  select(variable, type, removed = hidden) |>
+  unique()
+removed_cat <- removed |> filter(type %in% aow_redcap_cat_type()) |>
+  select(variable, removed) |> unique()
+removed_txt <- removed |> filter(type %in% aow_redcap_txt_type()) |>
+  select(variable, removed) |> unique()
+
+
+# loop through variables - categorical
+if(nrow(removed_cat > 0)) {
+  for(v in 1:nrow(removed_cat)) {
+    mod_allcols <- mod_allcols |> aow_miss_cat_removed(removed_cat$variable[v], removed_cat$removed[v])
+  }
+}
+# loop through variables - text
+if(nrow(removed_txt > 0)) {
+  for(v in 1:nrow(removed_txt)) {
+    mod_allcols <- mod_allcols |> aow_miss_txt_removed(removed_txt$variable[v], removed_txt$removed[v])
+  }
+}
 
