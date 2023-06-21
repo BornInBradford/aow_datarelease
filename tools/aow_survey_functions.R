@@ -3,6 +3,7 @@ library(tidyverse)
 library(haven)
 library(labelled)
 
+# set values that need to be controlled across survey scripts
 aow_srv_regexp <- function(type = character(0)) {
   
   exp <- case_when(type == "rev_cat" ~ "_r[0-9]{1,2}$|_r[0-9]{1,2}___[0-9]{1,3}$",
@@ -47,7 +48,30 @@ aow_dict_colnames <- function() {
   
 }
 
-aow_miss_radio_offline <- function(df, var) {
+# add column
+aow_add_col <- function(df, name = "dummy_col", type = "int") {
+  
+  # if name already exists, do nothing
+  if(name %in% names(df)) return(df)
+
+  if(name == "dummy_col") warning("Using default name for added column: `dummy_col`")
+  
+  name <- sym(name)
+  
+  if(type == "int") {
+    df <- df |> mutate(!!name := as.integer(NA))
+  }
+  
+  return(df)
+  
+}
+
+
+# add missing data indicators and labels
+aow_miss_cat_offline <- function(df, var) {
+  
+  # add col if it doesn't exist already
+  df <- df |> aow_add_col(var)
   
   var <- sym(var)
   df <- df |> mutate(!!var := case_when(survey_mode == 1 ~ aow_miss_label("off_only"),
@@ -58,31 +82,14 @@ aow_miss_radio_offline <- function(df, var) {
   
 }
 
-aow_miss_radio_online <- function(df, var) {
+aow_miss_cat_online <- function(df, var) {
+  
+  # add col if it doesn't exist already
+  df <- df |> aow_add_col(var)
   
   var <- sym(var)
   df <- df |> mutate(!!var := case_when(survey_mode == 2 ~ aow_miss_label("on_only"),
                                         TRUE ~ !!var))
-  df <- df |> add_value_labels(!!var := aow_miss_label("on_only"))
-  
-  return(df)
-  
-}
-
-aow_miss_checkbox_offline <- function(df, var) {
-  
-  var <- sym(var)
-  df <- df |> mutate(!!var := case_when(survey_mode == 1 ~ aow_miss_label("off_only")))
-  df <- df |> add_value_labels(!!var := aow_miss_label("off_only"))
-  
-  return(df)
-  
-}
-
-aow_miss_checkbox_online <- function(df, var) {
-  
-  var <- sym(var)
-  df <- df |> mutate(!!var := case_when(survey_mode == 2 ~ aow_miss_label("on_only")))
   df <- df |> add_value_labels(!!var := aow_miss_label("on_only"))
   
   return(df)
@@ -109,8 +116,11 @@ aow_miss_text_online <- function(df, var) {
   
 }
 
-aow_miss_radio_yrgrp <- function(df, var, yrgrp) {
-
+aow_miss_cat_yrgrp <- function(df, var, yrgrp) {
+  
+  # add col if it doesn't exist already
+  df <- df |> aow_add_col(var)
+  
   var <- sym(var)
   
   df <- df |> mutate(!!var := case_when(year_group != yrgrp ~ aow_miss_label(paste0("year_gp_", yrgrp)),
@@ -118,15 +128,6 @@ aow_miss_radio_yrgrp <- function(df, var, yrgrp) {
   df <- df |> add_value_labels(!!var := yrgrp_lab)
   
   return(df)
-  
-}
-
-aow_miss_checkbox_yrgrp <- function(df, var, yrgrp) {
-  
-  # Does this need to deal with the fact that the variable may or may not already exist?
-  # Need a function to create it?
-  # Then add TRUE condition back into checkbox function above - in fact can probably use radio functions again
-  # or grab radio and checkbox types together?
   
 }
 

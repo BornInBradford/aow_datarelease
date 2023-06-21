@@ -39,7 +39,7 @@ add_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat
 add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), offline_dict$variable, value = TRUE))
 
 
-# the second expression using ?_exp_n would only be needed if processing actual variable names
+# the second expression using ?_chk would only be needed if processing actual variable names
 # it removes the ___n from the end of the name
 # only the stem is in the data dictionary i.e. not including the ___ and checkbox value
 online_dict <- online_dict |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
@@ -61,8 +61,6 @@ offline_dict <- offline_dict |> mutate(added = case_when(grepl(aow_srv_regexp("a
                                                                TRUE ~ "in both")
 )
 
-
-
 # add online/offline missing vars
 off_only <- offline_dict |> 
   filter(type %in% c("radio", "checkbox", "text") & offline_only != "in both") |> 
@@ -73,17 +71,15 @@ on_only <- online_dict |>
 
 off_only_text <- off_only |> filter(type %in% c("text", "notes")) |> pull(variable)
 on_only_text <- on_only |> filter(type %in% c("text", "notes")) |> pull(variable)
-off_only_radio <- off_only |> filter(type == "radio") |> pull(variable)
-on_only_radio <- on_only |> filter(type == "radio") |> pull(variable)
-off_only_checkbox <- off_only |> filter(type == "checkbox") |> pull(variable)
-on_only_checkbox <- on_only |> filter(type == "checkbox") |> pull(variable)
+off_only_cat <- off_only |> filter(type %in% c("radio", "checkbox")) |> pull(variable)
+on_only_cat <- on_only |> filter(type %in% c("radio", "checkbox")) |> pull(variable)
 
-# loop through variables - radio
-for(var in off_only_radio) {
-  mod_allcols <- mod_allcols |> aow_miss_radio_offline(var)
+# loop through variables - categorical
+for(var in off_only_cat) {
+  mod_allcols <- mod_allcols |> aow_miss_cat_offline(var)
 }
-for(var in on_only_radio) {
-  mod_allcols <- mod_allcols |> aow_miss_radio_online(var)
+for(var in on_only_cat) {
+  mod_allcols <- mod_allcols |> aow_miss_cat_online(var)
 }
 # loop through variables - text
 for(var in off_only_text) {
@@ -91,13 +87,6 @@ for(var in off_only_text) {
 }
 for(var in on_only_text) {
   mod_allcols <- mod_allcols |> aow_miss_text_online(var)
-}
-# loop through variables - checkbox
-for(var in off_only_checkbox) {
-  mod_allcols <- mod_allcols |> aow_miss_checkbox_offline(var)
-}
-for(var in on_only_checkbox) {
-  mod_allcols <- mod_allcols |> aow_miss_checkbox_online(var)
 }
 
 # add year group missing vars
