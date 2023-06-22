@@ -11,6 +11,10 @@ library(labelled)
 online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module1_Online.dta")
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module1_Offline.dta")
 
+# data dictionary
+online_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data_dictionary\\AoWModule1OnlineSurvey_DataDictionary_2023-06-15.csv")
+offline_dict <- read_csv("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data_dictionary\\AoWModule1OfflineForm_DataDictionary_2023-06-15.csv")
+
 # add survey indicator to each dataset --- label values once appended 
 online <- online %>% mutate(survey_type = 1) # 1=online
 offline <- offline %>% mutate(survey_type = 2) # 2=offline
