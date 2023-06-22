@@ -31,6 +31,9 @@ mod_allcols <- online |> bind_rows(offline) |>
   set_value_labels(survey_mode = c("Online" = 1, "Offline" = 2)) |>
   rename(survey_version = mod2_version)
 
+# preserve order of columns before any processing occurs
+mod_allcols_order <- names(mod_allcols)
+
 # check conflicting value labels
 warnings()
 
@@ -56,6 +59,9 @@ off_only <- offline_dict |>
 on_only <- online_dict |> 
   filter(!type == "descriptive" & online_only != "in both") |> 
   select(variable, type)
+
+# don't process aow_id
+off_only <- off_only |> filter(!variable %in% c("aow_id", "date_time_collection"))
 
 off_only_txt <- off_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
 on_only_txt <- on_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
@@ -178,6 +184,8 @@ if(nrow(removed_txt > 0)) {
 }
 
 
+# restore column order
+mod_allcols <- mod_allcols |> select(any_of(mod_allcols_order), everything())
 
 # export
-if(exists("export_import") && export_import) saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module2_merged.rds")
+saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module2_merged.rds")

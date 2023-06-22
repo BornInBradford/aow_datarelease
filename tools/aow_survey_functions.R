@@ -2,6 +2,7 @@
 library(tidyverse)
 library(haven)
 library(labelled)
+library(lubridate)
 
 # set values that need to be controlled across survey scripts
 aow_srv_regexp <- function(type) {
@@ -93,6 +94,48 @@ aow_redcap_txt_type <- function() {
   return(types)
   
 }
+
+aow_survey_drop_cols <- function() {
+  
+  cols <- c("awb1_1_id",
+            "redcap_survey_identifier",
+            "module_2_timestamp",
+            "module_2_complete",
+            "end_submit",
+            "aow_id",
+            "date_time_collection",
+            "birth_date"
+  )
+   
+  return(cols)
+  
+}
+
+aow_survey_column_order <- function() {
+  
+  cols <- c("aow_person_id",
+            "aow_recruitment_id",
+            "recruitment_era",
+            "age_recruitment_y",
+            "age_recruitment_m",
+            "gender",
+            "ethnicity",
+            "birth_year",
+            "birth_month",
+            "school_id",
+            "year_group",
+            "form_tutor_id",
+            "age_survey_y",
+            "age_survey_m",
+            "survey_date",
+            "survey_version",
+            "survey_mode"
+  )
+  
+  return(cols)
+  
+}
+
 
 # process redcap data dictionaries
 aow_add_dict_cols <- function(df) {

@@ -50,7 +50,7 @@ conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> hea
 denom <- denom_all |>
   transmute(aow_person_id = map_chr(paste0(UPN_con, salt), digest::digest, algo = "sha1", serialize = FALSE),
             upn = UPN_con,
-            aow_recruitment_id = AoWRecruitmentID,
+            aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = DateOfBirth,
             birth_year = year(birth_date),
             birth_month = month(birth_date),
