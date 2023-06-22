@@ -41,27 +41,13 @@ add_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat
 add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), offline_dict$variable, value = TRUE))
 
 
-# the second expression using ?_chk would only be needed if processing actual variable names
-# it removes the ___n from the end of the name
-# only the stem is in the data dictionary i.e. not including the ___ and checkbox value
-online_dict <- online_dict |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                       grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                     revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                     hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
-                                     year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+")),
-                                     online_only = case_when(!variable %in% offline_dict$variable ~ "online only",
-                                                             TRUE ~ "in both")
-)
-offline_dict <- offline_dict |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                           grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
-                                       year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+")),
-                                       offline_only = case_when(!variable %in% online_dict$variable ~ "offline only",
-                                                               TRUE ~ "in both")
-)
+# add missing/changed question indicators to data dictionaries
+online_dict <- online_dict |> aow_add_dict_cols() |>
+  mutate(online_only = case_when(!variable %in% offline_dict$variable ~ "online only", TRUE ~ "in both"))
+
+offline_dict <- offline_dict |> aow_add_dict_cols() |>
+  mutate(offline_only = case_when(!variable %in% online_dict$variable ~ "offline only", TRUE ~ "in both"))
+
 
 # add online/offline missing vars
 off_only <- offline_dict |> 
@@ -90,6 +76,7 @@ for(var in off_only_txt) {
 for(var in on_only_txt) {
   mod_allcols <- mod_allcols |> aow_miss_txt_online(var)
 }
+
 
 # add year group missing vars
 year_group <- offline_dict |> bind_rows(online_dict) |>
