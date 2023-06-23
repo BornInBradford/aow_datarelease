@@ -46,3 +46,6 @@ vignettes/*.pdf
 # config
 config/
 
+# reports
+reports/
+
