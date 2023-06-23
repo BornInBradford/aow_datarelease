@@ -1,0 +1,78 @@
+---
+title: "`r params$df_name`"
+output: html_document
+params:
+  df_file: "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_linked.rds"
+  df_name: "Survey module 1 linked data frame"
+---
+
+```{r setup, include=FALSE}
+library(summarytools)
+library(tidyverse)
+library(labelled)
+library(knitr)
+
+st_options(plain.ascii = FALSE, style = "rmarkdown", dfSummary.valid.col = FALSE, footnote = NA,
+           headings=FALSE, bootstrap.css = FALSE, dfSummary.silent = TRUE, dfSummary.na.col = TRUE,
+           dfSummary.varnumbers = FALSE, dfSummary.graph.col = TRUE, dfSummary.graph.magnif = 0.6,
+           dfSummary.labels.col = FALSE)
+st_css()
+
+dat <- readRDS(params$df_file)
+
+```
+
+## Summary
+
+Data frame: `r params$df_name`
+
+File path: `r params$df_file`
+
+File date: `r file.info(params$df_file)$ctime`
+
+Rows: `r nrow(dat)`
+
+Cols: `r length(dat)`
+
+## Column metadata
+
+```{r metadata, echo=FALSE}
+
+meta = data.frame(variable = character(0), label = character(0), value_labels = character(0))
+
+for(v in names(dat)) {
+  
+  label <- get_variable_labels(dat[v])
+  value_labels <- get_value_labels(dat[v])
+  
+  if(!is.null(label[[1]])) {
+    label <- paste0(label)
+  } else {
+    label <- ""
+  }
+  
+  if(length(value_labels[[1]]) > 0) {
+    value_labels <- paste0(value_labels[[1]], ": ", names(value_labels[[1]]), collapse = "<br>")
+  } else {
+    value_labels <- ""
+  }
+  
+  meta <- meta |> add_row(variable = v,
+                          label = label,
+                          value_labels = value_labels)
+  
+}
+
+kable(meta)
+
+```
+
+
+## Column descriptives
+
+```{r descriptives, echo=FALSE, results="asis"}
+
+print(dfSummary(dat),
+  method = "render")
+
+```
