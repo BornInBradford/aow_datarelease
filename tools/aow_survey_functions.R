@@ -152,6 +152,38 @@ aow_add_dict_cols <- function(df) {
   
 }
 
+# add suffix to named variable in data dictionary
+aow_suffix_var_dict <- function(df, var, suffix) {
+  
+  suffix <- tolower(suffix)
+  
+  if(!var %in% df$variable) stop(paste0(var, " not found in data dictionary df"))
+  
+  newvar <- paste0(var, "_", suffix)
+  
+  df <- df |> mutate(variable = if_else(variable == var, newvar, variable))
+  
+  return(df)
+  
+}
+
+# add suffix to named variable in data frame
+aow_suffix_var <- function(df, var, suffix) {
+  
+  suffix <- tolower(suffix)
+  
+  if(!var %in% names(df)) stop(paste0(var, " not found in data frame"))
+  
+  newvar <- paste0(var, "_", suffix)
+  
+  var <- sym(var)
+  
+  df <- df |> rename(!!newvar := !!var)
+  
+  return(df)
+  
+}
+
 # add column
 aow_add_col <- function(df, name = "dummy_col", type = "int") {
   
