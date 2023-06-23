@@ -1,5 +1,7 @@
 # example dataframe summary report rendering
 
+# may need to create reports folder in project root - currently ignored by git
+
 data_frame_file <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module4_linked.rds"
 data_frame_name <- "Survey module 4 linked data frame"
 
