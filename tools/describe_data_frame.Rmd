@@ -12,29 +12,29 @@ library(tidyverse)
 library(labelled)
 library(knitr)
 
-st_options(plain.ascii = FALSE, style = "rmarkdown", dfSummary.valid.col = FALSE, footnote = NA,
+st_options(plain.ascii = FALSE, style = "rmarkdown", dfSummary.valid.col = TRUE, footnote = NA,
            headings=FALSE, bootstrap.css = FALSE, dfSummary.silent = TRUE, dfSummary.na.col = TRUE,
            dfSummary.varnumbers = FALSE, dfSummary.graph.col = TRUE, dfSummary.graph.magnif = 0.6,
-           dfSummary.labels.col = FALSE)
+           dfSummary.labels.col = TRUE
+)
+
 st_css()
 
 dat <- readRDS(params$df_file)
 
 ```
 
-## Summary
 
-Data frame: `r params$df_name`
+**Data frame:** `r params$df_name`
 
-File path: `r params$df_file`
+**File path:** `r params$df_file`
 
-File date: `r file.info(params$df_file)$ctime`
+**File date:** `r file.info(params$df_file)$ctime`
 
-Rows: `r nrow(dat)`
+**Rows:** `r nrow(dat)`
 
-Cols: `r length(dat)`
+**Cols:** `r length(dat)`
 
-## Column metadata
 
 ```{r metadata, echo=FALSE}
 
@@ -63,16 +63,19 @@ for(v in names(dat)) {
   
 }
 
-kable(meta)
 
 ```
 
 
-## Column descriptives
 
 ```{r descriptives, echo=FALSE, results="asis"}
 
-print(dfSummary(dat),
+dfSummary_tab <- dfSummary(dat)
+
+dfSummary_tab$Valid <- meta$value_labels
+
+print(dfSummary_tab,
   method = "render")
+
 
 ```
