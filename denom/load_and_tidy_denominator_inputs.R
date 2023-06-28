@@ -4,10 +4,10 @@ library(dplyr)
 library(lubridate)
 library(readr)
 
+# whether to export files and summary reports
+options(aow_export_denom = TRUE)
 
-source("config/set_aow_salt.R")
-
-salt <- getOption("aow_salt")
+source("tools/aow_tools.R")
 
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
@@ -48,7 +48,7 @@ conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> hea
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
-  transmute(aow_person_id = map_chr(paste0(UPN_con, salt), digest::digest, algo = "sha1", serialize = FALSE),
+  transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
             upn = UPN_con,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = DateOfBirth,
@@ -63,10 +63,10 @@ denom <- denom_all |>
             age_recruitment_m = (birth_date %--% recruitment_date) %/% months(1),
             school_establishment_no = EstablishmentNumber_con,
             school = School_con,
-            school_id = map_chr(paste0(EstablishmentNumber_con, salt), digest::digest, algo = "sha1", serialize = FALSE),
+            school_id = map_chr(EstablishmentNumber_con, aow_pseudo),
             year_group = YearGroup_rec,
             form_tutor = FormTutor_rec,
-            form_tutor_id = map_chr(paste0(FormTutor_rec, salt), digest::digest, algo = "sha1", serialize = FALSE),
+            form_tutor_id = map_chr(FormTutor_rec, aow_pseudo),
             gender = Gender,
             ethnicity = Ethnicity,
             fsm = FSM,
@@ -98,15 +98,30 @@ denom_pseudo <- denom |> select(-upn,
 # create ID lookup
 lkup <- denom |> select(aow_person_id, aow_recruitment_id) |> unique()
 
+
+
 # export
-saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
-write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
-write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
-
-saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
-write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
-write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
-
-saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
-write_dta(lkup, file.path(output_path, "id_lookup.dta"))
-write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
+if(getOption("aow_export_denom")) {
+  
+  saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
+  write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
+  write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "denom_identifiable.rds"),
+                 "Denominator with identifiers")
+  
+  saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
+  write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
+  write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "denom_pseudo.rds"),
+                 "Denominator without identifiers")
+  
+  saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
+  write_dta(lkup, file.path(output_path, "id_lookup.dta"))
+  write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "id_lookup.rds"),
+                 "Denominator lookup")
+  
+}
