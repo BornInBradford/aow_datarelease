@@ -4,10 +4,10 @@ library(dplyr)
 library(lubridate)
 library(readr)
 
+# whether to export files and summary reports
+options(aow_export_denom = TRUE)
 
-source("config/set_aow_salt.R")
-
-salt <- getOption("aow_salt")
+source("tools/aow_tools.R")
 
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
@@ -48,10 +48,10 @@ conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> hea
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
-  transmute(aow_person_id = map_chr(paste0(UPN_con, salt), digest::digest, algo = "sha1", serialize = FALSE),
+  transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
             upn = UPN_con,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
-            birth_date = DateOfBirth,
+            birth_date = as.Date(DateOfBirth),
             birth_year = year(birth_date),
             birth_month = month(birth_date),
             postcode = Postcode,
@@ -63,12 +63,12 @@ denom <- denom_all |>
             age_recruitment_m = (birth_date %--% recruitment_date) %/% months(1),
             school_establishment_no = EstablishmentNumber_con,
             school = School_con,
-            school_id = map_chr(paste0(EstablishmentNumber_con, salt), digest::digest, algo = "sha1", serialize = FALSE),
+            school_id = map_chr(EstablishmentNumber_con, aow_pseudo),
             year_group = YearGroup_rec,
             form_tutor = FormTutor_rec,
-            form_tutor_id = map_chr(paste0(FormTutor_rec, salt), digest::digest, algo = "sha1", serialize = FALSE),
+            form_tutor_id = map_chr(FormTutor_rec, aow_pseudo),
             gender = Gender,
-            ethnicity = Ethnicity,
+            ethnicity = ethnicity_ons2,
             fsm = FSM,
             sen = SEN,
             consent_form = Consent_Form,
@@ -87,6 +87,94 @@ denom <- denom_all |>
             withdrawn = Withdrawn,
             withdrawal_date = WithdrawnDate)
 
+# recoding and value labelling
+denom <- denom |> 
+  
+  # gender
+  mutate(gender = gender |> tolower() |> trimws(),
+         gender = case_when(gender %in% c("m", "male") ~ 2L,
+                            gender %in% c("f", "female") ~ 1L,
+                            TRUE ~ as.integer(NA))) |>
+  set_value_labels(gender = c(Female = 1, Male = 2)) |>
+  
+  # free shcool meals
+  mutate(fsm = fsm |> tolower() |> trimws(),
+         fsm = case_when(fsm %in% c("n", "no") ~ 0L,
+                         fsm %in% c("y", "yes") ~ 1L,
+                         TRUE ~ as.integer(NA))) |>
+  set_value_labels(fsm = c(No = 0, Yes = 1)) |>
+  
+  # special educational needs
+  mutate(sen = sen |> tolower() |> trimws(),
+         sen = case_when(sen %in% c("n") ~ 0L,
+                         sen %in% c("k") ~ 1L,
+                         sen %in% c("e") ~ 2L,
+                         TRUE ~ as.integer(NA))) |>
+  # NB some schools have sent SEN type (e.g. "Severe Learning Difficulty")
+  #    instead of provision as requested. Nullifying these while we find out
+  #    whether there's any way to infer provision from type
+  set_value_labels(sen = c("No special educational need" = 0, 
+                           "Special educational need support" = 1,
+                           "Education, Health and Care Plan" = 2)) |>
+  
+  # ethnicity
+  mutate(ethnicity = case_when(ethnicity == "asian or asian british" ~ 1L,
+                               ethnicity == "black or african or caribbean or black british" ~ 2L,
+                               ethnicity == "mixed multiple ethnic groups" ~ 3L,
+                               ethnicity %in% c("white", "roma ethnic group") ~ 4L,
+                               ethnicity == "not stated" ~ 99L,
+                               ethnicity == "other ethnic group" ~ 5L)) |>
+  set_value_labels(ethnicity = c("Asian or Asian British" = 1,
+                                 "Black, Black British, Caribbean or African" = 2,
+                                 "Mixed or multiple ethnic groups" = 3,
+                                 "White" = 4,
+                                 "Other ethnic group" = 5,
+                                 "Not stated" = 99))
+
+  
+  
+
+# labelling variables
+denom <- denom |> 
+  set_variable_labels(aow_person_id = "Age of Wonder person ID",
+                      upn = "Unique Pupil Number",
+                      aow_recruitment_id = "Age of Wonder year group recruitment ID",
+                      birth_date = "Date of birth",
+                      birth_year = "Year of birth",
+                      birth_month = "Month of birth",
+                      postcode = "Home postcode",
+                      recruitment_era = "Recruitment era (academic year)",
+                      recruitment_date = "Recruitment date (import of class list)",
+                      recruitment_year = "Recruitment year",
+                      recruitment_month = "Recruitment month",
+                      age_recruitment_y = "Age at recruitment in years",
+                      age_recruitment_m = "Age at recruitment in months",
+                      school_establishment_no = "School local authority establishment number",
+                      school = "School name",
+                      school_id = "Pseudo school ID",
+                      year_group = "Year group at recruitment",
+                      form_tutor = "Form tutor at recruitment",
+                      form_tutor_id = "Pseudo recruitment form tutor ID",
+                      gender = "Gender reported by school",
+                      ethnicity = "Ethnicity reported by school",
+                      fsm = "Free school meals",
+                      sen = "Special educational needs provision",
+                      consent_form = "Consent form type I",
+                      consent_form_type = "Consent form type II",
+                      consent_scenario = "Consent scenario",
+                      consent_parental = "Consent: parental consent given",
+                      consent_survey = "Consent: for survey",
+                      consent_cogmot = "Consent: for cognitive and motor testing",
+                      consent_hgtwgt = "Consent: for height and weight measurement",
+                      consent_bioimp = "Consent: for bioimpedance measurement",
+                      consent_sknthk = "Consent: for skin thickness measurement",
+                      consent_bp = "Consent: for blood pressure measurement",
+                      consent_bloods = "Consent: for blood sample for testing",
+                      consent_bldst1 = "Consent: for blood sample for storage - non-genetic",
+                      consent_bldst2 = "Consent: for blood sample for storage - genetic",
+                      withdrawn = "Withdrawn",
+                      withdrawal_date = "Withdrawal date")
+
 # create pseudo only version
 denom_pseudo <- denom |> select(-upn,
                                 -birth_date,
@@ -98,15 +186,30 @@ denom_pseudo <- denom |> select(-upn,
 # create ID lookup
 lkup <- denom |> select(aow_person_id, aow_recruitment_id) |> unique()
 
+
+
 # export
-saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
-write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
-write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
-
-saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
-write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
-write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
-
-saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
-write_dta(lkup, file.path(output_path, "id_lookup.dta"))
-write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
+if(getOption("aow_export_denom")) {
+  
+  saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
+  write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
+  write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "denom_identifiable.rds"),
+                 "Denominator with identifiers")
+  
+  saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
+  write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
+  write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "denom_pseudo.rds"),
+                 "Denominator without identifiers")
+  
+  saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
+  write_dta(lkup, file.path(output_path, "id_lookup.dta"))
+  write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
+  # html summary
+  aow_df_summary(file.path(output_path, "id_lookup.rds"),
+                 "Denominator lookup")
+  
+}
