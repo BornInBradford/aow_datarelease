@@ -68,7 +68,7 @@ denom <- denom_all |>
             form_tutor = FormTutor_rec,
             form_tutor_id = map_chr(FormTutor_rec, aow_pseudo),
             gender = Gender,
-            ethnicity = Ethnicity,
+            ethnicity = ethnicity_ons2,
             fsm = FSM,
             sen = SEN,
             consent_form = Consent_Form,
@@ -115,7 +115,22 @@ denom <- denom |>
   #    whether there's any way to infer provision from type
   set_value_labels(sen = c("No special educational need" = 0, 
                            "Special educational need support" = 1,
-                           "Education, Health and Care Plan" = 2))
+                           "Education, Health and Care Plan" = 2)) |>
+  
+  # ethnicity
+  mutate(ethnicity = case_when(ethnicity == "asian or asian british" ~ 1L,
+                               ethnicity == "black or african or caribbean or black british" ~ 2L,
+                               ethnicity == "mixed multiple ethnic groups" ~ 3L,
+                               ethnicity %in% c("white", "roma ethnic group") ~ 4L,
+                               ethnicity == "not stated" ~ 99L,
+                               ethnicity == "other ethnic group" ~ 5L)) |>
+  set_value_labels(ethnicity = c("Asian or Asian British" = 1,
+                                 "Black, Black British, Caribbean or African" = 2,
+                                 "Mixed or multiple ethnic groups" = 3,
+                                 "White" = 4,
+                                 "Other ethnic group" = 5,
+                                 "Not stated" = 99))
+
   
   
 
