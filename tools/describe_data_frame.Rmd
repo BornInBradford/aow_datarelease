@@ -48,13 +48,13 @@ for(v in names(dat)) {
   if(!is.null(label[[1]])) {
     label <- paste0(label)
   } else {
-    label <- ""
+    label <- "[no variable label]"
   }
   
   if(length(value_labels[[1]]) > 0) {
     value_labels <- paste0(value_labels[[1]], ": ", names(value_labels[[1]]), collapse = "<br>")
   } else {
-    value_labels <- ""
+    value_labels <- "[no value labels]"
   }
   
   meta <- meta |> add_row(variable = v,
@@ -73,6 +73,7 @@ for(v in names(dat)) {
 dfSummary_tab <- dfSummary(dat)
 
 dfSummary_tab$Valid <- meta$value_labels
+dfSummary_tab$Label <- meta$label
 
 print(dfSummary_tab,
   method = "render")

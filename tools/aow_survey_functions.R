@@ -40,7 +40,7 @@ aow_miss_label <- function(type) {
                    type == "revised_4" ~ c("Revised in version 4" = -2),
                    type == "revised_5" ~ c("Revised in version 5" = -2),
                    type == "revised_6" ~ c("Revised in version 6" = -2),
-                   type == "revised-7" ~ c("Revised in version 7" = -2),
+                   type == "revised_7" ~ c("Revised in version 7" = -2),
                    type == "revised_8" ~ c("Revised in version 8" = -2),
                    type == "revised_9" ~ c("Revised in version 9" = -2),
                    type == "revised_10" ~ c("Revised in version 10" = -2),
