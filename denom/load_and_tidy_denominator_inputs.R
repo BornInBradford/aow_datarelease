@@ -87,6 +87,38 @@ denom <- denom_all |>
             withdrawn = Withdrawn,
             withdrawal_date = WithdrawnDate)
 
+# recoding and value labelling
+denom <- denom |> 
+  
+  # gender
+  mutate(gender = gender |> tolower() |> trimws(),
+         gender = case_when(gender %in% c("m", "male") ~ 2L,
+                            gender %in% c("f", "female") ~ 1L,
+                            TRUE ~ as.integer(NA))) |>
+  set_value_labels(gender = c(Female = 1, Male = 2)) |>
+  
+  # free shcool meals
+  mutate(fsm = fsm |> tolower() |> trimws(),
+         fsm = case_when(fsm %in% c("n", "no") ~ 0L,
+                         fsm %in% c("y", "yes") ~ 1L,
+                         TRUE ~ as.integer(NA))) |>
+  set_value_labels(fsm = c(No = 0, Yes = 1)) |>
+  
+  # special educational needs
+  mutate(sen = sen |> tolower() |> trimws(),
+         sen = case_when(sen %in% c("n") ~ 0L,
+                         sen %in% c("k") ~ 1L,
+                         sen %in% c("e") ~ 2L,
+                         TRUE ~ as.integer(NA))) |>
+  # NB some schools have sent SEN type (e.g. "Severe Learning Difficulty")
+  #    instead of provision as requested. Nullifying these while we find out
+  #    whether there's any way to infer provision from type
+  set_value_labels(sen = c("No special educational need" = 0, 
+                           "Special educational need support" = 1,
+                           "Education, Health and Care Plan" = 2))
+  
+  
+
 # labelling variables
 denom <- denom |> 
   set_variable_labels(aow_person_id = "Age of Wonder person ID",
@@ -111,7 +143,7 @@ denom <- denom |>
                       gender = "Gender reported by school",
                       ethnicity = "Ethnicity reported by school",
                       fsm = "Free school meals",
-                      sen = "Special educational needs",
+                      sen = "Special educational needs provision",
                       consent_form = "Consent form type I",
                       consent_form_type = "Consent form type II",
                       consent_scenario = "Consent scenario",
@@ -127,8 +159,6 @@ denom <- denom |>
                       consent_bldst2 = "Consent: for blood sample for storage - genetic",
                       withdrawn = "Withdrawn",
                       withdrawal_date = "Withdrawal date")
-
-
 
 # create pseudo only version
 denom_pseudo <- denom |> select(-upn,
