@@ -51,7 +51,7 @@ denom <- denom_all |>
   transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
             upn = UPN_con,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
-            birth_date = DateOfBirth,
+            birth_date = as.Date(DateOfBirth),
             birth_year = year(birth_date),
             birth_month = month(birth_date),
             postcode = Postcode,
@@ -86,6 +86,49 @@ denom <- denom_all |>
             consent_bldst2 = ConBloodStor2,
             withdrawn = Withdrawn,
             withdrawal_date = WithdrawnDate)
+
+# labelling variables
+denom <- denom |> 
+  set_variable_labels(aow_person_id = "Age of Wonder person ID",
+                      upn = "Unique Pupil Number",
+                      aow_recruitment_id = "Age of Wonder year group recruitment ID",
+                      birth_date = "Date of birth",
+                      birth_year = "Year of birth",
+                      birth_month = "Month of birth",
+                      postcode = "Home postcode",
+                      recruitment_era = "Recruitment era (academic year)",
+                      recruitment_date = "Recruitment date (import of class list)",
+                      recruitment_year = "Recruitment year",
+                      recruitment_month = "Recruitment month",
+                      age_recruitment_y = "Age at recruitment in years",
+                      age_recruitment_m = "Age at recruitment in months",
+                      school_establishment_no = "School local authority establishment number",
+                      school = "School name",
+                      school_id = "Pseudo school ID",
+                      year_group = "Year group at recruitment",
+                      form_tutor = "Form tutor at recruitment",
+                      form_tutor_id = "Pseudo recruitment form tutor ID",
+                      gender = "Gender reported by school",
+                      ethnicity = "Ethnicity reported by school",
+                      fsm = "Free school meals",
+                      sen = "Special educational needs",
+                      consent_form = "Consent form type I",
+                      consent_form_type = "Consent form type II",
+                      consent_scenario = "Consent scenario",
+                      consent_parental = "Consent: parental consent given",
+                      consent_survey = "Consent: for survey",
+                      consent_cogmot = "Consent: for cognitive and motor testing",
+                      consent_hgtwgt = "Consent: for height and weight measurement",
+                      consent_bioimp = "Consent: for bioimpedance measurement",
+                      consent_sknthk = "Consent: for skin thickness measurement",
+                      consent_bp = "Consent: for blood pressure measurement",
+                      consent_bloods = "Consent: for blood sample for testing",
+                      consent_bldst1 = "Consent: for blood sample for storage - non-genetic",
+                      consent_bldst2 = "Consent: for blood sample for storage - genetic",
+                      withdrawn = "Withdrawn",
+                      withdrawal_date = "Withdrawal date")
+
+
 
 # create pseudo only version
 denom_pseudo <- denom |> select(-upn,
