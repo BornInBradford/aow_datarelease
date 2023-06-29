@@ -29,7 +29,7 @@ dat <- readRDS(params$df_file)
 
 **File path:** `r params$df_file`
 
-**File date:** `r file.info(params$df_file)$ctime`
+**File date:** `r file.info(params$df_file)$mtime`
 
 **Rows:** `r nrow(dat)`
 

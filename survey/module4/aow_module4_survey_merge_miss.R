@@ -2,6 +2,8 @@
 
 source("tools/aow_survey_functions.R")
 
+redcap_project_name <- "aow_module_4_online_survey"
+
 # data
 online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module4_Online.dta")
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module4_Offline.dta")
@@ -15,6 +17,10 @@ offline_dict <- read_csv("survey/redcap/AoWModule4OfflineForm_DataDictionary_202
 # get year group from denominator
 yrgp_lkup <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_pseudo.rds")
 yrgp_lkup <- yrgp_lkup |> select(aow_recruitment_id, year_group)
+
+# get survey timestamps lookup
+timestamps <- readRDS("U:\\Born in Bradford - AOW Raw Data\\sql\\survey_process\\data\\AOW_Survey_Timestamps.rds")
+timestamps <- timestamps |> filter(project_name == redcap_project_name) |> select(-project_id, -project_name)
 
 
 # which columns have value label conflicts
@@ -83,6 +89,9 @@ mod_allcols_order <- names(mod_allcols)
 # replace year_group with more complete variable from denominator
 mod_allcols$year_group <- NULL
 mod_allcols <- mod_allcols |> left_join(yrgp_lkup)
+
+# merge all survey timestamps - creates duplicate but we'll deal with these later
+mod_allcols <- mod_allcols |> left_join(timestamps)
 
 # check conflicting value labels
 warnings()

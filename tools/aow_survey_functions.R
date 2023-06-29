@@ -110,7 +110,11 @@ aow_survey_drop_cols <- function() {
             "end_submit",
             "aow_id",
             "date_time_collection",
-            "birth_date"
+            "birth_date",
+            "start_time", 
+            "first_submit_time", 
+            "completion_time",
+            "valid_values"
   )
    
   return(cols)
