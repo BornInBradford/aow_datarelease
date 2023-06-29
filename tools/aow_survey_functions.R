@@ -99,14 +99,31 @@ aow_survey_drop_cols <- function() {
   
   cols <- c("awb1_1_id",
             "redcap_survey_identifier",
+            "module_1_timestamp",
+            "module_1_complete",
             "module_2_timestamp",
             "module_2_complete",
+            "module_3_timestamp",
+            "module_3_complete",
+            "module_4_timestamp",
+            "module_4_complete",
             "end_submit",
             "aow_id",
             "date_time_collection",
             "birth_date"
   )
    
+  return(cols)
+  
+}
+
+aow_survey_admin_cols <- function() {
+  
+  cols <- c("aow_id", 
+            "date_time_collection",
+            "year_group"
+  )
+  
   return(cols)
   
 }

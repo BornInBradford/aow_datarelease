@@ -12,6 +12,11 @@ online_dict <- read_csv("survey/redcap/AoWModule3OnlineSurvey_DataDictionary_202
 offline_dict <- read_csv("survey/redcap/AoWModule3OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
+# get year group from denominator
+yrgp_lkup <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_pseudo.rds")
+yrgp_lkup <- yrgp_lkup |> select(aow_recruitment_id, year_group)
+
+
 # which columns have value label conflicts
 vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_categories = categories),
                                              by = "variable") |>
@@ -42,8 +47,17 @@ mod_allcols <- online |> bind_rows(offline) |>
   set_value_labels(survey_mode = c("Online" = 1, "Offline" = 2)) |>
   rename(survey_version = mod3_version)
 
+# tidy up recruitment ids
+mod_allcols <- mod_allcols |> mutate(aow_recruitment_id = coalesce(aow_id, redcap_survey_identifier),
+                                     aow_recruitment_id = gsub("[^aowAOW0-9]", "", aow_recruitment_id),
+                                     aow_recruitment_id = tolower(aow_recruitment_id))
+
 # preserve order of columns before any processing occurs
 mod_allcols_order <- names(mod_allcols)
+
+# replace year_group with more complete variable from denominator
+mod_allcols$year_group <- NULL
+mod_allcols <- mod_allcols |> left_join(yrgp_lkup)
 
 # check conflicting value labels
 warnings()
@@ -71,8 +85,8 @@ on_only <- online_dict |>
   filter(!type == "descriptive" & online_only != "in both") |> 
   select(variable, type)
 
-# don't process aow_id
-off_only <- off_only |> filter(!variable %in% c("aow_id", "date_time_collection"))
+# don't process admin cols
+off_only <- off_only |> filter(!variable %in% aow_survey_admin_cols())
 
 off_only_txt <- off_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
 on_only_txt <- on_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)

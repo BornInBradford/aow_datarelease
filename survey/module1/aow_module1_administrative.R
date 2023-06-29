@@ -19,11 +19,6 @@ denom <- denom |> select(aow_person_id,
                          gender,
                          ethnicity)
 
-# tidy up recruitment ids
-mod_allcols <- mod_allcols |> mutate(aow_recruitment_id = coalesce(aow_id, redcap_survey_identifier),
-                                     aow_recruitment_id = gsub("[^aowAOW0-9]", "", aow_recruitment_id),
-                                     aow_recruitment_id = tolower(aow_recruitment_id))
-
 data_not_in_denom <- mod_allcols |> anti_join(denom, by = "aow_recruitment_id")
 
 mod_allcols <- mod_allcols |> inner_join(denom, by = "aow_recruitment_id") |>
