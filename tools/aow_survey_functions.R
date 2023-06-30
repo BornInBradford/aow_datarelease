@@ -3,6 +3,8 @@ library(tidyverse)
 library(haven)
 library(labelled)
 library(lubridate)
+library(stringr)
+library(purrr)
 
 # set values that need to be controlled across survey scripts
 aow_srv_regexp <- function(type) {
@@ -82,6 +84,14 @@ aow_dict_colnames <- function() {
 aow_redcap_cat_type <- function() {
   
   types <- c("radio", "checkbox", "yesno", "dropdown")
+  
+  return(types)
+  
+}
+
+aow_redcap_chk_type <- function() {
+  
+  types <- c("checkbox")
   
   return(types)
   
@@ -385,6 +395,35 @@ aow_miss_txt_removed <- function(df, var, version) {
   df <- df |> mutate(!!var := as.character(!!var), # when all values are NA, can be imported as numeric
                      !!var := case_when(as.integer(survey_version) >= as.integer(version) ~ paste0("[", names(aow_miss_label(paste0("removed_", version))) , "]"),
                                         TRUE ~ !!var))
+  
+  return(df)
+  
+}
+
+
+# modify metadata
+
+# add checkbox labels
+aow_label_chk <- function(df, var, labels) {
+  
+  # check for online/offline pre-processing and remove for now
+  if(grepl("_on$", var)) var <- substr(var, 1, nchar(var) - 3)
+  if(grepl("_off$", var)) var <- substr(var, 1, nchar(var) - 4)
+  
+  for(label in labels) {
+    
+    lab_var <- paste0(var, "___", label[1])
+    
+    if(lab_var %in% names(df)) {
+      lab_var <- sym(lab_var)
+      new_label <- c(0L,1L)
+      names(new_label) <- c("Unchecked", paste0("Checked: ", label[2]))
+      df <- df |> set_value_labels(!!lab_var := new_label)
+    } else {
+      warning(paste0("Variable ", lab_var, " not found in data frame for checkbox labelling"))
+    }
+      
+  }
   
   return(df)
   

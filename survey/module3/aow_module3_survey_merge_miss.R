@@ -71,6 +71,31 @@ mod_allcols <- mod_allcols |> left_join(timestamps)
 # check conflicting value labels
 warnings()
 
+
+# add checkbox options to value labels
+
+checkboxes <- offline_dict |> bind_rows(online_dict) |>
+  select(variable, type, categories)
+checkboxes <- checkboxes |> filter(type %in% aow_redcap_chk_type()) |>
+  select(variable, categories) |> unique()
+
+
+# loop through variables
+if(nrow(checkboxes > 0)) {
+  
+  # parse category labels
+  chk_labels <- str_split(checkboxes$categories, fixed("|"))
+  chk_labels <- map(chk_labels, trimws)
+  names(chk_labels) <- checkboxes$variable
+  chk_labels <- map(chk_labels, str_split, pattern = ",", n = 2)
+  for(v in 1:length(chk_labels)) chk_labels[[v]] <- map(chk_labels[[v]], trimws)
+  
+  for(v in checkboxes$variable) {
+    mod_allcols <- mod_allcols |> aow_label_chk(v, chk_labels[[v]])
+  }
+}
+
+
 # get revised/added column names
 rev_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("rev_cat"), online_dict$variable, value = TRUE))
 rev_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("rev_cat"), offline_dict$variable, value = TRUE))
