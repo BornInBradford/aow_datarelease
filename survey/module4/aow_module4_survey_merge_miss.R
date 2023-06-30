@@ -59,9 +59,13 @@ for(v in c("awb7_1_bullying_1", "awb7_1_recommend_1")) {
 # data and the data dictionary
 online <- online |> aow_suffix_var("awb6_7_opp_dig_sklls_r8___6", "on")
 online_dict <- online_dict |> aow_suffix_var_dict("awb6_7_opp_dig_sklls_r8", "on")
+# manually set checkbox label
+online <- online |> set_value_labels(awb6_7_opp_dig_sklls_r8___6_on = c("Unchecked" = 0, "I wouldn't know who to ask or where to go" = 1))
 
 offline <- offline |> aow_suffix_var("awb6_7_opp_dig_sklls_r8___6", "off")
 offline_dict <- offline_dict |> aow_suffix_var_dict("awb6_7_opp_dig_sklls_r8", "off")
+# manually set checkbox label
+offline <- offline |> set_value_labels(awb6_7_opp_dig_sklls_r8___6_off = c("Unchecked" = 0, "I would know who to ask or where to go" = 1))
 
 # add survey indicator to each dataset --- label values once appended 
 online <- online %>% mutate(survey_mode = 1) # 1=online
