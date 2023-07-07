@@ -93,6 +93,10 @@ module <- module %>%
 
 
 # Re-order variables
+module <- module %>%
+  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
+  relocate(awb1_2_uknation_idntty_1, .before = awb1_2_uknation_idntty_1___1)
+
 
 
 # export
