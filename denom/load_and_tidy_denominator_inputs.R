@@ -15,6 +15,7 @@ output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom
 
 consent <- read_dta(file.path(input_path, "AOW_Consent.dta"))
 schoolrec <- read_dta(file.path(input_path, "AOW_School_RecruitmentList.dta"))
+cohort <- read_dta(file.path(input_path, "BiB_Cohort.dta"))
 
 # check duplicates
 consent$AoWRecruitmentID[duplicated(consent$AoWRecruitmentID) |> which()]
@@ -45,10 +46,19 @@ conflicts(denom_all$CreatedDateTime_con, denom_all$CreatedDateTime_rec) |> head(
 conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> head()
 
 
+# create BiB lookup
+bib_lkup <- cohort |> select(BiBPersonID = BIBPersonID, upn = UPN) |>
+  filter(!is.na(upn) & nchar(upn) > 0)
+
+# link BiB ID
+denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_con" = "upn"))
+
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
   transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
+            BiBPersonID,
+            is_bib = case_when(!is.na(BiBPersonID) ~ 1, TRUE ~ 0),
             upn = UPN_con,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = as.Date(DateOfBirth),
@@ -137,6 +147,8 @@ denom <- denom |>
 # labelling variables
 denom <- denom |> 
   set_variable_labels(aow_person_id = "Age of Wonder person ID",
+                      BiBPersonID = "BiB cohort person ID",
+                      is_bib = "Participant is in original BiB cohort",
                       upn = "Unique Pupil Number",
                       aow_recruitment_id = "Age of Wonder year group recruitment ID",
                       birth_date = "Date of birth",
@@ -184,7 +196,7 @@ denom_pseudo <- denom |> select(-upn,
                                 -form_tutor)
 
 # create ID lookup
-lkup <- denom |> select(aow_person_id, aow_recruitment_id) |> unique()
+lkup <- denom |> select(aow_person_id, aow_recruitment_id, BiBPersonID, is_bib) |> unique()
 
 
 
