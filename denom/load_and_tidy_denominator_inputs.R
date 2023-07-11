@@ -3,6 +3,7 @@ library(haven)
 library(dplyr)
 library(lubridate)
 library(readr)
+library(labelled)
 
 # whether to export files and summary reports
 options(aow_export_denom = TRUE)
@@ -26,6 +27,14 @@ nrow(consent)
 nrow(schoolrec)
 denom_all <- consent |> inner_join(schoolrec, by = "AoWRecruitmentID", suffix = c("_con", "_rec"))
 nrow(denom_all)
+
+
+# remove withdrawals
+# these are withdrawn by school or parents AFTER data passed to BiB
+# so not processed further
+denom_all <- denom_all |> filter(is.na(Withdrawn)) |>
+  select(-Withdrawn, -WithdrawnDate)
+
 
 # check conflicts between school recruitment and consent tables
 conflicts <- function(x, y, which = FALSE) {
@@ -93,9 +102,7 @@ denom <- denom_all |>
             consent_bp = ConBP,
             consent_bloods = ConBlood,
             consent_bldst1 = ConBloodStor1,
-            consent_bldst2 = ConBloodStor2,
-            withdrawn = Withdrawn,
-            withdrawal_date = WithdrawnDate)
+            consent_bldst2 = ConBloodStor2)
 
 # recoding and value labelling
 denom <- denom |> 
@@ -183,9 +190,7 @@ denom <- denom |>
                       consent_bp = "Consent: for blood pressure measurement",
                       consent_bloods = "Consent: for blood sample for testing",
                       consent_bldst1 = "Consent: for blood sample for storage - non-genetic",
-                      consent_bldst2 = "Consent: for blood sample for storage - genetic",
-                      withdrawn = "Withdrawn",
-                      withdrawal_date = "Withdrawal date")
+                      consent_bldst2 = "Consent: for blood sample for storage - genetic")
 
 # create pseudo only version
 denom_pseudo <- denom |> select(-upn,
