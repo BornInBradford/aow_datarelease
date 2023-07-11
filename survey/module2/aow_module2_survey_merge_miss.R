@@ -14,6 +14,10 @@ online_dict <- read_csv("survey/redcap/AoWModule2OnlineSurvey_DataDictionary_202
 offline_dict <- read_csv("survey/redcap/AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
+# drop validation columns that have unpredictable value types
+online_dict <- online_dict |> select(-validation_max, -validation_min)
+offline_dict <- offline_dict |> select(-validation_max, -validation_min)
+
 # get year group from denominator
 yrgp_lkup <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_pseudo.rds")
 yrgp_lkup <- yrgp_lkup |> select(aow_recruitment_id, year_group)
