@@ -11,6 +11,8 @@ module <- module %>%
                       survey_date = "Date survey taken",
                       survey_version = "Survey version",
                       survey_mode = "Survey taken online or offline?",
+                      awb1_2_ethnicity = "What is your ethnicity?",
+                      awb1_2_ethnicity_r4 = "What is your ethnicity?",
                       awb1_2_ethnicity_whte_othr = "Any other White background",
                       awb1_2_ethnicity_mix_othr = "Any other mixed/multiple ethnic background",
                       awb1_2_ethnicity_asn_othr = "Any other Asian background",
@@ -97,7 +99,11 @@ module <- module %>%
   relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
   relocate(awb1_2_uknation_idntty_1, .before = awb1_2_uknation_idntty_1___1)
 
-
+# drop some variables we don't want to keep
+module <- module |> select(-aw1_2_name_a4,
+                           -aw1_2_dob_r4,
+                           -awb1_2_dob)
+                           
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_labelled.rds")

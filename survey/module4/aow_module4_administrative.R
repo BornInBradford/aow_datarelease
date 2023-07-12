@@ -7,6 +7,8 @@ mod_allcols <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/A
 denom <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_identifiable.rds")
 
 denom <- denom |> select(aow_person_id,
+                         BiBPersonID,
+                         is_bib,
                          aow_recruitment_id,
                          birth_date,
                          birth_year,

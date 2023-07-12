@@ -145,6 +145,8 @@ aow_survey_admin_cols <- function() {
 aow_survey_column_order <- function() {
   
   cols <- c("aow_person_id",
+            "BiBPersonID",
+            "is_bib",
             "aow_recruitment_id",
             "recruitment_era",
             "age_recruitment_y",

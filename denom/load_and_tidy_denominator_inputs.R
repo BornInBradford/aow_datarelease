@@ -3,6 +3,7 @@ library(haven)
 library(dplyr)
 library(lubridate)
 library(readr)
+library(labelled)
 
 # whether to export files and summary reports
 options(aow_export_denom = TRUE)
@@ -15,6 +16,7 @@ output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom
 
 consent <- read_dta(file.path(input_path, "AOW_Consent.dta"))
 schoolrec <- read_dta(file.path(input_path, "AOW_School_RecruitmentList.dta"))
+cohort <- read_dta(file.path(input_path, "BiB_Cohort.dta"))
 
 # check duplicates
 consent$AoWRecruitmentID[duplicated(consent$AoWRecruitmentID) |> which()]
@@ -25,6 +27,14 @@ nrow(consent)
 nrow(schoolrec)
 denom_all <- consent |> inner_join(schoolrec, by = "AoWRecruitmentID", suffix = c("_con", "_rec"))
 nrow(denom_all)
+
+
+# remove withdrawals
+# these are withdrawn by school or parents AFTER data passed to BiB
+# so not processed further
+denom_all <- denom_all |> filter(is.na(Withdrawn)) |>
+  select(-Withdrawn, -WithdrawnDate)
+
 
 # check conflicts between school recruitment and consent tables
 conflicts <- function(x, y, which = FALSE) {
@@ -45,10 +55,19 @@ conflicts(denom_all$CreatedDateTime_con, denom_all$CreatedDateTime_rec) |> head(
 conflicts(denom_all$ModifiedDateTime_con, denom_all$ModifiedDateTime_rec) |> head()
 
 
+# create BiB lookup
+bib_lkup <- cohort |> select(BiBPersonID = BIBPersonID, upn = UPN) |>
+  filter(!is.na(upn) & nchar(upn) > 0)
+
+# link BiB ID
+denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_con" = "upn"))
+
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
   transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
+            BiBPersonID,
+            is_bib = case_when(!is.na(BiBPersonID) ~ 1, TRUE ~ 0),
             upn = UPN_con,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = as.Date(DateOfBirth),
@@ -83,9 +102,7 @@ denom <- denom_all |>
             consent_bp = ConBP,
             consent_bloods = ConBlood,
             consent_bldst1 = ConBloodStor1,
-            consent_bldst2 = ConBloodStor2,
-            withdrawn = Withdrawn,
-            withdrawal_date = WithdrawnDate)
+            consent_bldst2 = ConBloodStor2)
 
 # recoding and value labelling
 denom <- denom |> 
@@ -137,6 +154,8 @@ denom <- denom |>
 # labelling variables
 denom <- denom |> 
   set_variable_labels(aow_person_id = "Age of Wonder person ID",
+                      BiBPersonID = "BiB cohort person ID",
+                      is_bib = "Participant is in original BiB cohort",
                       upn = "Unique Pupil Number",
                       aow_recruitment_id = "Age of Wonder year group recruitment ID",
                       birth_date = "Date of birth",
@@ -171,9 +190,7 @@ denom <- denom |>
                       consent_bp = "Consent: for blood pressure measurement",
                       consent_bloods = "Consent: for blood sample for testing",
                       consent_bldst1 = "Consent: for blood sample for storage - non-genetic",
-                      consent_bldst2 = "Consent: for blood sample for storage - genetic",
-                      withdrawn = "Withdrawn",
-                      withdrawal_date = "Withdrawal date")
+                      consent_bldst2 = "Consent: for blood sample for storage - genetic")
 
 # create pseudo only version
 denom_pseudo <- denom |> select(-upn,
@@ -184,7 +201,7 @@ denom_pseudo <- denom |> select(-upn,
                                 -form_tutor)
 
 # create ID lookup
-lkup <- denom |> select(aow_person_id, aow_recruitment_id) |> unique()
+lkup <- denom |> select(aow_person_id, aow_recruitment_id, BiBPersonID, is_bib) |> unique()
 
 
 

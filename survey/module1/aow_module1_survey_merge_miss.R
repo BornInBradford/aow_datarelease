@@ -14,6 +14,10 @@ online_dict <- read_csv("survey/redcap/AoWModule1OnlineSurvey_DataDictionary_202
 offline_dict <- read_csv("survey/redcap/AoWModule1OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
+# drop validation columns that have unpredictable value types
+online_dict <- online_dict |> select(-validation_max, -validation_min)
+offline_dict <- offline_dict |> select(-validation_max, -validation_min)
+
 # get year group from denominator
 yrgp_lkup <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_pseudo.rds")
 yrgp_lkup <- yrgp_lkup |> select(aow_recruitment_id, year_group)
@@ -166,8 +170,6 @@ for(var in on_only_txt) {
 
 # add year group missing vars
 
-# fix a value type prior to merge
-offline_dict$validation_min <- as.character(offline_dict$validation_min)
 year_group <- offline_dict |> bind_rows(online_dict) |>
   filter(!is.na(year_group)) |>
   select(variable, type, year_group) |>
@@ -272,3 +274,4 @@ mod_allcols <- mod_allcols |> select(any_of(mod_allcols_order), everything())
 
 # export
 saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_merged.rds")
+
