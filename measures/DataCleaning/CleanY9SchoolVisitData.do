@@ -123,14 +123,11 @@ save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\a
 use "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\AoWYear9SchoolVisit.dta", clear
 
 * Drop variables not required
-keep date_time_collection bp_aow_id bp_sys_1 bp_dia_1 bp_sys_2 bp_dia_2
-
-* Remove * from aow id
-gen id=substr(bp_aow_id, 2, 10)
+keep date_time_collection hw_aow_id bp_sys_1 bp_dia_1 bp_sys_2 bp_dia_2
 
 * Rename ID and make lower case so can merge with denominator data
-gen aow_recruitment_id = lower(id)
-drop bp_aow_id id
+gen aow_recruitment_id = lower(hw_aow_id)
+drop hw_aow_id
 
 * Merge with denominator to get sex and dob
 merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) keepusing(gender birth_date) nogen
@@ -175,14 +172,11 @@ save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\a
 use "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\AoWYear9SchoolVisit.dta", clear
 
 * Drop variables not required
-keep date_time_collection sk_aow_id sk_tricep sk_subscap
-
-* Remove * from aow id
-gen id=substr(sk_aow_id, 2, 10)
+keep date_time_collection hw_aow_id sk_tricep sk_subscap
 
 * Rename ID and make lower case so can merge with denominator data
-gen aow_recruitment_id = lower(id)
-drop sk_aow_id id
+gen aow_recruitment_id = lower(hw_aow_id)
+drop hw_aow_id
 
 * Merge with denominator to get sex and dob
 merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) keepusing(gender birth_date) nogen
