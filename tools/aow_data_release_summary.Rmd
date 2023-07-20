@@ -1,6 +1,9 @@
 ---
 title: "Age of Wonder data release summary"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -40,6 +43,10 @@ yg_plot <- function(df, title) {
   
 }
 
+options(DT.options = list(pageLength = 25,
+                          dom = "t"))
+
+
 ```
 
 # AoW denominator
@@ -56,19 +63,7 @@ denom |> yg_plot("AoW recruitment denominator: complete class lists")
 
 ```{r summary_tbl, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df <- denom |>
-  left_join(srv1 |> select(aow_recruitment_id) |> mutate(has_survey_m1 = 1) |> unique()) |>
-  left_join(srv2 |> select(aow_recruitment_id) |> mutate(has_survey_m2 = 1) |> unique()) |>
-  left_join(srv3 |> select(aow_recruitment_id) |> mutate(has_survey_m3 = 1) |> unique()) |>
-  left_join(srv4 |> select(aow_recruitment_id) |> mutate(has_survey_m4 = 1) |> unique()) |>
-  left_join(bioimp |> select(aow_recruitment_id) |> mutate(has_bioimp = 1) |> unique()) |>
-  left_join(bp |> select(aow_recruitment_id) |> mutate(has_bp = 1) |> unique()) |>
-  left_join(sk |> select(aow_recruitment_id) |> mutate(has_skinfld = 1) |> unique()) |>
-  left_join(htwt |> select(aow_recruitment_id) |> mutate(has_htwt = 1) |> unique())
-
-summ_df <- summ_df |> mutate(across(starts_with("has_"), ~if_else(!is.na(.), 1, 0))) 
-
-summ_df <- summ_df |> group_by(recruitment_era, year_group) |>
+summ_df <- denom |> group_by(recruitment_era, year_group) |>
   summarise(total = n(),
             across(starts_with("has_"), ~sum(.))) |>
   ungroup() |>
@@ -85,19 +80,7 @@ datatable(summ_df,
 
 ```{r summary_tbl_bib, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df_bib <- denom |>
-  left_join(srv1 |> select(aow_recruitment_id) |> mutate(has_survey_m1 = 1) |> unique()) |>
-  left_join(srv2 |> select(aow_recruitment_id) |> mutate(has_survey_m2 = 1) |> unique()) |>
-  left_join(srv3 |> select(aow_recruitment_id) |> mutate(has_survey_m3 = 1) |> unique()) |>
-  left_join(srv4 |> select(aow_recruitment_id) |> mutate(has_survey_m4 = 1) |> unique()) |>
-  left_join(bioimp |> select(aow_recruitment_id) |> mutate(has_bioimp = 1) |> unique()) |>
-  left_join(bp |> select(aow_recruitment_id) |> mutate(has_bp = 1) |> unique()) |>
-  left_join(sk |> select(aow_recruitment_id) |> mutate(has_skinfld = 1) |> unique()) |>
-  left_join(htwt |> select(aow_recruitment_id) |> mutate(has_htwt = 1) |> unique())
-
-summ_df_bib <- summ_df_bib |> mutate(across(starts_with("has_"), ~if_else(!is.na(.), 1, 0))) 
-
-summ_df_bib <- summ_df_bib |> group_by(is_bib, recruitment_era, year_group) |>
+summ_df_bib <- denom |> group_by(is_bib, recruitment_era, year_group) |>
   summarise(total = n(),
             across(starts_with("has_"), ~sum(.))) |>
   ungroup() |>
@@ -118,13 +101,20 @@ srv1 |> yg_plot("AoW data: survey module 1")
 srv2 |> yg_plot("AoW data: survey module 2")
 srv3 |> yg_plot("AoW data: survey module 3")
 srv4 |> yg_plot("AoW data: survey module 4")
-# these don't have the correct denominator variables yet
-#bioimp |> yg_plot("AoW school visit: bioimpedance")
-#bp |> yg_plot("AoW school visit: blood pressure")
-#sk |> yg_plot("AoW school visit: skinfolds")
-#htwt |> yg_plot("AoW school visit: height and weight")
-
 
 
 ```
 
+
+
+# School visit measures summaries
+
+```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+bioimp |> yg_plot("AoW school visit: bioimpedance")
+bp |> yg_plot("AoW school visit: blood pressure")
+sk |> yg_plot("AoW school visit: skinfolds")
+htwt |> yg_plot("AoW school visit: height and weight")
+
+
+```
