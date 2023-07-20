@@ -49,3 +49,6 @@ config/
 # reports
 reports/
 
+# visual studio
+.vs/
+
