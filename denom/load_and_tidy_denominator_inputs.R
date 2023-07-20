@@ -1,11 +1,13 @@
 
+library(tidyverse)
 library(haven)
 library(dplyr)
 library(lubridate)
 library(readr)
 library(labelled)
+library(purrr)
 
-# whether to export files and summary reports
+# whether to export files
 options(aow_export_denom = TRUE)
 
 source("tools/aow_tools.R")
@@ -203,6 +205,27 @@ denom_pseudo <- denom |> select(-upn,
 # create ID lookup
 lkup <- denom |> select(aow_person_id, aow_recruitment_id, BiBPersonID, is_bib) |> unique()
 
+# separate consent cols
+consent_cols <- c("consent_form",
+                  "consent_form_type",
+                  "consent_scenario",
+                  "consent_parental",
+                  "consent_survey",
+                  "consent_cogmot",
+                  "consent_hgtwgt",
+                  "consent_bioimp",
+                  "consent_sknthk",
+                  "consent_bp",
+                  "consent_bloods",
+                  "consent_bldst1",
+                  "consent_bldst2"
+)
+
+denom_consent <- denom |> select(aow_person_id, aow_recruitment_id, BiBPersonID, is_bib,
+                                 all_of(consent_cols))
+denom <- denom |> select(-all_of(consent_cols))
+denom_pseudo <- denom_pseudo |> select(-all_of(consent_cols))
+
 
 
 # export
@@ -211,22 +234,17 @@ if(getOption("aow_export_denom")) {
   saveRDS(denom, file.path(output_path, "denom_identifiable.rds"))
   write_dta(denom, file.path(output_path, "denom_identifiable.dta"))
   write_csv(denom, file.path(output_path, "denom_identifiable.csv"), na = "")
-  # html summary
-  aow_df_summary(file.path(output_path, "denom_identifiable.rds"),
-                 "Denominator with identifiers")
-  
+
   saveRDS(denom_pseudo, file.path(output_path, "denom_pseudo.rds"))
   write_dta(denom_pseudo, file.path(output_path, "denom_pseudo.dta"))
   write_csv(denom_pseudo, file.path(output_path, "denom_pseudo.csv"), na = "")
-  # html summary
-  aow_df_summary(file.path(output_path, "denom_pseudo.rds"),
-                 "Denominator without identifiers")
-  
+
+  saveRDS(denom_consent, file.path(output_path, "aow_consent.rds"))
+  write_dta(denom_consent, file.path(output_path, "aow_consent.dta"))
+  write_csv(denom_consent, file.path(output_path, "aow_consent.csv"), na = "")
+
   saveRDS(lkup, file.path(output_path, "id_lookup.rds"))
   write_dta(lkup, file.path(output_path, "id_lookup.dta"))
   write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
-  # html summary
-  aow_df_summary(file.path(output_path, "id_lookup.rds"),
-                 "Denominator lookup")
-  
+
 }

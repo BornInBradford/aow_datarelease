@@ -1,0 +1,120 @@
+---
+title: "Age of Wonder data release summary"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(gt)
+library(ggplot2)
+library(hrbrthemes)
+library(viridis)
+library(DT)
+
+# load data frames
+
+denom <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\denom\\data\\denom_pseudo.rds")
+bioimp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_bioimpedance.rds")
+bp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_bp.rds")
+sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_sk.rds")
+htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
+srv1 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module1_labelled.rds")
+srv2 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module2_labelled.rds")
+srv3 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module3_labelled.rds")
+srv4 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module4_labelled.rds")
+
+yg_plot <- function(df, title) {
+  
+  g <- df |> mutate(is_bib = as_factor(is_bib),
+                    year_group = as_factor(year_group),
+                    year_group = ordered(year_group, c("8", "9", "10"))) |>
+    ggplot(aes(fill = is_bib, x = year_group, group = is_bib)) + 
+    geom_bar(position = "stack", stat = "count") +
+    facet_wrap(vars(recruitment_era), ncol = 1, scales = "free_y") +
+    scale_fill_viridis(discrete=TRUE, option = "cividis", begin = 0.25, end = 0.90) +
+    labs(title = title) +
+    theme_ipsum(plot_title_face = "plain")
+  
+  return(g)
+  
+}
+
+options(DT.options = list(pageLength = 25,
+                          dom = "t"))
+
+
+```
+
+# AoW denominator
+
+All recruited participants to date, i.e. full class lists received from schools.
+
+```{r denom_plot, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+denom |> yg_plot("AoW recruitment denominator: complete class lists")
+
+```
+
+# Participants with data
+
+```{r summary_tbl, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df <- denom |> group_by(recruitment_era, year_group) |>
+  summarise(total = n(),
+            across(starts_with("has_"), ~sum(.))) |>
+  ungroup() |>
+  mutate(year_group = as.integer(year_group)) |>
+  select(recruitment_era, year_group, everything()) |>
+  arrange(recruitment_era, year_group)
+
+datatable(summ_df,
+          rownames = FALSE)
+
+```
+
+# Participants with data, split by BiB membership
+
+```{r summary_tbl_bib, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df_bib <- denom |> group_by(is_bib, recruitment_era, year_group) |>
+  summarise(total = n(),
+            across(starts_with("has_"), ~sum(.))) |>
+  ungroup() |>
+  mutate(year_group = as.integer(year_group)) |>
+  select(recruitment_era, year_group, is_bib, everything()) |>
+  arrange(recruitment_era, year_group, is_bib)
+
+datatable(summ_df_bib,
+          rownames = FALSE)
+
+```
+
+# Survey module summaries
+
+```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+srv1 |> yg_plot("AoW data: survey module 1")
+srv2 |> yg_plot("AoW data: survey module 2")
+srv3 |> yg_plot("AoW data: survey module 3")
+srv4 |> yg_plot("AoW data: survey module 4")
+
+
+```
+
+
+
+# School visit measures summaries
+
+```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+bioimp |> yg_plot("AoW school visit: bioimpedance")
+bp |> yg_plot("AoW school visit: blood pressure")
+sk |> yg_plot("AoW school visit: skinfolds")
+htwt |> yg_plot("AoW school visit: height and weight")
+
+
+```
