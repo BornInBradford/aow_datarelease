@@ -29,8 +29,15 @@ keep date_time_collection hw_aow_id hw_height hw_weight
 gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
-* Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) keepusing(gender birth_date)  nogen
+* Merge with denominator 
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) keep(master matched) gen(linkage)
+
+* Save a dataset of not linked
+preserve
+keep if linkage==1
+keep aow_recruitment_id date_time_collection hw_height hw_weight
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_notlinked.dta", replace
+restore
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -75,6 +82,8 @@ replace cbmi = bmi if aow_recruitment_id=="aow1077643" & date_measurement==d(25a
 replace cweight = weight if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
 replace cbmi = bmi if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
 
+
+
 * Drop bioimpedance variables
 drop height weight bmi _merge
 
@@ -97,7 +106,7 @@ lab var age_yrs "Age (years) at measurement"
 lab var bmi "BMI (kg/m2)"
 
 * Order variables
-order aow_recruitment_id gender date_measurement age_mths age_yrs
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
 
 * Generate z-scores (UK90)
 
@@ -110,7 +119,12 @@ edit if bmi>240 & bmi<.
 replace height=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
 replace bmi=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
 
-* Save
+* Set bmi to 1dp 
+replace bmi = round(bmi, 0.1)
+
+* Save a dataset excluding those not linked
+keep if linkage==3
+drop linkage
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight.dta", replace
 
 
@@ -130,7 +144,7 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) keepusing(gender birth_date) nogen
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -149,7 +163,7 @@ drop birth_date
 drop if bp_sys_1==. & bp_dia_1==.
 
 * Order variables
-order aow_recruitment_id gender date_measurement age_mths age_yrs
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
 
 * Label
 rename gender sex
@@ -179,7 +193,7 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) keepusing(gender birth_date) nogen
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -198,7 +212,7 @@ drop birth_date
 drop if sk_tricep==. & sk_subscap==.
 
 * Order variables
-order aow_recruitment_id gender date_measurement age_mths age_yrs
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
 
 * Label
 rename gender sex
