@@ -81,7 +81,7 @@ sum height weight bmi fatp fatm pmm ffm tbw imp, det
 preserve
 keep if _merge==1
 keep aow_recruitment_id date_measurement age_yrs height - imp
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_notlinked.dta", replace
+export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_notlinked.csv", replace
 restore
 
 * Save a dataset excluding those not linked

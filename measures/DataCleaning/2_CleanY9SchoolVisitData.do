@@ -36,7 +36,7 @@ merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\
 preserve
 keep if linkage==1
 keep aow_recruitment_id date_time_collection hw_height hw_weight
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_notlinked.dta", replace
+export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_y9schoolvisit_notlinked.csv", replace
 restore
 
 * Generate a date variable from date/time 
