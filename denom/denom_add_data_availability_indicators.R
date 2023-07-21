@@ -81,9 +81,10 @@ dat_df <- dat_df |> select(aow_recruitment_id,
                            has_measure,
                            has_data)
 
+has_cols <- names(dat_df |> select(starts_with("has_")))
 
-denom <- denom |> left_join(dat_df)
-denom_pseudo <- denom_pseudo |> left_join(dat_df)
+denom <- denom |> select(-any_of(has_cols)) |> left_join(dat_df)
+denom_pseudo <- denom_pseudo |> select(-any_of(has_cols)) |> left_join(dat_df)
 
 
 # export
