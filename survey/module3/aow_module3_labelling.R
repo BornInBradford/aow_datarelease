@@ -222,7 +222,16 @@ module <- module %>%
                       awb4_2_overall_a5 = "What are your typical sedentary habits at home?",
                       awb4_2_outside_schl_5 = "How long do you use a mobile for after school?",
                       awb5_2_tkn_mny_a5 = "Have you taken money without permission to spend on gambling?",
-                      awb4_2_outside_schl_5_a5 = "How long do you use a mobile for after school?")
+                      awb4_2_outside_schl_5_a5 = "How long do you use a mobile for after school?",
+                      awb5_2y_alcohol_whch_1___1 = "Have you had no alcohol in the past 7 days?",
+                      awb5_2y_alcohol_whch_1___2 = "Have you had pre-mixed spirits in past 7 days?",
+                      awb5_2y_alcohol_whch_1___3 = "Have you had beer/lager in past 7 days?",
+                      awb5_2y_alcohol_whch_1___4 = "Have you had any spirits in past 7 days?",
+                      awb5_2y_alcohol_whch_1___5 = "Have you had cider/perry in past 7 days?",
+                      awb5_2y_alcohol_whch_1___6 = "Have you have fortified wine in past 7 days?",
+                      awb5_2y_alcohol_whch_1___7 = "Have you had wine in past 7 days?",
+                      awb5_2y_alcohol_whch_1___8 = "Have you had any other alcohol in past 7 days?",
+                      awb5_2y_gang_5 = "Were you found guilty or not guilty?")
 
 
 # set value labels
@@ -240,10 +249,10 @@ module <- module %>%
          awb2_12_eat_hbt_10_a5 = awb2_12_eat_hbt_10_a5 + 1,
          awb5_1_oral_hlth_2 = awb5_1_oral_hlth_2 + 1,
          awb5_1_oral_hlth_3 = awb5_1_oral_hlth_3 + 1,
-         awb4_4y_gendersex_f_2 = awb4_4y_gendersex_f_2 + 1,
+         awb4_4y_gendersex_f_2 = ifelse(awb4_4y_gendersex_f_2 == 1,0,1),
          awb5_2_smokevape_prnt = awb5_2_smokevape_prnt + 1,
          aw5_2_vape_prnt = aw5_2_vape_prnt + 1,
-         awb5_2y_alcohol_qntty = awb5_2y_alcohol_qntty + 1,
+         awb5_2y_alcohol_qntty = ifelse(awb5_2y_alcohol_qntty == 1,0,1),
          awb5_2_gambling_1_a5 = awb5_2_gambling_1_a5 + 1,
          awb5_2_gambling_2_a5 = awb5_2_gambling_2_a5 + 1,
          awb5_2_gambling_3_a5 = awb5_2_gambling_3_a5 + 1,
@@ -258,9 +267,9 @@ module <- module %>%
          awb5_2_gambling_12_a5 = awb5_2_gambling_12_a5 + 1,
          awb5_2_gambling_13_a5 = awb5_2_gambling_13_a5 + 1,
          awb5_2_gambling_14_a5 = awb5_2_gambling_14_a5 + 1,
-         awb5_2y_knife = awb5_2y_knife + 1,
+         awb5_2y_knife = ifelse(awb5_2y_knife == 1,0,1),
          awb5_2y_gang_6 = awb5_2y_gang_6 + 1,
-         awb4_1_sick_a5 = awb4_1_sick_a5 + 1,
+         awb4_1_sick_a5 = ifelse(awb4_1_sick_a5 == 1,0,1),
          awb4_3_nap_a5 = awb4_3_nap_a5 + 1) %>%
   set_value_labels(awb5_1_hearing_sght_4 = c("No" = 1, "Not sure" = 2, "Yes" = 3),
                    awb2_12_eat_hbt_1_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
@@ -275,10 +284,10 @@ module <- module %>%
                    awb2_12_eat_hbt_10_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
                   awb5_1_oral_hlth_2 = c("None" = 1, "Once" = 2, "Twice" = 3, "Three times or more" = 4),
                    awb5_1_oral_hlth_3 = c("No" = 1, "Not sure" = 2, "Yes" = 3),
-                   awb4_4y_gendersex_f_2 = c("Yes" = 1, "No" = 2),
+                   awb4_4y_gendersex_f_2 = c("No" = 0, "Yes" = 1),
                    awb5_2_smokevape_prnt = c("Yes" = 1, "No" = 2),
                    aw5_2_vape_prnt = c("Yes" = 1, "No" = 2),
-                   awb5_2y_alcohol_qntty = c("Yes" = 1, "No" = 2),
+                   awb5_2y_alcohol_qntty = c("No" = 0, "Yes" = 1),
                    awb5_2_gambling_1_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
                                             "Yes, more than 12 months ago" = 4, "No, never" = 5),
                   awb5_2_gambling_2_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
@@ -310,9 +319,9 @@ module <- module %>%
                    awb5_2_gambling_1 = c("No" = 0, "Yes" = 1),
                    awb5_2_gambling_2 = c("No" = 0, "Yes" = 1),
                    awb5_2_gambling_3 = c("No" = 0, "Yes" = 1),
-                   awb5_2y_knife = c("Yes" = 1, "No" = 2),
+                   awb5_2y_knife = c("No" = 0, "Yes" = 1),
                    awb5_2y_gang_6 = c("Yes" = 1, "No" = 2, "I used to be a member but not anymore" = 3),
-                   awb4_1_sick_a5 = c("Yes" = 1, "No" = 2),
+                   awb4_1_sick_a5 = c("No" = 0, "Yes" = 1),
                    awb4_3_nap_a5 = c("Never" = 1, "Rarely" = 2, "Sometimes" = 3, "Often" = 4))
 
 # export
