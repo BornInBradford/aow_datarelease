@@ -28,7 +28,7 @@ drop AoWRecruitmentID aow_recruitment_id1
 order aow_recruitment_id
 
 * Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) keep(master matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) keep(master matched)
 drop SEX FIRSTNAME LASTNAME BIRTHDATE PATNR FLAG
 
 * Generate a date variable from date/time 
@@ -71,7 +71,7 @@ lab var date_measurement "Date of measurement"
 lab var age_mths "Age (months) at measurement"
 lab var age_yrs "Age (years) at measurement"
 
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs model
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs model
 drop birth_date
 
 * Check measurements	
@@ -109,7 +109,7 @@ gen aow_recruitment_id = lower(id)
 drop bp_aow_id id
 
 * Merge with denominator
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) nogen keep(matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -127,7 +127,7 @@ replace age_yrs = floor(age_yrs)
 drop if bp_sys_1==. & bp_dia_1==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
 
 * Label
 rename gender sex
@@ -160,7 +160,7 @@ gen aow_recruitment_id = lower(id)
 drop sk_aow_id id
 
 * Merge with denominator
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group) nogen keep(matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -178,7 +178,7 @@ replace age_yrs = floor(age_yrs)
 drop if sk_tricep==. & sk_subscap==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
 drop birth_date
 
 * Label

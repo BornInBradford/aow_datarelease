@@ -19,7 +19,8 @@ denom <- denom |> select(aow_person_id,
                          school_id,
                          form_tutor_id,
                          gender,
-                         ethnicity)
+                         ethnicity_1,
+                         ethnicity_2)
 
 data_not_in_denom <- mod_allcols |> anti_join(denom, by = "aow_recruitment_id")
 
