@@ -28,7 +28,7 @@ drop AoWRecruitmentID aow_recruitment_id1
 order aow_recruitment_id
 
 * Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) keep(master matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) keep(master matched) 
 drop SEX FIRSTNAME LASTNAME BIRTHDATE PATNR FLAG
 
 * Generate a date variable from date/time 
@@ -38,10 +38,24 @@ order date_measurement, after(aow_recruitment_id)
 drop if date_measurement==.
 drop DATETIME
 
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
+
 * Label / rename variables
 rename MODEL model
 lab var model "Bioimpedance scale model"
-rename AGE age_yrs
+rename AGE age_y
 rename HEIGHT height
 lab var height "Height (cm)"
 rename WEIGHT weight
@@ -62,16 +76,19 @@ rename TBW tbw
 lab var tbw "Total body water (kg)"
 rename IMP imp
 lab var imp "Impedence"
+lab var aow_recruitment_id "AoW recruitment ID"
+lab var year_group "Academic year"
 
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+rename age_y age_y
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
 
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs model
+* Tidy dataset
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y model
 drop birth_date
 
 * Check measurements	
@@ -80,7 +97,7 @@ sum height weight bmi fatp fatm pmm ffm tbw imp, det
 * Save a dataset of not linked
 preserve
 keep if _merge==1
-keep aow_recruitment_id date_measurement age_yrs height - imp
+keep aow_recruitment_id date_measurement age_y height - imp
 export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_notlinked.csv", replace
 restore
 
@@ -117,26 +134,43 @@ gen date_measurement = date(strdate, "DMY")
 format date_measurement %td
 drop date_time_collection strdate
 
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
+
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-gen age_yrs = (date_measurement - birth_date) / 365.25
-replace age_yrs = floor(age_yrs)
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
 
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
 
 * Label
 rename gender sex
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
+lab var aow_recruitment_id "AoW recruitment ID"
 
 * Summary stats
 sum bp*, det	/* all look plausible */
+
+drop birth_date
 
 * Save
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
@@ -169,23 +203,38 @@ format date_measurement %td
 drop date_time_collection strdate
 
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-gen age_yrs = (date_measurement - birth_date) / 365.25
-replace age_yrs = floor(age_yrs)
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
+
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
 
 * Drop if no skin fold measurements
 drop if sk_tricep==. & sk_subscap==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
 drop birth_date
 
 * Label
 rename gender sex
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
+lab var aow_recruitment_id "AoW recruitment ID"
 
 * Summary stats
 sum sk*, det	/* all look plausible */

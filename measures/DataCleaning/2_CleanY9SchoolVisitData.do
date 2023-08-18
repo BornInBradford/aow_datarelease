@@ -41,9 +41,24 @@ restore
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
-gen date_measurement = date(strdate, "DMY")
+gen date_measurement = date(strdate, "YMD")
 format date_measurement %td
 drop date_time_collection strdate
+
+
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
 
 * Drop if no height and weight measurements
 drop if hw_height==. & hw_weight==.
@@ -61,9 +76,9 @@ rename height cheight
 rename weight cweight
 rename bmi cbmi
 
-merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight bmi)
+merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight bmi) nogen
 
-* For matched variables, replace any measurements missing from master
+* For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace cheight = height if height!=. & cheight==.
 replace cweight = weight if weight!=. & cweight==.
 replace cbmi = bmi if bmi!=. & cbmi==.
@@ -82,10 +97,8 @@ replace cbmi = bmi if aow_recruitment_id=="aow1077643" & date_measurement==d(25a
 replace cweight = weight if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
 replace cbmi = bmi if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
 
-
-
 * Drop bioimpedance variables
-drop height weight bmi _merge
+drop height weight bmi 
 
 * Rename variables again
 rename cheight height
@@ -93,29 +106,26 @@ rename cweight weight
 rename cbmi bmi
 
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-gen age_yrs = (date_measurement - birth_date) / 365.25
-replace age_yrs = floor(age_yrs)
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
 drop birth_date
 
 * Label
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
 lab var bmi "BMI (kg/m2)"
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
-
-* Generate z-scores (UK90)
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
 
 * Check measurements	
 tabstat height weight bmi, s(p50 min max) f(%9.2f)
 sum height weight bmi, det
 
-* BMI = 244 for one person
-edit if bmi>240 & bmi<.
+* BMI = 244 for one person. This is because weight has been entered into height
 replace height=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
 replace bmi=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
 
@@ -148,28 +158,43 @@ merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
-gen date_measurement = date(strdate, "DMY")
+gen date_measurement = date(strdate, "YMD")
 format date_measurement %td
 drop date_time_collection strdate
 
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-gen age_yrs = (date_measurement - birth_date) / 365.25
-replace age_yrs = floor(age_yrs)
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
 drop birth_date
+
+
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
 
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
 
 * Label
 rename gender sex
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
 
 * Summary stats
 sum bp*, det	/* all look plausible */
@@ -197,28 +222,43 @@ merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
-gen date_measurement = date(strdate, "DMY")
+gen date_measurement = date(strdate, "YMD")
 format date_measurement %td
 drop date_time_collection strdate
 
 * Generate age variables
-gen age_mths = (date_measurement - birth_date) / 30.4375
-replace age_mths = floor(age_mths)
-gen age_yrs = (date_measurement - birth_date) / 365.25
-replace age_yrs = floor(age_yrs)
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
 drop birth_date
+
+* Change year-group from string to numeric
+gen tmpyear_group=real(year_group)
+drop year_group
+rename tmpyear_group year_group
+
+* Generate recruitment month and year vars
+gen tmprecruitment_year=substr(recruitment_era, 1, 4)
+gen recruitment_y=real(tmprecruitment_year)
+gen tmprecruitment_month=substr(recruitment_era, 6, 2)
+gen recruitment_m=real(tmprecruitment_month)
+drop recruitment_era tmprecruitment_year tmprecruitment_month 
+lab var recruitment_m "Month of recruitment"
+lab var recruitment_y "Year of recruitment"
+
 
 * Drop if no skin fold measurements
 drop if sk_tricep==. & sk_subscap==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_mths age_yrs 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
 
 * Label
 rename gender sex
 lab var date_measurement "Date of measurement"
-lab var age_mths "Age (months) at measurement"
-lab var age_yrs "Age (years) at measurement"
+lab var age_m "Age (months) at measurement"
+lab var age_y "Age (years) at measurement"
 
 * Summary stats
 sum sk*, det	/* all look plausible */
