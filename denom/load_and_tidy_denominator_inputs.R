@@ -62,15 +62,15 @@ bib_lkup <- cohort |> select(BiBPersonID = BIBPersonID, upn = UPN) |>
   filter(!is.na(upn) & nchar(upn) > 0)
 
 # link BiB ID
-denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_con" = "upn"))
+denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_rec" = "upn"))
 
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
-  transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
+  transmute(aow_person_id = map_chr(UPN_rec, aow_pseudo),
             BiBPersonID,
             is_bib = case_when(!is.na(BiBPersonID) ~ 1, TRUE ~ 0),
-            upn = UPN_con,
+            upn = UPN_rec,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = as.Date(DateOfBirth),
             birth_year = year(birth_date),
