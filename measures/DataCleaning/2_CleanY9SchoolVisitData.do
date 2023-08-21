@@ -30,7 +30,7 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) keep(master matched) gen(linkage)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(master matched) gen(linkage)
 
 * Save a dataset of not linked
 preserve
@@ -50,15 +50,6 @@ drop date_time_collection strdate
 gen tmpyear_group=real(year_group)
 drop year_group
 rename tmpyear_group year_group
-
-* Generate recruitment month and year vars
-gen tmprecruitment_year=substr(recruitment_era, 1, 4)
-gen recruitment_y=real(tmprecruitment_year)
-gen tmprecruitment_month=substr(recruitment_era, 6, 2)
-gen recruitment_m=real(tmprecruitment_month)
-drop recruitment_era tmprecruitment_year tmprecruitment_month 
-lab var recruitment_m "Month of recruitment"
-lab var recruitment_y "Year of recruitment"
 
 * Drop if no height and weight measurements
 drop if hw_height==. & hw_weight==.
@@ -119,7 +110,7 @@ lab var age_y "Age (years) at measurement"
 lab var bmi "BMI (kg/m2)"
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
 
 * Check measurements	
 tabstat height weight bmi, s(p50 min max) f(%9.2f)
@@ -154,7 +145,7 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) nogen keep(matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -175,20 +166,11 @@ gen tmpyear_group=real(year_group)
 drop year_group
 rename tmpyear_group year_group
 
-* Generate recruitment month and year vars
-gen tmprecruitment_year=substr(recruitment_era, 1, 4)
-gen recruitment_y=real(tmprecruitment_year)
-gen tmprecruitment_month=substr(recruitment_era, 6, 2)
-gen recruitment_m=real(tmprecruitment_month)
-drop recruitment_era tmprecruitment_year tmprecruitment_month 
-lab var recruitment_m "Month of recruitment"
-lab var recruitment_y "Year of recruitment"
-
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
 
 * Label
 rename gender sex
@@ -218,7 +200,7 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group) nogen keep(matched)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) nogen keep(matched)
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -238,21 +220,11 @@ gen tmpyear_group=real(year_group)
 drop year_group
 rename tmpyear_group year_group
 
-* Generate recruitment month and year vars
-gen tmprecruitment_year=substr(recruitment_era, 1, 4)
-gen recruitment_y=real(tmprecruitment_year)
-gen tmprecruitment_month=substr(recruitment_era, 6, 2)
-gen recruitment_m=real(tmprecruitment_month)
-drop recruitment_era tmprecruitment_year tmprecruitment_month 
-lab var recruitment_m "Month of recruitment"
-lab var recruitment_y "Year of recruitment"
-
-
 * Drop if no skin fold measurements
 drop if sk_tricep==. & sk_subscap==.
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_m recruitment_y age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month year_group year_group date_measurement age_m age_y 
+order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
 
 * Label
 rename gender sex
