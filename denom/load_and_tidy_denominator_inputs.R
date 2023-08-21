@@ -108,6 +108,10 @@ denom <- denom_all |>
             consent_bldst1 = ConBloodStor1,
             consent_bldst2 = ConBloodStor2)
 
+# remove any records missing upn or date of birth
+denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
+  filter(!is.na(birth_date) & birth_date != as.Date("1900-01-01"))
+
 # recoding and value labelling
 denom <- denom |> 
   
