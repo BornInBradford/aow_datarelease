@@ -4,6 +4,22 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_derived.rds")
 
+# Re-order variables
+module <- module %>%
+  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
+  relocate(awb1_2_uknation_idntty_1, .before = awb1_2_uknation_idntty_1___1)%>%
+  relocate(awb1_2_ethnicity_arb_r4, .after = ethnicity_2)
+
+# drop some variables we don't want to keep
+module <- module |> select(-aw1_2_name_a4,
+                           -aw1_2_dob_r4,
+                           -awb1_2_dob)
+                           
+# add value labels
+module <- module %>%
+  set_value_labels(awb1_2_language_hme___9 = c("Unchecked" = 0,
+                                               "Checked: Other (please specify)" = 1))
+
 module <- module %>%
   set_variable_labels(aow_recruitment_id = "Age of Wonder recruitment ID",
                       age_survey_y = "Age (years) at survey date",
@@ -49,7 +65,7 @@ module <- module %>%
                       awb3_2_homes_2_grd_3 = "How many of your guardians live in this home?",
                       awb3_2_homes_2_fstcr_4 = "How many of your foster carers live in this home?",
                       awb3_2_homes_2_stpm_5 = "How many of your step mothers live in this home?",
-                      awb3_2_homes_2_stpf_6 = "How manay of your step fathers live in this home?",
+                      awb3_2_homes_2_stpf_6 = "How many of your step fathers live in this home?",
                       awb3_2_homes_2_mthpt_7 = "How many of your mothers partners live in this home?",
                       awb3_2_homes_2_fthpt_8 = "How many of your fathers partners live in this home?",
                       awb3_2_homes_2_ppl_sib_9 = "How many of your siblings live in this home?",
@@ -162,23 +178,14 @@ module <- module %>%
                       awb3_4_activities_15 = "Did you do creative writing in past month?",
                       awb3_4_activities_16 = "Did you take part in performance activities in past month?",
                       awb3_4_activities_17 = "Did you do any artwork in past month?",
-                      awb3_4_activities_18 = "Did you make any graphic designs in past month?")
+                      awb3_4_activities_18 = "Did you make any graphic designs in past month?",
+                      awb1_2_date_emgrtd_year_a3 = "If you wasnt born in UK when did you arrive to live here?",
+                      awb3_1_compare_frnds = "Would you say your family is richer compared to your friends?",
+                      awb3_1_warm_engh_a5 = "Are you warm enough at home during winter?",
+                      awb3_1_save_mny_a5  = "Parents have talked about cutting back to save money",
+                      awb3_3_home_2_jb_work_2 = "What is Adult 2 place of work?",
+                      awb3_3_home_2_jb_work_3 = "What is Adult 3 place of work?")
 
-
-# Re-order variables
-module <- module %>%
-  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
-  relocate(awb1_2_uknation_idntty_1, .before = awb1_2_uknation_idntty_1___1)
-
-# drop some variables we don't want to keep
-module <- module |> select(-aw1_2_name_a4,
-                           -aw1_2_dob_r4,
-                           -awb1_2_dob)
-                           
-# add value labels
-module <- module %>%
-  set_value_labels(awb1_2_language_hme___9 = c("Unchecked" = 0,
-                                               "Checked: Other (please specify)" = 1))
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_labelled.rds")

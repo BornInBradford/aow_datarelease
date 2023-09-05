@@ -5,6 +5,26 @@ source("tools/aow_survey_functions.R")
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module4_derived.rds")
 
 module <- module %>%
+  mutate(awb7_1_bullying_2 = awb7_1_bullying_2 +1,
+         awb7_1_future = awb7_1_future + 1,
+         awb7_2_water_1 = awb7_2_water_1 + 1) %>%
+  set_value_labels(awb7_1_bullying_2 = c("It doesn't happen" = 1, "It happens and teachers are really good at resolving it" = 2,
+                                         "It happens and teachers are good at resolving it" = 3, "It happens and teachers are not good at resolving it" = 4,
+                                         "It happens and teachers do nothing about it" = 5),
+                   awb7_1_future = c("Yes but it was too  much information and was not helpful" = 1,
+                                     "Yes I received the right amount of information that was helpful" = 2,
+                                     "Yes but there wasnt enough information that was helpful" = 3,
+                                     "No I havent received any information" = 4),
+                   awb7_2_water_1 = c("Yes" = 1, "No" = 2, "Not easily" = 3),
+                   awb6_8_attd_tech_10 = c("Strongly disagree" = 1,
+                                           "Disagree" = 2,
+                                           "Neither agree or disagree" = 3,
+                                           "Agree" = 4,
+                                           "Strongly agree" = 5))
+
+
+
+module <- module %>%
   set_variable_labels(aow_recruitment_id = "Age of Wonder recruitment ID",
                       age_survey_y = "Age (years) at survey date",
                       age_survey_m = "Age (months) at survey date",
@@ -358,25 +378,6 @@ module <- module %>%
                       awb6_7_opp_dig_sklls_r8___7 = "Would you find out about opportunities to learn digital skills another way?",
                       awb6_8_cnfdnt_2 = "I feel confident using digital devices for my own leisure e.g. social media")
 
-
-
-module <- module %>%
-  mutate(awb7_1_bullying_2 = awb7_1_bullying_2 +1,
-         awb7_1_future = awb7_1_future + 1,
-         awb7_2_water_1 = awb7_2_water_1 + 1) %>%
-  set_value_labels(awb7_1_bullying_2 = c("It doesn't happen" = 1, "It happens and teachers are really good at resolving it" = 2,
-                                         "It happens and teachers are good at resolving it" = 3, "It happens and teachers are not good at resolving it" = 4,
-                                         "It happens and teachers do nothing about it" = 5),
-                   awb7_1_future = c("Yes but it was too  much information and was not helpful" = 1,
-                                     "Yes I received the right amount of information that was helpful" = 2,
-                                     "Yes but there wasnt enough information that was helpful" = 3,
-                                     "No I havent received any information" = 4),
-                   awb7_2_water_1 = c("Yes" = 1, "No" = 2, "Not easily" = 3),
-                   awb6_8_attd_tech_10 = c("Strongly disagree" = 1,
-                                           "Disagree" = 2,
-                                           "Neither agree or disagree" = 3,
-                                           "Agree" = 4,
-                                           "Strongly agree" = 5))
 
 
 # export
