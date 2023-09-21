@@ -4,17 +4,24 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module4_derived.rds")
 
-
 module <- module %>%
   mutate(awb7_1_bullying_2 = awb7_1_bullying_2 +1,
-         awb7_1_future = awb7_1_future + 1) %>%
+         awb7_1_future = awb7_1_future + 1,
+         awb7_2_water_1 = awb7_2_water_1 + 1) %>%
   set_value_labels(awb7_1_bullying_2 = c("It doesn't happen" = 1, "It happens and teachers are really good at resolving it" = 2,
                                          "It happens and teachers are good at resolving it" = 3, "It happens and teachers are not good at resolving it" = 4,
                                          "It happens and teachers do nothing about it" = 5),
                    awb7_1_future = c("Yes but it was too  much information and was not helpful" = 1,
                                      "Yes I received the right amount of information that was helpful" = 2,
                                      "Yes but there wasnt enough information that was helpful" = 3,
-                                     "No I havent received any information" = 4))
+                                     "No I havent received any information" = 4),
+                   awb7_2_water_1 = c("Yes" = 1, "No" = 2, "Not easily" = 3),
+                   awb6_8_attd_tech_10 = c("Strongly disagree" = 1,
+                                           "Disagree" = 2,
+                                           "Neither agree or disagree" = 3,
+                                           "Agree" = 4,
+                                           "Strongly agree" = 5))
+
 
 
 module <- module %>%
@@ -59,19 +66,19 @@ module <- module %>%
                       awb6_1_negative_exp_r5 = "What have been your negative experiences of using social media?",
                       awb8_2_problem_1 = "When you have a problem, what do you do about it?",
                       awb6_1_search_links = "When searching/following links online, what are they about most of the time?",
-                      addi_inst_exp = "Adolescent Discrimination Distress Index Institutional",
-                      addi_peer_exp = "Adolescent Discrimination Distress Index Peer",
-                      addi_total = "Adolescent Discrimination Distress Index total",
+                      addi_inst_exp = "Adolescent Discrimination Distress Index Institutional experience",
+                      addi_peer_exp = "Adolescent Discrimination Distress Index Peer experience",
+                      addi_total = "Adolescent Discrimination Distress Index total experience",
                       addi_nas = "Adolescent Discrimination Distress Index NAs",
                       addi_missing = "Adolescent Discrimination Distress Index missing",
-                      patt_career = "Pupils attitudes toward technology: Careers",
-                      patt_interest = "Pupils attitudes toward technology: Interest",
-                      patt_tedious = "Pupils attitudes toward technology: Tedious",
-                      patt_conseq = "Pupils attitudes toward technology: Consequences",
-                      patt_diff = "Pupils attitudes toward technology: Diff",
-                      patt_gender = "Pupils attitudes toward technology: Gender",
-                      patt_nas = "Pupils attitudes toward technology: NAs",
-                      patt_missing = "Pupils attitudes toward technology: Missing",
+                      patt_career = "Pupils attitudes toward technology mean score: Careers",
+                      patt_interest = "Pupils attitudes toward technology mean score: Interest",
+                      patt_tedious = "Pupils attitudes toward technology mean score: Tedious",
+                      patt_conseq = "Pupils attitudes toward technology mean score: Consequences",
+                      patt_diff = "Pupils attitudes toward technology mean score: Diff",
+                      patt_gender = "Pupils attitudes toward technology mean score: Gender",
+                      patt_nas = "Pupils attitudes toward technology mean score: NAs",
+                      patt_missing = "Pupils attitudes toward technology mean score: Missing",
                       awb7_1_respect = "Does your school encourage you to respect people from other backgrounds?",
                       awb7_1_future = "Does your school provide you with next steps?",
                       awb7_1_future_r8 = "Does your school provide you with next steps?",
@@ -350,6 +357,26 @@ module <- module %>%
                       awb6_2_dgt_home = "What kind of digital devices do you have access to at home?",
                       awb6_1_negative_exp = "What have been your negative experiences of using social media?",
                       awb6_1_exp_online = "Have you ever had these negative experiences when online?",
+                      awb6_7_opp_dig_sklls = "Where would you go to find out about opportunities to learn digital skills?",
+                      awb7_1_physcial_hlth = "My school encourages me to look after my physical health",
+                      awb6_1_time_weekday = "How many hours spent using social media during term time?",
+                      awb6_7_opp_dig_sklls = "Where would you go to find out about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___1 = "Would you ask school staff about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___2 = "Would you search online for opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___3 = "Would you visit a local place for opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___4 = "Would you ask your friends about opportunities to learn digital skill?",
+                      awb6_7_opp_dig_sklls___5 = "Would you ask a relative about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___6 = "Would you know who to ask about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls___7 = "Would you find out about opportunities to learn digital skills another way?",
+                      awb6_7_opp_dig_sklls_r8___1 = "Would you ask school staff about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___2 = "Would you search online for opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___3 = "Would you visit a local place for opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___4 = "Would you ask your friends about opportunities to learn digital skill?",
+                      awb6_7_opp_dig_sklls_r8___5 = "Would you ask a relative about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___6_on = "Would you know who to ask about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___6_off = "Would you know who to ask about opportunities to learn digital skills?",
+                      awb6_7_opp_dig_sklls_r8___7 = "Would you find out about opportunities to learn digital skills another way?",
+                      awb6_8_cnfdnt_2 = "I feel confident using digital devices for my own leisure e.g. social media")
                       awb6_7_opp_dig_sklls = "Where would you go to find out about opportunities to learn digital skills?")
 
 
