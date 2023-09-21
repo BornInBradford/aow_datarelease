@@ -150,8 +150,8 @@ denom <- denom |>
                                  ethnicity_1 %in% c("White", "Roma ethnic group") ~ 4L,
                                  ethnicity_1 == "Not stated" ~ 97L,
                                  ethnicity_1 == "Other ethnic group" ~ 5L,
-                                 ethnicity_1 == "" & ethnicity_raw == "" ~ 99L,
-                                 ethnicity_1 == "" & ethnicity_raw != "" ~ 98L)) |>
+                                 ethnicity_1 == "Not provided" ~ 99L,
+                                 (is.na(ethnicity_1) | ethnicity_1 == "") & ethnicity_raw != "" ~ 98L)) |>
   set_value_labels(ethnicity_1 = c("Asian or Asian British" = 1,
                                    "Black, Black British, Caribbean or African" = 2, # to bring up to 2021 census
                                    "Mixed or multiple ethnic groups" = 3,
@@ -185,8 +185,8 @@ denom <- denom |>
                                  ethnicity_2 == "Arab" ~ 51L,
                                  ethnicity_2 == "Any other ethnic group" ~ 52L,
                                  ethnicity_2 == "Not stated" ~ 97L,
-                                 ethnicity_2 == "" & ethnicity_raw == "" ~ 99L,
-                                 ethnicity_2 == "" & ethnicity_raw != "" ~ 98L)) |>
+                                 ethnicity_2 == "Not provided" ~ 99L,
+                                 (is.na(ethnicity_2) | ethnicity_2 == "") & ethnicity_raw != "" & !is.na(ethnicity_raw) ~ 98L)) |>
   set_value_labels(ethnicity_2 = c("Indian" = 11,
                                    "Pakistani" = 12,
                                    "Bangladeshi" = 13,
