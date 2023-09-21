@@ -62,15 +62,15 @@ bib_lkup <- cohort |> select(BiBPersonID = BIBPersonID, upn = UPN) |>
   filter(!is.na(upn) & nchar(upn) > 0)
 
 # link BiB ID
-denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_con" = "upn"))
+denom_all <- denom_all |> left_join(bib_lkup, by = c("UPN_rec" = "upn"))
 
 # start sorting fields to keep and renaming, add pseudo columns
 
 denom <- denom_all |>
-  transmute(aow_person_id = map_chr(UPN_con, aow_pseudo),
+  transmute(aow_person_id = map_chr(UPN_rec, aow_pseudo),
             BiBPersonID,
             is_bib = case_when(!is.na(BiBPersonID) ~ 1, TRUE ~ 0),
-            upn = UPN_con,
+            upn = UPN_rec,
             aow_recruitment_id = gsub("[^aowAOW0-9]", "", AoWRecruitmentID) |> tolower(),
             birth_date = as.Date(DateOfBirth),
             birth_year = year(birth_date),
@@ -89,7 +89,9 @@ denom <- denom_all |>
             form_tutor = FormTutor_rec,
             form_tutor_id = map_chr(FormTutor_rec, aow_pseudo),
             gender = Gender,
-            ethnicity = ethnicity_ons2,
+            ethnicity_1 = ethnicity_ons2,
+            ethnicity_2 = ethnicity_ons,
+            ethnicity_raw = Ethnicity,
             fsm = FSM,
             sen = SEN,
             consent_form = Consent_Form,
@@ -105,6 +107,10 @@ denom <- denom_all |>
             consent_bloods = ConBlood,
             consent_bldst1 = ConBloodStor1,
             consent_bldst2 = ConBloodStor2)
+
+# remove any records missing upn or date of birth
+denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
+  filter(!is.na(birth_date) & birth_date != as.Date("1900-01-01"))
 
 # recoding and value labelling
 denom <- denom |> 
@@ -136,22 +142,76 @@ denom <- denom |>
                            "Special educational need support" = 1,
                            "Education, Health and Care Plan" = 2)) |>
   
-  # ethnicity
-  mutate(ethnicity = case_when(ethnicity == "asian or asian british" ~ 1L,
-                               ethnicity == "black or african or caribbean or black british" ~ 2L,
-                               ethnicity == "mixed multiple ethnic groups" ~ 3L,
-                               ethnicity %in% c("white", "roma ethnic group") ~ 4L,
-                               ethnicity == "not stated" ~ 99L,
-                               ethnicity == "other ethnic group" ~ 5L)) |>
-  set_value_labels(ethnicity = c("Asian or Asian British" = 1,
-                                 "Black, Black British, Caribbean or African" = 2,
-                                 "Mixed or multiple ethnic groups" = 3,
-                                 "White" = 4,
-                                 "Other ethnic group" = 5,
-                                 "Not stated" = 99))
+  # ethnicity higher level - some remapping to 2021 census categories
+  # https://www.ethnicity-facts-figures.service.gov.uk/style-guide/ethnic-groups
+  mutate(ethnicity_1 = case_when(ethnicity_1 == "Asian or Asian British" ~ 1L,
+                                 ethnicity_1 == "Black or African or Caribbean or Black British" ~ 2L, # not 2021 census
+                                 ethnicity_1 == "Mixed multiple ethnic groups" ~ 3L,
+                                 ethnicity_1 %in% c("White", "Roma ethnic group") ~ 4L,
+                                 ethnicity_1 == "Not stated" ~ 97L,
+                                 ethnicity_1 == "Other ethnic group" ~ 5L,
+                                 ethnicity_1 == "" & ethnicity_raw == "" ~ 99L,
+                                 ethnicity_1 == "" & ethnicity_raw != "" ~ 98L)) |>
+  set_value_labels(ethnicity_1 = c("Asian or Asian British" = 1,
+                                   "Black, Black British, Caribbean or African" = 2, # to bring up to 2021 census
+                                   "Mixed or multiple ethnic groups" = 3,
+                                   "White" = 4,
+                                   "Other ethnic group" = 5,
+                                   "Data provided but ethnicity not stated" = 97,
+                                   "Data provided but unmapped" = 98,
+                                   "Data not provided" = 99)) |>
+  
+  # ethnicity lower level - some remapping to 2021 census categories
+  # https://www.ethnicity-facts-figures.service.gov.uk/style-guide/ethnic-groups
+  mutate(ethnicity_2 = case_when(ethnicity_2 == "Indian" ~ 11L,
+                                 ethnicity_2 == "Pakistani" ~ 12L,
+                                 ethnicity_2 == "Bangladeshi" ~ 13L,
+                                 ethnicity_2 == "Chinese" ~ 14L,
+                                 ethnicity_2 == "Any other Asian background" ~ 15L,
+                                 ethnicity_2 == "Caribbean" ~ 21L,
+                                 ethnicity_2 == "African" ~ 22L,
+                                 ethnicity_2 == "Any other Black or African or Caribbean background" ~ 23L, # not 2021 census
+                                 ethnicity_2 == "Other Black or African or Caribbean background" ~ 23L, # not 2021 census
+                                 ethnicity_2 == "White and Black Caribbean" ~ 31L,
+                                 ethnicity_2 == "White and Black African" ~ 32L,
+                                 ethnicity_2 == "White and Asian" ~ 33L,
+                                 ethnicity_2 == "Any other Mixed or multiple ethnic background" ~ 34L,
+                                 ethnicity_2 == "English or Welsh or Scottish or Northern Irish or British" ~ 41L,
+                                 ethnicity_2 == "Irish" ~ 42L,
+                                 ethnicity_2 == "Gypsy or Irish Traveller" ~ 43L,
+                                 ethnicity_2 == "Roma" ~ 44L,
+                                 ethnicity_2 == "Roma ethnic group" ~ 44L,
+                                 ethnicity_2 == "Any other White background" ~ 45L,
+                                 ethnicity_2 == "Arab" ~ 51L,
+                                 ethnicity_2 == "Any other ethnic group" ~ 52L,
+                                 ethnicity_2 == "Not stated" ~ 97L,
+                                 ethnicity_2 == "" & ethnicity_raw == "" ~ 99L,
+                                 ethnicity_2 == "" & ethnicity_raw != "" ~ 98L)) |>
+  set_value_labels(ethnicity_2 = c("Indian" = 11,
+                                   "Pakistani" = 12,
+                                   "Bangladeshi" = 13,
+                                   "Chinese" = 14,
+                                   "Any other Asian background" = 15,
+                                   "Caribbean" = 21,
+                                   "African" = 22,
+                                   "Any other Black, Black British, or Caribbean background" = 23,
+                                   "White and Black Caribbean" = 31,
+                                   "White and Black African" = 32,
+                                   "White and Asian" = 33,
+                                   "Any other Mixed or multiple ethnic background" = 34,
+                                   "English, Welsh, Scottish, Northern Irish or British" = 41,
+                                   "Irish" = 42,
+                                   "Gypsy or Irish Traveller" = 43,
+                                   "Roma" = 44,
+                                   "Any other White background" = 45,
+                                   "Arab" = 51,
+                                   "Any other ethnic group" = 52,
+                                   "Data provided but ethnicity not stated" = 97,
+                                   "Data provided but unmapped" = 98,
+                                   "Data not provided" = 99)) |>
+  
+  select(-ethnicity_raw)
 
-  
-  
 
 # labelling variables
 denom <- denom |> 
@@ -177,7 +237,8 @@ denom <- denom |>
                       form_tutor = "Form tutor at recruitment",
                       form_tutor_id = "Pseudo recruitment form tutor ID",
                       gender = "Gender reported by school",
-                      ethnicity = "Ethnicity reported by school",
+                      ethnicity_1 = "Ethnicity reported by school - higher level category",
+                      ethnicity_2 = "Ethnicity reported by school - lower level category",
                       fsm = "Free school meals",
                       sen = "Special educational needs provision",
                       consent_form = "Consent form type I",

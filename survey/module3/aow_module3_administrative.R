@@ -19,13 +19,13 @@ denom <- denom |> select(aow_person_id,
                          school_id,
                          form_tutor_id,
                          gender,
-                         ethnicity)
+                         ethnicity_1,
+                         ethnicity_2)
 
 data_not_in_denom <- mod_allcols |> anti_join(denom, by = "aow_recruitment_id")
 
 mod_allcols <- mod_allcols |> inner_join(denom, by = "aow_recruitment_id") |>
-  mutate(survey_date = coalesce(date_time_collection, module_3_timestamp, survey_date) |> 
-           as.Date(),
+  mutate(survey_date = coalesce(as.Date(date_time_collection), as.Date(module_3_timestamp), as.Date(survey_date)),
          age_survey_y = (birth_date %--% survey_date) %/% years(1),
          age_survey_m = (birth_date %--% survey_date) %/% months(1))
 

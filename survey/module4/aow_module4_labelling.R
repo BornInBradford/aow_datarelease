@@ -377,7 +377,7 @@ module <- module %>%
                       awb6_7_opp_dig_sklls_r8___6_off = "Would you know who to ask about opportunities to learn digital skills?",
                       awb6_7_opp_dig_sklls_r8___7 = "Would you find out about opportunities to learn digital skills another way?",
                       awb6_8_cnfdnt_2 = "I feel confident using digital devices for my own leisure e.g. social media")
-
+                      awb6_7_opp_dig_sklls = "Where would you go to find out about opportunities to learn digital skills?")
 
 
 # export
