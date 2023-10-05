@@ -8,6 +8,13 @@ redcap_project_name <- "aow_module_2_online_survey"
 online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Online.dta")
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Offline.dta")
 
+# set min and max survey versions in this data
+# NB if version var is missing it sets min/max to Inf/-Inf and all modified vars will be removed
+min_online_version <- min(online$mod2_version, na.rm = TRUE)
+max_online_version <- max(online$mod2_version, na.rm = TRUE)
+min_offline_version <- min(offline$mod2_version, na.rm = TRUE)
+max_offline_version <- max(offline$mod2_version, na.rm = TRUE)
+
 # data dictionary
 online_dict <- read_csv("survey/redcap/AoWModule2OnlineSurvey_DataDictionary_2023-06-15.csv",
                         col_names = aow_dict_colnames(), skip = 1)
@@ -40,6 +47,24 @@ vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_
 # add survey indicator to each dataset --- label values once appended 
 online <- online %>% mutate(survey_mode = 1) # 1=online
 offline <- offline %>% mutate(survey_mode = 2) # 2=offline
+
+
+
+# add missing/changed question indicators to data dictionaries
+online_dict <- online_dict |> aow_add_dict_cols()
+offline_dict <- offline_dict |> aow_add_dict_cols() 
+
+# trim data down to match in-version data dict vars
+online <- online |> aow_trim_var_versions_data(online_dict, min_online_version, max_online_version)
+offline <- offline |> aow_trim_var_versions_data(offline_dict, min_offline_version, max_offline_version)
+
+# trim version changes that are out of range of the data
+online_dict <- online_dict |> aow_trim_var_versions(min_online_version, max_online_version) |>
+  mutate(online_only = case_when(!variable %in% offline_dict$variable ~ "online only", TRUE ~ "in both"))
+offline_dict <- offline_dict |> aow_trim_var_versions(min_offline_version, max_offline_version) |>
+  mutate(offline_only = case_when(!variable %in% online_dict$variable ~ "offline only", TRUE ~ "in both"))
+
+
 
 # merge online and offline, do some renaming needed for processing
 mod_allcols <- online |> bind_rows(offline) |>
@@ -95,13 +120,6 @@ rev_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("rev_cat")
 add_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), online_dict$variable, value = TRUE))
 add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), offline_dict$variable, value = TRUE))
 
-
-# add missing/changed question indicators to data dictionaries
-online_dict <- online_dict |> aow_add_dict_cols() |>
-  mutate(online_only = case_when(!variable %in% offline_dict$variable ~ "online only", TRUE ~ "in both"))
-
-offline_dict <- offline_dict |> aow_add_dict_cols() |>
-  mutate(offline_only = case_when(!variable %in% online_dict$variable ~ "offline only", TRUE ~ "in both"))
 
 
 # add online/offline missing vars

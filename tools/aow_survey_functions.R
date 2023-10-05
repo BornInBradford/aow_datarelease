@@ -431,3 +431,58 @@ aow_label_chk <- function(df, var, labels) {
   return(df)
   
 }
+
+
+# only keep vars in dict that are expected to have data in this version range
+
+aow_trim_var_versions <- function(dict, min_version, max_version) {
+  
+  anti_dict <- dict |> aow_out_of_vrange(min_version, max_version)
+  
+  dict <- dict |> anti_join(anti_dict)
+  
+  return(dict)
+  
+}
+
+
+# only keep vars in data that are expected to have data in version range
+# needs data dict vars
+
+aow_trim_var_versions_data <- function(dat, dict, min_version, max_version) {
+  
+  anti_dict <- dict |> aow_out_of_vrange(min_version, max_version)
+  
+  anti_dict_chk <- anti_dict |> filter(type %in% aow_redcap_chk_type()) |>
+    pull(variable)
+  
+  anti_dict <- anti_dict |> filter(!type %in% aow_redcap_chk_type()) |>
+    pull(variable)
+  
+  anti_dict_chk <- paste0(anti_dict_chk, "___")
+  
+  dat <- dat |> select(-any_of(anti_dict))
+  
+  dat <- dat |> select(-any_of(starts_with(anti_dict_chk)))
+  
+  return(dat)
+  
+}
+
+# find vars in data dict that are out of version range
+
+aow_out_of_vrange <- function(dict, min_version, max_version) {
+  
+  dict <- dict |> filter(as.numeric(added) > max_version |
+                         as.numeric(revised) > max_version |
+                         as.numeric(hidden) <= min_version)
+  
+  return(dict)
+  
+}
+
+
+
+
+
+
