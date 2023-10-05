@@ -482,6 +482,22 @@ aow_out_of_vrange <- function(dict, min_version, max_version) {
 }
 
 
+aow_version_by_date <- function(timestamp, launch_dates) {
+
+  version <- character(0)
+  
+  for(d in 1:length(launch_dates)) {
+    
+    version <- ifelse(timestamp >= launch_dates[d], names(launch_dates[d]), version)
+    
+  }
+
+  return(as.numeric(version))
+ 
+}
+
+
+
 
 
 

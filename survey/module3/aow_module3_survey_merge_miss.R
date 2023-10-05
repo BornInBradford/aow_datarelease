@@ -8,6 +8,14 @@ redcap_project_name <- "aow_module_3_online_survey"
 online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module3_Online.dta")
 offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module3_Offline.dta")
 
+# fix offline version var
+launch_dates <- c("5" = "2022-11-23",
+                  "6" = "2023-03-14",
+                  "7" = "2023-05-19",
+                  "8" = "2023-06-01")
+
+offline <- offline |> mutate(mod3_version = aow_version_by_date(date_time_collection, launch_dates))
+
 # set min and max survey versions in this data
 # NB if version var is missing it sets min/max to Inf/-Inf and all modified vars will be removed
 min_online_version <- min(online$mod3_version, na.rm = TRUE)
