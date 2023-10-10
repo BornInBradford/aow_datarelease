@@ -7,13 +7,11 @@ module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/su
 # Re-order variables
 module <- module %>%
   relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
-  relocate(awb1_2_uknation_idntty_1, .before = awb1_2_uknation_idntty_1___1)%>%
   relocate(awb1_2_ethnicity_arb_r4, .after = ethnicity_2)
 
 # drop some variables we don't want to keep
 module <- module |> select(-aw1_2_name_a4,
-                           -aw1_2_dob_r4,
-                           -awb1_2_dob)
+                           -aw1_2_dob_r4)
                            
 # add value labels
 module <- module %>%
@@ -27,7 +25,6 @@ module <- module %>%
                       survey_date = "Date survey taken",
                       survey_version = "Survey version",
                       survey_mode = "Survey taken online or offline?",
-                      awb1_2_ethnicity = "What is your ethnicity?",
                       awb1_2_ethnicity_r4 = "What is your ethnicity?",
                       awb1_2_ethnicity_whte_othr = "Any other White background",
                       awb1_2_ethnicity_mix_othr = "Any other mixed/multiple ethnic background",
@@ -108,14 +105,7 @@ module <- module %>%
                       sais_nas = "Striving to Avoid Inferiority Scale (SAIS) NAs",
                       sais_missing = "Striving to Avoid Inferiority Scale (SAIS) missing",
                       sais_mean = "Striving to Avoid Inferiority Scale (SAIS) mean",
-                      awb1_2_date_emgrtd = "If not born in UK when did you arrive to live here?",
-                      awb1_2_uknation_idntty_1 = "How would you describe your national identity?",
-                      awb1_2_uknation_idntty_2 = "If other national identity, please describe",
                       awb1_2_language_hme___9 = "Which language is spoken at home? Choice = Other",
-                      awb1_2_gender_othr = "Enter the term you use to describe your gender",
-                      awb1_3_worries = "Can you tell us 3 things currently worrying you?",
-                      awb1_3_happy = "What is currently making you happy?",
-                      awb1_4_q_self_a3 = "What question would you ask yourself in 3 years?",
                       awb3_3_home_1_jb_work_1 = "What is Adult 1 place of work?",
                       awb3_3_home_1_jb_job_1 = "What job does Adult 1 do?",
                       awb3_3_home_2_jb_othr_1 = "What other relation is Adult 1 to you?",
@@ -127,24 +117,6 @@ module <- module %>%
                       awb3_3_home_2_jb_job_3 = "What job does Adult 3 do?",
                       awb3_7_violence = "Have you been victim of violence in past 1yr?",
                       aw3_7_decisions = "I can influence decisions affecting my local area",
-                      awb3_activities_1 = "Did you go to a party in past month?",
-                      awb3_activities_2 = "Did you watch live sport in past month?",
-                      awb3_activities_3 = "Did you make music/sing in past month?",
-                      awb3_activities_4 = "Did you go to a concert/gig in past month?",
-                      awb3_activities_5 = "Did you go to other live performance in past month?",
-                      awb3_activities_6 = "Did you read for enjoyment in past month?",
-                      awb3_activities_7 = "Did you go to youth clubs in past month?",
-                      awb3_activities_8 = "Did you go to scouts/guides in past month?",
-                      awb3_activities_9 = "Did you go to the library in past month?",
-                      awb3_activities_10 = "Did you go to museum/gallery/historic place in past month?",
-                      awb3_activities_11 = "Did you do any voluntary work in past month?",
-                      awb3_activities_12 = "Did you go to a political meeting in past month?",
-                      awb3_activities_13 = "Did you attend a religious service in past month?",
-                      awb3_activities_14 = "Did you participate in poetry in past month?",
-                      awb3_activities_15 = "Did you do creative writing in past month?",
-                      awb3_activities_16 = "Did you take part in performance activities in past month?",
-                      awb3_activities_17 = "Did you make any artwork in past month?",
-                      awb3_activities_18 = "Did you make any graphic designs in past month?",
                       awb3_4_restriction___1 = "Not enough time to do activities",
                       awb3_4_restriction___2 = "It's too expensive to do activities",
                       awb3_4_restriction___3 = "Health problems prevent me from doing activities",
@@ -161,25 +133,6 @@ module <- module %>%
                       awb3_4_talent_in_arts___3 = "Neither agree/disagree I have great talent in artistic activities",
                       awb3_4_talent_in_arts___4 = "Strongly disagree I have great talent in artistic activities",
                       awb3_4_talent_in_arts___5 = "Strongly disagree I have great talent in artistic activities",
-                      awb3_4_activities_1 = "Did you go to a party in past month?",
-                      awb3_4_activities_2 = "Did you watch live sport in past month?",
-                      awb3_4_activities_3 = "Did you make music/sing in past month?",
-                      awb3_4_activities_4 = "Did you go to a live concert/gig in past month?",
-                      awb3_4_activities_5 = "Did you go to a live performance in past month?",
-                      awb3_4_activities_6 = "Did you read for enjoyment in past month?",
-                      awb3_4_activities_7 = "Did you go to youth clubs in past month?",
-                      awb3_4_activities_8 = "Did you go to scouts/guides in past month?",
-                      awb3_4_activities_9 = "Did you go to a library in past month?",
-                      awb3_4_activities_10 = "Did you go to museum/historic place in past month?",
-                      awb3_4_activities_11 = "Did you do voluntary work in past month?",
-                      awb3_4_activities_12 = "Did you go to a political meeting in past month?",
-                      awb3_4_activities_13 = "Did you attend a religious service in past month?",
-                      awb3_4_activities_14 = "Did you participate in poetry in past month?",
-                      awb3_4_activities_15 = "Did you do creative writing in past month?",
-                      awb3_4_activities_16 = "Did you take part in performance activities in past month?",
-                      awb3_4_activities_17 = "Did you do any artwork in past month?",
-                      awb3_4_activities_18 = "Did you make any graphic designs in past month?",
-                      awb1_2_date_emgrtd_year_a3 = "If you wasnt born in UK when did you arrive to live here?",
                       awb3_1_compare_frnds = "Would you say your family is richer compared to your friends?",
                       awb3_1_warm_engh_a5 = "Are you warm enough at home during winter?",
                       awb3_1_save_mny_a5  = "Parents have talked about cutting back to save money",
