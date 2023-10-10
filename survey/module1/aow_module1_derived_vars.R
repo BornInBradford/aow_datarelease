@@ -29,34 +29,35 @@ module <- module %>%
   set_value_labels(awb3_3_home_1_jb = c("No" = 0, "Yes" = 1, "Don't know" = 2),
                    awb3_3_home_2_jb = c("No" = 0, "Yes" = 1, "Don't know" = 2)) %>%
   # rescale striving to avoid inferiority scale(SAIS) (subtract 1, reverse third option)
-  mutate(across(aw3_6_comparison_1:aw3_6_comparison_3,
-                ~ .x - 1)) %>%
-  mutate(aw3_6_comparison_3 = recode(aw3_6_comparison_3,
+  mutate(TMPVAR_aw3_6_comparison_1 = aw3_6_comparison_1 - 1,
+         TMPVAR_aw3_6_comparison_2 = aw3_6_comparison_2 - 1,
+         TMPVAR_aw3_6_comparison_3 = aw3_6_comparison_3 - 1) %>%
+  mutate(TMPVAR_aw3_6_comparison_3 = recode(TMPVAR_aw3_6_comparison_3,
                                      `0` = 4,
                                      `1` = 3,
                                      `2` = 2,
                                      `3` = 1,
                                      `4` = 0)) %>%
-  set_value_labels(aw3_6_comparison_1 = c("Never" = 0,
+  set_value_labels(TMPVAR_aw3_6_comparison_1 = c("Never" = 0,
                                           "Rarely" = 1,
                                           "Sometimes" = 2,
                                           "Mostly" = 3,
                                           "Always" = 4),
-                   aw3_6_comparison_2 = c("Never" = 0,
+                   TMPVAR_aw3_6_comparison_2 = c("Never" = 0,
                                           "Rarely" = 1,
                                           "Sometimes" = 2,
                                           "Mostly" = 3,
                                           "Always" = 4),
-                   aw3_6_comparison_3 = c("Never" = 4,
+                   TMPVAR_aw3_6_comparison_3 = c("Never" = 4,
                                           "Rarely" = 3,
                                           "Sometimes" = 2,
                                           "Mostly" = 1,
                                           "Always" = 0)) %>%
-  mutate(awb3_7_violence = recode(awb3_7_violence,
+  mutate(TMPVAR_awb3_7_violence = recode(awb3_7_violence,
                                   `1` = 0,
                                   `2` = 2,
                                   `3` = 1)) %>%
-  set_value_labels(awb3_7_violence = c("No" = 0, "Yes" = 1, "Not sure" = 2))
+  set_value_labels(TMPVAR_awb3_7_violence = c("No" = 0, "Yes" = 1, "Not sure" = 2))
 
 
 # Sum derived variables
@@ -86,8 +87,8 @@ module <-
          food_avail_missing = ifelse(food_avail_nas == 5, 1, 0)) %>%
   #Striving to Avoid Inferiority Scale (SAIS) - Adapted
   #sum scores
-  mutate(sais_total = sum(c_across(aw3_6_comparison_1:aw3_6_comparison_3), na.rm = TRUE),
-         sais_nas = sum(is.na(c_across(aw3_6_comparison_1:aw3_6_comparison_3))),
+  mutate(sais_total = sum(c_across(TMPVAR_aw3_6_comparison_1:TMPVAR_aw3_6_comparison_3), na.rm = TRUE),
+         sais_nas = sum(is.na(c_across(TMPVAR_aw3_6_comparison_1:TMPVAR_aw3_6_comparison_3))),
          sais_missing = ifelse(sais_nas == 3, 1, 0)) %>%
   #compute score
   mutate(sais_mean = sais_total/3)
@@ -102,6 +103,8 @@ module <- module %>%
   set_value_labels(fas_cat = c("Low" = 1,
                                "Medium" = 2,
                                "High" = 3))
+
+module <- module |> select(-starts_with("TMPVAR_"))
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_derived.rds")
