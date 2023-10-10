@@ -6,28 +6,7 @@ module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/su
 
 # Re-scaling variables
 module <- module %>%
-  mutate(awb1_2_religion = ifelse(awb1_2_religion == 2, 0, awb1_2_religion)) %>%
-  set_value_labels(awb1_2_religion = c("No" = 0, "Yes" = 1)) %>%
-  mutate(awb1_2_disability = ifelse(awb1_2_disability == 2, 0, awb1_2_disability),
-         awb1_2_disability_tme_a4 = ifelse(awb1_2_disability_tme_a4 == 2, 0, awb1_2_disability_tme_a4),
-         awb1_2_disability_impct_a4 = recode(awb1_2_disability_impct_a4,
-                                             `1` = 2,
-                                             `2` = 1,
-                                             `3` = 0,
-                                             `-1` = -1)) %>%
-  set_value_labels(awb1_2_disability = c("No" = 0, "Yes" = 1),
-                   awb1_2_disability_tme_a4 = c("No" = 0, "Yes" = 1),
-                   awb1_2_disability_impct_a4 = c("No" = 0, "Yes, a little" = 1, "Yes, a lot" = 2, "Added in version 4" = -1)) %>%
-  mutate(awb3_3_home_1_jb = recode(awb3_3_home_1_jb,
-                                   `1` = 1,
-                                   `2` = 0,
-                                   `3` = 2),
-         awb3_3_home_2_jb = recode(awb3_3_home_2_jb,
-                                   `1` = 1,
-                                   `2` = 0,
-                                   `3` = 2)) %>%
-  set_value_labels(awb3_3_home_1_jb = c("No" = 0, "Yes" = 1, "Don't know" = 2),
-                   awb3_3_home_2_jb = c("No" = 0, "Yes" = 1, "Don't know" = 2)) %>%
+  
   # rescale striving to avoid inferiority scale(SAIS) (subtract 1, reverse third option)
   mutate(TMPVAR_aw3_6_comparison_1 = aw3_6_comparison_1 - 1,
          TMPVAR_aw3_6_comparison_2 = aw3_6_comparison_2 - 1,
