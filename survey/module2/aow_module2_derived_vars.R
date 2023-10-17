@@ -265,6 +265,7 @@ module <-
                                                  TMPVAR_awb2_5_social_spprt_8))),
          soc_sup_missing = ifelse(soc_sup_nas == 8, 1, 0))
 
+module <- module |> select(-starts_with("TMPVAR_"))
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module2_derived.rds")
