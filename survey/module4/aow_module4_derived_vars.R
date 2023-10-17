@@ -6,21 +6,11 @@ module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/su
 
 module <-
   module %>%
-  mutate(awb7_1_bullying_2 = case_when(awb7_1_bullying_2 == 1 ~ 0,
-                                       awb7_1_bullying_2 == 2 ~ 2,
-                                       awb7_1_bullying_2 == 3 ~ 1)) %>%
-  mutate(awb7_1_future = ifelse(awb7_1_future == 4, 0, awb7_1_future)) %>%
-  mutate(awb7_2_water_1 = case_when(awb7_2_water_1 == 1 ~ 1,
-                                    awb7_2_water_1 == 2 ~ 0,
-                                    awb7_2_water_1 == 3 ~ 2)) %>%
-  mutate(awb6_5_dev_n_home = awb6_5_dev_n_home - 1) %>%
-  mutate(awb6_6_int_hme_hrs = awb6_6_int_hme_hrs - 1) %>%
-  mutate(awb6_6_int_hme_hrs_wknd = awb6_6_int_hme_hrs_wknd - 1) %>%
-  mutate(awb6_8_attd_tech_10 = case_when(awb6_8_attd_tech_10 == 1 ~ 5,
-                                         awb6_8_attd_tech_10 == 2 ~ 4,
-                                         awb6_8_attd_tech_10 == 3 ~ 3,
-                                         awb6_8_attd_tech_10 == 4 ~ 2,
-                                         awb6_8_attd_tech_10 == 5 ~ 1))
+  mutate(TMPVAR_awb6_8_attd_tech_10 = case_when(awb6_8_attd_tech_10 == 1 ~ 5,
+                                                awb6_8_attd_tech_10 == 2 ~ 4,
+                                                awb6_8_attd_tech_10 == 3 ~ 3,
+                                                awb6_8_attd_tech_10 == 4 ~ 2,
+                                                awb6_8_attd_tech_10 == 5 ~ 1))
 
 
 
@@ -64,11 +54,12 @@ module <-
                             na.rm = TRUE),
          patt_diff = mean(c(awb6_8_attd_tech_7, awb6_8_attd_tech_8),
                           na.rm = TRUE),
-         patt_gender = mean(c(awb6_8_attd_tech_9, awb6_8_attd_tech_10),
+         patt_gender = mean(c(awb6_8_attd_tech_9, TMPVAR_awb6_8_attd_tech_10),
                             na.rm = TRUE),
          patt_nas = sum(is.na(c_across(awb6_8_attd_tech_1:awb6_8_attd_tech_12))),
          patt_missing = ifelse(patt_nas == 12, 1, 0))
 
+module <- module |> select(-starts_with("TMPVAR_"))
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module4_derived.rds")
