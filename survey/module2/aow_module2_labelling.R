@@ -204,7 +204,7 @@ module <- module %>%
                       awb2_9_seek_hlp_ppl_6 = "How likely would you seek help from a phone helpline?",
                       awb2_9_seek_hlp_ppl_7 = "How likely would you seek help from a doctor/GP?",
                       awb2_9_seek_hlp_ppl_8 = "How likely would you seek help from a religious leader?",
-                      awb2_9_seek_hlp_ppl_9 = "How likely would you seek help from a teacher/other school staff?",
+                      awb2_9_seek_hlp_ppl_9_a_4 = "How likely would you seek help from a teacher/other school staff?",
                       awb2_9_seek_hlp_ppl_10 = "How likely is it you would not seek help from anyone?",
                       awb2_11_upsetting_3_a4 = "How upsetting if you heard voices others couldn't hear?",
                       awb2_11_upsetting_5_a4 = "How upsetting if you have seen something other couldn't see?",

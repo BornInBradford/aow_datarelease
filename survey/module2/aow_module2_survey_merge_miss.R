@@ -90,6 +90,18 @@ mod_allcols <- mod_allcols |> left_join(timestamps)
 warnings()
 
 
+# fix version control issue
+# awb2_9_seek_hlp_ppl_9 was missing from offline prior to version 6
+# when it was replaced by awb2_9_seek_hlp_ppl_9_a_4 in both online/offline
+# merge into awb2_9_seek_hlp_ppl_9_a_4 (the name to be used going forward)
+mod_allcols <- mod_allcols |> aow_miss_cat_online("awb2_9_seek_hlp_ppl_9_a_4")
+mod_allcols <- mod_allcols |> mutate(awb2_9_seek_hlp_ppl_9_a_4 = case_when(survey_version < 6 ~ awb2_9_seek_hlp_ppl_9,
+                                                                       TRUE ~ awb2_9_seek_hlp_ppl_9_a_4))
+mod_allcols <- mod_allcols |> select(-awb2_9_seek_hlp_ppl_9)
+offline_dict <- offline_dict |> filter(variable != "awb2_9_seek_hlp_ppl_9")
+online_dict <- online_dict |> filter(variable != "awb2_9_seek_hlp_ppl_9")
+
+
 # add checkbox options to value labels
 
 checkboxes <- offline_dict |> bind_rows(online_dict) |>
@@ -256,6 +268,7 @@ if(nrow(removed_txt > 0)) {
 
 # restore column order
 mod_allcols <- mod_allcols |> select(any_of(mod_allcols_order), everything())
+
 
 # export
 saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module2_merged.rds")

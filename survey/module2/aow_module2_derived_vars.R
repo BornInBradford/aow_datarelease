@@ -221,7 +221,7 @@ module <-
                                              awb2_9_seek_hlp_ppl_6,
                                              awb2_9_seek_hlp_ppl_7,
                                              awb2_9_seek_hlp_ppl_8,
-                                             awb2_9_seek_hlp_ppl_9,
+                                             awb2_9_seek_hlp_ppl_9_a_4,
                                              awb2_9_seek_hlp_ppl_10))),
          emo_missing = ifelse(emo_nas == 10, 1, 0)) %>%
   #BRS
