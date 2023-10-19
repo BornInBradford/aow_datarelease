@@ -79,15 +79,15 @@ module <- module %>%
     #YAP (sedentary scale)
   #Own Financial Resources - Bespoke
   #sum scores
-  mutate(yapsed_total = sum(c(awb4_2_outside_schl_1_a5,
-                              awb4_2_outside_schl_1_a5,
-                              awb4_2_outside_schl_1_a5,
-                              awb4_2_outside_schl_1_a5,
+  mutate(yapsed_total = sum(c(awb4_2_outside_schl_1_r7,
+                              awb4_2_outside_schl_2_r7,
+                              awb4_2_outside_schl_3_r7,
+                              awb4_2_outside_schl_4_r7,
                               awb4_2_overall_a5), na.rm = TRUE),
-         yapsed_nas = sum(is.na(c(awb4_2_outside_schl_1_a5,
-                                  awb4_2_outside_schl_1_a5,
-                                  awb4_2_outside_schl_1_a5,
-                                  awb4_2_outside_schl_1_a5,
+         yapsed_nas = sum(is.na(c(awb4_2_outside_schl_1_r7,
+                                  awb4_2_outside_schl_2_r7,
+                                  awb4_2_outside_schl_3_r7,
+                                  awb4_2_outside_schl_4_r7,
                                   awb4_2_overall_a5))),
          yapsed_missing = ifelse(yapsed_nas == 5, 1, 0)) %>%
   #compute score

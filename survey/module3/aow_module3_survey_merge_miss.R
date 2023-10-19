@@ -108,6 +108,107 @@ mod_allcols <- mod_allcols |> left_join(timestamps)
 warnings()
 
 
+
+# fix version control issues
+# merge into awb4_2_outside_schl_X_r7 as these are used going forward
+# the Xs were incorrectly numbered in the offline version so renaming has occurred
+mod_allcols <- mod_allcols |> mutate(awb4_2_outside_schl_1_r7 = case_when(survey_mode == 1 & is.na(awb4_2_outside_schl_1_r7) & !is.na(awb4_2_outside_schl_1_a5) ~ awb4_2_outside_schl_1_a5,
+                                                                          survey_mode == 2 & is.na(awb4_2_outside_schl_1_r7) & !is.na(awb4_2_outside_schl_2_a5) ~ awb4_2_outside_schl_2_a5,
+                                                                          TRUE ~ awb4_2_outside_schl_1_r7),
+                                     awb4_2_outside_schl_2_r7 = case_when(survey_mode == 1 & is.na(awb4_2_outside_schl_2_r7) & !is.na(awb4_2_outside_schl_2_a5) ~ awb4_2_outside_schl_2_a5,
+                                                                          survey_mode == 2 & is.na(awb4_2_outside_schl_2_r7) & !is.na(awb4_2_outside_schl_3_a5) ~ awb4_2_outside_schl_3_a5,
+                                                                          TRUE ~ awb4_2_outside_schl_2_r7),
+                                     awb4_2_outside_schl_3_r7 = case_when(survey_mode == 1 & is.na(awb4_2_outside_schl_3_r7) & !is.na(awb4_2_outside_schl_3_a5) ~ awb4_2_outside_schl_3_a5,
+                                                                          survey_mode == 2 & is.na(awb4_2_outside_schl_3_r7) & !is.na(awb4_2_outside_schl_4_a5) ~ awb4_2_outside_schl_4_a5,
+                                                                          TRUE ~ awb4_2_outside_schl_3_r7),
+                                     awb4_2_outside_schl_4_r7 = case_when(survey_mode == 1 & is.na(awb4_2_outside_schl_4_r7) & !is.na(awb4_2_outside_schl_4_a5) ~ awb4_2_outside_schl_4_a5,
+                                                                          survey_mode == 2 & is.na(awb4_2_outside_schl_4_r7) & !is.na(awb4_2_outside_schl_5_a5) ~ awb4_2_outside_schl_5_a5,
+                                                                          TRUE ~ awb4_2_outside_schl_4_r7))
+mod_allcols <- mod_allcols |> select(-awb4_2_outside_schl_1_a5,
+                                     -awb4_2_outside_schl_2_a5,
+                                     -awb4_2_outside_schl_3_a5,
+                                     -awb4_2_outside_schl_4_a5,
+                                     -awb4_2_outside_schl_5_a5)
+offline_dict <- offline_dict |> filter(!variable %in% c("awb4_2_outside_schl_1_a5",
+                                                        "awb4_2_outside_schl_2_a5", 
+                                                        "awb4_2_outside_schl_3_a5", 
+                                                        "awb4_2_outside_schl_4_a5", 
+                                                        "awb4_2_outside_schl_5_a5"))
+online_dict <- online_dict |> filter(!variable %in% c("awb4_2_outside_schl_1_a5",
+                                                      "awb4_2_outside_schl_2_a5", 
+                                                      "awb4_2_outside_schl_3_a5", 
+                                                      "awb4_2_outside_schl_4_a5", 
+                                                      "awb4_2_outside_schl_5_a5"))
+
+# merge into awb5_1_food_dt_6_r7 which is used going forward                                   
+mod_allcols <- mod_allcols |> mutate(awb5_1_food_dt_6_r7 = case_when(survey_mode == 1 ~ coalesce(awb5_1_food_dt_6_r7, awb5_1_food_dt_6),
+                                                                     survey_mode == 2 ~ coalesce(awb5_1_food_dt_6_r7, awb5_1_food_dt_6_a5, awb5_1_food_dt_6)))
+mod_allcols <- mod_allcols |> select(-awb5_1_food_dt_6, -awb5_1_food_dt_6_a6)
+offline_dict <- offline_dict |> filter(!variable %in% c("awb5_1_food_dt_6",
+                                                        "awb5_1_food_dt_6_a6"))
+online_dict <- online_dict |> filter(!variable %in% c("awb5_1_food_dt_6",
+                                                      "awb5_1_food_dt_6_a6"))
+
+
+# missed off offline, merge into awb4_3_wake_drng_nght2_r7, used going forward (seems to be dropped)
+mod_allcols <- mod_allcols |> aow_miss_cat_online("awb4_3_wake_drng_nght2_r7")
+mod_allcols <- mod_allcols |> mutate(awb4_3_wake_drng_nght2_r7 = case_when(survey_version < 7 & survey_mode == 1 ~ awb4_3_wake_drng_nght2_a5,
+                                                                           survey_version >= 7 ~ awb4_3_wake_drng_nght2_r7))
+mod_allcols <- mod_allcols |> select(-awb4_3_wake_drng_nght2_a5)
+offline_dict <- offline_dict |> filter(variable != "awb4_3_wake_drng_nght2_a5")
+online_dict <- online_dict |> filter(variable != "awb4_3_wake_drng_nght2_a5")                                                                     
+                                                                          
+# incorrectly specified as radio instead of checkbox
+# merging into awb5_2_tkn_mny_r8___X
+mod_allcols <- mod_allcols |> mutate(awb5_2_tkn_mny_r8___1 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 1 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___1, awb5_2_tkn_mny_a5___1),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___2 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 2 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___2, awb5_2_tkn_mny_a5___2),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___3 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 3 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___3, awb5_2_tkn_mny_a5___3),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___4 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 4 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___4, awb5_2_tkn_mny_a5___4),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___5 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 5 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___5, awb5_2_tkn_mny_a5___5),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___6 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 6 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___6, awb5_2_tkn_mny_a5___6),
+                                                                       TRUE ~ 0),
+                                     awb5_2_tkn_mny_r8___7 = case_when(survey_mode == 2 & awb5_2_tkn_mny_a5 == 7 ~ 1,
+                                                                       survey_mode == 1 & coalesce(awb5_2_tkn_mny_r8___7, awb5_2_tkn_mny_a5___7),
+                                                                       TRUE ~ 0))
+mod_allcols <- mod_allcols |> select(-awb5_2_tkn_mny_a5,
+                                     -awb5_2_tkn_mny_a5___1,
+                                     -awb5_2_tkn_mny_a5___2,
+                                     -awb5_2_tkn_mny_a5___3,
+                                     -awb5_2_tkn_mny_a5___4,
+                                     -awb5_2_tkn_mny_a5___5,
+                                     -awb5_2_tkn_mny_a5___6,
+                                     -awb5_2_tkn_mny_a5___7)
+offline_dict <- offline_dict |> filter(!variable %in% c("awb5_2_tkn_mny_a5",
+                                                        "awb5_2_tkn_mny_a5___1",
+                                                        "awb5_2_tkn_mny_a5___2",
+                                                        "awb5_2_tkn_mny_a5___3",
+                                                        "awb5_2_tkn_mny_a5___4",
+                                                        "awb5_2_tkn_mny_a5___5",
+                                                        "awb5_2_tkn_mny_a5___6",
+                                                        "awb5_2_tkn_mny_a5___7"))
+online_dict <- online_dict |> filter(!variable %in% c("awb5_2_tkn_mny_a5",
+                                                      "awb5_2_tkn_mny_a5___1",
+                                                      "awb5_2_tkn_mny_a5___2",
+                                                      "awb5_2_tkn_mny_a5___3",
+                                                      "awb5_2_tkn_mny_a5___4",
+                                                      "awb5_2_tkn_mny_a5___5",
+                                                      "awb5_2_tkn_mny_a5___6",
+                                                      "awb5_2_tkn_mny_a5___7"))
+
+                                     
+
+
 # add checkbox options to value labels
 
 checkboxes <- offline_dict |> bind_rows(online_dict) |>
