@@ -129,6 +129,84 @@ mod_allcols <- mod_allcols |> left_join(timestamps)
 warnings()
 
 
+
+# fix version control issues
+# online/offline naming discrepancies later fixed by create an r8 var
+mod_allcols <- mod_allcols |> mutate(awb7_1_safe1_r8 = coalesce(awb7_1_safe_r8, awb7_1_safe1, awb7_1_safe),
+                                     awb7_1_future_r8 = coalesce(awb7_1_future_r8, awb7_1_future, awb7_1_furture),
+                                     awb7_2_acad_strss_r8 = coalesce(awb7_2_acad_strss_r8, awb7_2_acad_strss_a5),
+                                     awb6_5_dgt_home_r8___1 = coalesce(awb6_5_dgt_home_r8___1, awb6_2_dgt_home_r8___1, awb6_2_dgt_home___1, awb6_5_dgt_home___1),
+                                     awb6_5_dgt_home_r8___2 = coalesce(awb6_5_dgt_home_r8___2, awb6_2_dgt_home_r8___2, awb6_2_dgt_home___2, awb6_5_dgt_home___2),
+                                     awb6_5_dgt_home_r8___3 = coalesce(awb6_5_dgt_home_r8___3, awb6_2_dgt_home_r8___3, awb6_2_dgt_home___3, awb6_5_dgt_home___3),
+                                     awb6_5_dgt_home_r8___4 = coalesce(awb6_5_dgt_home_r8___4, awb6_2_dgt_home_r8___4, awb6_2_dgt_home___4, awb6_5_dgt_home___4),
+                                     awb6_5_dgt_home_r8___5 = coalesce(awb6_5_dgt_home_r8___5, awb6_2_dgt_home_r8___5, awb6_2_dgt_home___5, awb6_5_dgt_home___5),
+                                     awb6_5_dgt_home_r8___6 = coalesce(awb6_5_dgt_home_r8___6, awb6_2_dgt_home_r8___6, awb6_2_dgt_home___6, awb6_5_dgt_home___6))
+mod_allcols <- mod_allcols |> select(-awb7_1_safe1,
+                                     -awb7_1_safe,
+                                     -awb7_1_future,
+                                     -awb7_1_furture,
+                                     -awb7_2_acad_strss_a5,
+                                     -starts_with("awb6_2_dgt_home"),
+                                     -starts_with("awb6_5_dgt_home___"),
+                                     -awb6_5_dgt_home)
+offline_dict <- offline_dict |> filter(!variable %in% c("awb7_1_safe1",
+                                                        "awb7_1_safe",
+                                                        "awb7_1_future",
+                                                        "awb7_1_furture",
+                                                        "awb7_2_acad_strss_a5",
+                                                        "awb6_2_dgt_home",
+                                                        "awb6_2_dgt_home___1",
+                                                        "awb6_2_dgt_home___2",
+                                                        "awb6_2_dgt_home___3",
+                                                        "awb6_2_dgt_home___4",
+                                                        "awb6_2_dgt_home___5",
+                                                        "awb6_2_dgt_home___6",
+                                                        "awb6_5_dgt_home",
+                                                        "awb6_5_dgt_home___1",
+                                                        "awb6_5_dgt_home___2",
+                                                        "awb6_5_dgt_home___3",
+                                                        "awb6_5_dgt_home___4",
+                                                        "awb6_5_dgt_home___5",
+                                                        "awb6_5_dgt_home___6",
+                                                        "awb6_2_dgt_home_r8",
+                                                        "awb6_2_dgt_home_r8___6",
+                                                        "awb6_2_dgt_home_r8___2",
+                                                        "awb6_2_dgt_home_r8___3",
+                                                        "awb6_2_dgt_home_r8___4",
+                                                        "awb6_2_dgt_home_r8___5",
+                                                        "awb6_2_dgt_home_r8___6"))
+online_dict <- online_dict |> filter(!variable %in% c("awb7_1_safe1",
+                                                      "awb7_1_safe",
+                                                      "awb7_1_future",
+                                                      "awb7_1_furture",
+                                                      "awb7_2_acad_strss_a5",
+                                                      "awb6_2_dgt_home",
+                                                      "awb6_2_dgt_home___1",
+                                                      "awb6_2_dgt_home___2",
+                                                      "awb6_2_dgt_home___3",
+                                                      "awb6_2_dgt_home___4",
+                                                      "awb6_2_dgt_home___5",
+                                                      "awb6_2_dgt_home___6",
+                                                      "awb6_5_dgt_home",
+                                                      "awb6_5_dgt_home___1",
+                                                      "awb6_5_dgt_home___2",
+                                                      "awb6_5_dgt_home___3",
+                                                      "awb6_5_dgt_home___4",
+                                                      "awb6_5_dgt_home___5",
+                                                      "awb6_5_dgt_home___6",
+                                                      "awb6_2_dgt_home_r8",
+                                                      "awb6_2_dgt_home_r8___6",
+                                                      "awb6_2_dgt_home_r8___2",
+                                                      "awb6_2_dgt_home_r8___3",
+                                                      "awb6_2_dgt_home_r8___4",
+                                                      "awb6_2_dgt_home_r8___5",
+                                                      "awb6_2_dgt_home_r8___6"))
+
+                 
+      
+                                 
+
+
 # add checkbox options to value labels
 
 checkboxes <- offline_dict |> bind_rows(online_dict) |>
