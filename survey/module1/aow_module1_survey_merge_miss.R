@@ -153,37 +153,6 @@ add_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat
 add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), offline_dict$variable, value = TRUE))
 
 
-# add online/offline missing vars
-off_only <- offline_dict |> 
-  filter(!type == "descriptive" & offline_only != "in both") |> 
-  select(variable, type)
-on_only <- online_dict |> 
-  filter(!type == "descriptive" & online_only != "in both") |> 
-  select(variable, type)
-
-# don't process admin cols
-off_only <- off_only |> filter(!variable %in% aow_survey_admin_cols())
-
-off_only_txt <- off_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
-on_only_txt <- on_only |> filter(type %in% aow_redcap_txt_type()) |> pull(variable)
-off_only_cat <- off_only |> filter(type %in% aow_redcap_cat_type()) |> pull(variable)
-on_only_cat <- on_only |> filter(type %in% aow_redcap_cat_type()) |> pull(variable)
-
-# loop through variables - categorical
-for(var in off_only_cat) {
-  mod_allcols <- mod_allcols |> aow_miss_cat_offline(var)
-}
-for(var in on_only_cat) {
-  mod_allcols <- mod_allcols |> aow_miss_cat_online(var)
-}
-# loop through variables - text
-for(var in off_only_txt) {
-  mod_allcols <- mod_allcols |> aow_miss_txt_offline(var)
-}
-for(var in on_only_txt) {
-  mod_allcols <- mod_allcols |> aow_miss_txt_online(var)
-}
-
 
 # add year group missing vars
 
