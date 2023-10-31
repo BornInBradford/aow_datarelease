@@ -46,11 +46,6 @@ format date_measurement %td
 drop date_time_collection strdate
 
 
-* Change year-group from string to numeric
-gen tmpyear_group=real(year_group)
-drop year_group
-rename tmpyear_group year_group
-
 * Drop if no height and weight measurements
 drop if hw_height==. & hw_weight==.
 
@@ -108,6 +103,7 @@ lab var date_measurement "Date of measurement"
 lab var age_m "Age (months) at measurement"
 lab var age_y "Age (years) at measurement"
 lab var bmi "BMI (kg/m2)"
+lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Order variables
 order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
@@ -160,12 +156,6 @@ gen age_y = (date_measurement - birth_date) / 365.25
 replace age_y = floor(age_y)
 drop birth_date
 
-
-* Change year-group from string to numeric
-gen tmpyear_group=real(year_group)
-drop year_group
-rename tmpyear_group year_group
-
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.
 
@@ -177,6 +167,7 @@ rename gender sex
 lab var date_measurement "Date of measurement"
 lab var age_m "Age (months) at measurement"
 lab var age_y "Age (years) at measurement"
+lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Summary stats
 sum bp*, det	/* all look plausible */
@@ -215,11 +206,6 @@ gen age_y = (date_measurement - birth_date) / 365.25
 replace age_y = floor(age_y)
 drop birth_date
 
-* Change year-group from string to numeric
-gen tmpyear_group=real(year_group)
-drop year_group
-rename tmpyear_group year_group
-
 * Drop if no skin fold measurements
 drop if sk_tricep==. & sk_subscap==.
 
@@ -231,6 +217,7 @@ rename gender sex
 lab var date_measurement "Date of measurement"
 lab var age_m "Age (months) at measurement"
 lab var age_y "Age (years) at measurement"
+lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Summary stats
 sum sk*, det	/* all look plausible */

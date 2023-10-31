@@ -38,11 +38,6 @@ order date_measurement, after(aow_recruitment_id)
 drop if date_measurement==.
 drop DATETIME
 
-* Change year-group from string to numeric
-gen tmpyear_group=real(year_group)
-drop year_group
-rename tmpyear_group year_group
-
 * Label / rename variables
 rename MODEL model
 lab var model "Bioimpedance scale model"
@@ -60,15 +55,14 @@ lab var fatp "Total fat %"
 rename FATM fatm
 lab var fatm "Fat mass (kg)"
 rename FFM ffm
-lab var ffm "Fat free mass"
+lab var ffm "Fat free mass (kg)"
 rename PMM pmm
-lab var pmm "Predicted muscle mass"
+lab var pmm "Predicted muscle mass (kg)"
 rename TBW tbw
 lab var tbw "Total body water (kg)"
 rename IMP imp
-lab var imp "Impedence"
-lab var aow_recruitment_id "AoW recruitment ID"
-lab var year_group "Academic year"
+lab var imp "Impedance"
+lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Generate age variables
 gen age_m = (date_measurement - birth_date) / 30.4375
