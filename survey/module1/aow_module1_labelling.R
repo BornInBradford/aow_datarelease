@@ -6,8 +6,7 @@ module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/su
 
 # Re-order variables
 module <- module %>%
-  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1) %>%
-  relocate(awb1_2_ethnicity_arb_r4, .after = ethnicity_2)
+  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1)
 
 # drop some variables we don't want to keep
 module <- module |> select(-aw1_2_name_a4,
