@@ -21,10 +21,8 @@ module <- module %>%
                    awb2_12_eat_hbt_10_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
                   awb5_1_oral_hlth_2 = c("None" = 1, "Once" = 2, "Twice" = 3, "Three times or more" = 4),
                    awb5_1_oral_hlth_3 = c("No" = 1, "Not sure" = 2, "Yes" = 3),
-                   awb4_4y_gendersex_f_2 = c("No" = 0, "Yes" = 1),
                    awb5_2_smokevape_prnt = c("Yes" = 1, "No" = 2),
                    aw5_2_vape_prnt = c("Yes" = 1, "No" = 2),
-                   awb5_2y_alcohol_qntty = c("No" = 0, "Yes" = 1),
                    awb5_2_gambling_1_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
                                             "Yes, more than 12 months ago" = 4, "No, never" = 5),
                   awb5_2_gambling_2_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
@@ -53,9 +51,6 @@ module <- module %>%
                                             "Yes, more than 12 months ago" = 4, "No, never" = 5),
                   awb5_2_gambling_14_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
                                             "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                   awb5_2y_knife = c("No" = 0, "Yes" = 1),
-                   awb5_2y_gang_6 = c("Yes" = 1, "No" = 2, "I used to be a member but not anymore" = 3),
-                   awb4_1_sick_a5 = c("No" = 0, "Yes" = 1),
                    awb4_3_nap_a5 = c("Never" = 1, "Rarely" = 2, "Sometimes" = 3, "Often" = 4))
 
 
