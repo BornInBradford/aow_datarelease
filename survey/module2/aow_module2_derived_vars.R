@@ -210,7 +210,7 @@ module <-
                                         awb2_9_seek_hlp_ppl_6,
                                         awb2_9_seek_hlp_ppl_7,
                                         awb2_9_seek_hlp_ppl_8), na.rm = TRUE),
-         emo_sch = awb2_9_seek_hlp_ppl_9,
+         emo_sch = awb2_9_seek_hlp_ppl_9_a_4,
          #totals
          emo_total = sum(c(emo_inf, emo_form, emo_sch), na.rm = TRUE),
          emo_nas = sum(is.na(c(TMPVAR_awb2_9_seek_hlp_ppl_1_r4,
