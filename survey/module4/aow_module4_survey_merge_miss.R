@@ -21,6 +21,10 @@ online_dict <- read_csv("survey/redcap/AoWModule4OnlineSurvey_DataDictionary_202
 offline_dict <- read_csv("survey/redcap/AoWModule4OfflineForm_DataDictionary_2023-06-15.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
+# fix a coding error in the offlien data dict
+offline_dict <- offline_dict |> mutate(note = case_when(variable %in% c("awb8_2_problem_2", "awb8_2_problem_3", "awb8_2_problem_4") ~ "hidden from v5",
+                                                        TRUE ~ note))
+
 # drop validation columns that have unpredictable value types
 online_dict <- online_dict |> select(-validation_max, -validation_min)
 offline_dict <- offline_dict |> select(-validation_max, -validation_min)
