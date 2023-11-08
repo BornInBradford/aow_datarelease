@@ -4,18 +4,11 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_derived.rds")
 
-# Re-order variables
-module <- module %>%
-  relocate(awb3_1y_save_mny_a5, .before = awb3_1y_save_mny_a5___1)
 
 # drop some variables we don't want to keep
 module <- module |> select(-aw1_2_name_a4,
                            -aw1_2_dob_r4)
                            
-# add value labels
-module <- module %>%
-  set_value_labels(awb1_2_language_hme___9 = c("Unchecked" = 0,
-                                               "Checked: Other (please specify)" = 1))
 
 module <- module %>%
   set_variable_labels(aow_recruitment_id = "Age of Wonder recruitment ID",

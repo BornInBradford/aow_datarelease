@@ -4,17 +4,6 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module4_derived.rds")
 
-module <- module %>%
-  set_value_labels(awb7_1_bullying_2 = c("It doesn't happen" = 1, "It happens and teachers are really good at resolving it" = 2,
-                                         "It happens and teachers are good at resolving it" = 3, "It happens and teachers are not good at resolving it" = 4,
-                                         "It happens and teachers do nothing about it" = 5),
-                   awb7_2_water_1 = c("Yes" = 1, "No" = 2, "Not easily" = 3),
-                   awb6_8_attd_tech_10 = c("Strongly disagree" = 1,
-                                           "Disagree" = 2,
-                                           "Neither agree or disagree" = 3,
-                                           "Agree" = 4,
-                                           "Strongly agree" = 5))
-
 
 
 module <- module %>%

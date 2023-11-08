@@ -5,55 +5,6 @@ source("tools/aow_survey_functions.R")
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module3_derived.rds")
 
 
-
-# set value labels
-module <- module %>%
-  set_value_labels(awb5_1_hearing_sght_4 = c("No" = 1, "Not sure" = 2, "Yes" = 3),
-                   awb2_12_eat_hbt_1_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_2_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_3_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_4_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_5_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_6_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_7_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_8_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_9_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                   awb2_12_eat_hbt_10_a5 = c("0 days" = 1, "1-2 days" = 2, "3-5 days" = 3, "6-7 days" = 4),
-                  awb5_1_oral_hlth_2 = c("None" = 1, "Once" = 2, "Twice" = 3, "Three times or more" = 4),
-                   awb5_1_oral_hlth_3 = c("No" = 1, "Not sure" = 2, "Yes" = 3),
-                   awb5_2_smokevape_prnt = c("Yes" = 1, "No" = 2),
-                   aw5_2_vape_prnt = c("Yes" = 1, "No" = 2),
-                   awb5_2_gambling_1_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_2_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_3_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_4_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_5_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_6_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_7_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_8_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_9_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                           "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_10_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_11_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_12_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_13_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                  awb5_2_gambling_14_a5 = c("Yes, in the last 7 days" = 1, "Yes, in the last 4 weeks" = 2, "Yes, in the last 12 months" = 3,
-                                            "Yes, more than 12 months ago" = 4, "No, never" = 5),
-                   awb4_3_nap_a5 = c("Never" = 1, "Rarely" = 2, "Sometimes" = 3, "Often" = 4))
-
-
 module <- module %>%
   set_variable_labels(aow_recruitment_id = "Age of Wonder recruitment ID",
                       age_survey_y = "Age (years) at survey date",
