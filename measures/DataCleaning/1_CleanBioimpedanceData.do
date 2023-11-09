@@ -61,7 +61,7 @@ lab var pmm "Predicted muscle mass (kg)"
 rename TBW tbw
 lab var tbw "Total body water (kg)"
 rename IMP imp
-lab var imp "Impedance"
+lab var imp "Impedance (ohms)"
 lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Generate age variables
