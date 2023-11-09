@@ -87,7 +87,7 @@ denom <- denom_all |>
             school_id = map_chr(EstablishmentNumber_con, aow_pseudo),
             year_group = YearGroup_rec,
             form_tutor = FormTutor_rec,
-            form_tutor_id = map_chr(FormTutor_rec, aow_pseudo),
+            form_tutor_id = map_chr(paste0(EstablishmentNumber_con, FormTutor_rec), aow_pseudo),
             gender = Gender,
             ethnicity_1 = ethnicity_ons2,
             ethnicity_2 = ethnicity_ons,
