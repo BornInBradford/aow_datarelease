@@ -8,17 +8,26 @@ library(labelled)
 library(purrr)
 
 # whether to export files
-options(aow_export_denom = TRUE)
+options(aow_export_denom = FALSE)
 
 source("tools/aow_tools.R")
 
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
+resources_path <- "./resources" 
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
 
 
 consent <- read_dta(file.path(input_path, "AOW_Consent.dta"))
 schoolrec <- read_dta(file.path(input_path, "AOW_School_RecruitmentList.dta"))
 cohort <- read_dta(file.path(input_path, "BiB_Cohort.dta"))
+
+# read postcode to lsoa lookup and select only required variables (postcode and LSOA code)
+postcode_lsoa_lookup <- read_csv(file.path(resources_path, "postcode_lsoa_lookup.zip")) %>%
+  select(postcode = pcds,
+         LSOA11CD = lsoa11cd) 
+
+# read IMD 2019 variables 
+imd2019 <- read.csv(file.path(resources_path, "imd2019_for_aow.csv"))
 
 # check duplicates
 consent$AoWRecruitmentID[duplicated(consent$AoWRecruitmentID) |> which()]
@@ -75,7 +84,7 @@ denom <- denom_all |>
             birth_date = as.Date(DateOfBirth),
             birth_year = year(birth_date),
             birth_month = month(birth_date),
-            postcode = Postcode,
+            postcode = trimws(Postcode), #remove white space before and after postcode string 
             recruitment_era = Era,
             recruitment_date = as.Date(CreatedDateTime_rec),
             recruitment_year = year(recruitment_date),
@@ -106,7 +115,10 @@ denom <- denom_all |>
             consent_bp = ConBP,
             consent_bloods = ConBlood,
             consent_bldst1 = ConBloodStor1,
-            consent_bldst2 = ConBloodStor2)
+            consent_bldst2 = ConBloodStor2) %>%
+  left_join(postcode_lsoa_lookup, by = "postcode") %>% # join postcode to lsoa lookup. to enable joining of IMD data
+  left_join(imd2019, by = "LSOA11CD") # join IMD 2019 data via LSOA code
+
 
 # remove any records missing upn or date of birth
 denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
@@ -224,6 +236,8 @@ denom <- denom |>
                       birth_year = "Year of birth",
                       birth_month = "Month of birth",
                       postcode = "Home postcode",
+                      IMD_2019_score = "IMD 2019 score",
+                      IMD_2019_decile = "IMD 2019 decile, national scale",
                       recruitment_era = "Recruitment era (academic year)",
                       recruitment_date = "Recruitment date (import of class list)",
                       recruitment_year = "Recruitment year",
@@ -309,3 +323,4 @@ if(getOption("aow_export_denom")) {
   write_csv(lkup, file.path(output_path, "id_lookup.csv"), na = "")
 
 }
+
