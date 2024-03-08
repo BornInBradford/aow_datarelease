@@ -8,7 +8,7 @@ library(labelled)
 library(purrr)
 
 # whether to export files
-options(aow_export_denom = FALSE)
+options(aow_export_denom = TRUE)
 
 source("tools/aow_tools.R")
 
