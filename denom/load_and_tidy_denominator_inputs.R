@@ -236,6 +236,7 @@ denom <- denom |>
                       birth_year = "Year of birth",
                       birth_month = "Month of birth",
                       postcode = "Home postcode",
+                      LSOA11CD = "LSOA code, 2011 boundaries",
                       IMD_2019_score = "IMD 2019 score",
                       IMD_2019_decile = "IMD 2019 decile, national scale",
                       recruitment_era = "Recruitment era (academic year)",
