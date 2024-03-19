@@ -50,7 +50,7 @@ If you just want to reproduce the whole pipeline in one go, run `survey/run_all.
 
 Now that the data outputs are generated, we can return to complete the denominator.
 
-Run `denom/denom_add_data_availability_indicators.R` to add variable to the denominator files indicatingf which participants have data from each instrument.
+Run `denom/denom_add_data_availability_indicators.R` to add variable to the denominator files indicating which participants have data from each instrument.
 
 Finally, run `denom/denom_data_frame_reports.R` to create html reports describing the denominator data output files.
 
