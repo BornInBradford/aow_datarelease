@@ -20,6 +20,8 @@ options(aow_salt = "xyz")
 
 You can replace "xyz" with any random string.
 
+Unzip the postcode_lsoa_lookup.zip file into the `resources` folder, as the scripts need access to the `PCD_OA_LSOA_MSOA_LAD_NOV22_UK_LU.csv` file.
+
 ### `reports`
 
 This is where html reports will go when they are produced by the data release scripts described below.

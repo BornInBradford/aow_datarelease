@@ -76,7 +76,7 @@ module <- module %>%
                       awb8_1_morality_3 = "Is it wrong for someone your age to steal something from a shop?",
                       awb8_1_morality_4 = "Is it wrong for someone your age to download content without paying?",
                       awb8_3_bully = "How often have you taken part in bullying somebody at school?",
-                      awb8_2_bullied_onlne = "How often have you taken part in bullying online?",
+                      awb8_2_bullied_onlne = "How often have you been bullied online?",
                       awb8_2_club_1 = "Have you ever been discouraged from joining a club/group?",
                       awb8_2_club_rsn_1___1 = "Were you discourage from joining a club/group because your ethnicity?",
                       awb8_2_club_rsn_1___2 = "Were you discourage from joining a club/group because your sex/gender?",

@@ -56,7 +56,7 @@ module <- module %>%
   mutate(TMPVAR_awb2_9_seek_hlp_ppl_1_r4 = ifelse(awb2_9_seek_hlp_ppl_1_r4 == 8, 0, awb2_9_seek_hlp_ppl_1_r4))
 
 
-rcads_lookup <- read_csv("U:\\Born In Bradford - Confidential\\Age Of Wonder\\Questionnaire Response Rates and Distributions\\Markdown Modules\\Module 2\\Scripts\\Lookup\\RCADS25_C_lookup_table.csv")
+rcads_lookup <- read_csv("resources/RCADS25_C_lookup_table.csv")
 
 rcads_lookup <- rcads_lookup %>%
   rename(year_group = YearGroup) %>%
@@ -65,7 +65,7 @@ rcads_lookup <- rcads_lookup %>%
 
 rcads_lookup$year_group <- as.character(rcads_lookup$year_group)
 
-swemwbs_lookup <- read_csv("U:\\Born In Bradford - Confidential\\Age Of Wonder\\Questionnaire Response Rates and Distributions\\Markdown Modules\\Module 2\\Scripts\\Lookup\\SWEMWBS_lookup_table.csv")
+swemwbs_lookup <- read_csv("resources/SWEMWBS_lookup_table.csv")
 
 
 #----------------Compute DVs
