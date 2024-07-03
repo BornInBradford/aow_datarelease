@@ -174,12 +174,12 @@ aow_survey_column_order <- function() {
 # process redcap data dictionaries
 aow_add_dict_cols <- function(df) {
   
-  df <- df |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                           grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
-                                       year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+"))
+  df <- df |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ str_split_i(variable, "_", -1) |> str_replace("\\D*", ""),
+                                       grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                     revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ str_split_i(variable, "_", -1) |> str_replace("\\D*", ""),
+                                         grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                     hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
+                     year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+"))
   )
   
   return(df)
