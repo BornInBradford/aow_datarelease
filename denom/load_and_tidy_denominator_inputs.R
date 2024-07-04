@@ -11,6 +11,7 @@ library(purrr)
 options(aow_export_denom = TRUE)
 
 source("tools/aow_tools.R")
+source("tools/aow_survey_functions.R")
 
 input_path <- "U:/Born in Bradford - AOW Raw Data/sql/denominator/data/"
 resources_path <- "./resources" 
@@ -127,6 +128,17 @@ denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
 # recoding and value labelling
 denom <- denom |> 
   
+  # year group
+  mutate(year_group = year_group |> trimws() |> as.integer()) |>
+  set_value_labels(year_group = c("Year 7" = 7,
+                                  "Year 8" = 8,
+                                  "Year 9" = 9,
+                                  "Year 10" = 10,
+                                  "Year 11" = 11,
+                                  "Year 12" = 12,
+                                  "Year 13" = 13,
+                                  "various - see module specific data" = -1)) |>
+  
   # gender
   mutate(gender = gender |> tolower() |> trimws(),
          gender = case_when(gender %in% c("m", "male") ~ 2L,
@@ -227,36 +239,8 @@ denom <- denom |>
 
 # labelling variables
 denom <- denom |> 
-  set_variable_labels(aow_person_id = "Age of Wonder person ID",
-                      BiBPersonID = "BiB cohort person ID",
-                      is_bib = "Participant is in original BiB cohort",
-                      upn = "Unique Pupil Number",
-                      aow_recruitment_id = "Age of Wonder year group recruitment ID",
-                      birth_date = "Date of birth",
-                      birth_year = "Year of birth",
-                      birth_month = "Month of birth",
-                      postcode = "Home postcode",
-                      LSOA11CD = "Home LSOA code, 2011 boundaries",
-                      IMD_2019_score = "Home IMD 2019 score",
-                      IMD_2019_decile = "Home IMD 2019 decile, national scale",
-                      recruitment_era = "Recruitment era (academic year)",
-                      recruitment_date = "Recruitment date (import of class list)",
-                      recruitment_year = "Recruitment year",
-                      recruitment_month = "Recruitment month",
-                      age_recruitment_y = "Age at recruitment in years",
-                      age_recruitment_m = "Age at recruitment in months",
-                      school_establishment_no = "School local authority establishment number",
-                      school = "School name",
-                      school_id = "Pseudo school ID",
-                      year_group = "Year group at recruitment",
-                      form_tutor = "Form tutor at recruitment",
-                      form_tutor_id = "Pseudo recruitment form tutor ID",
-                      gender = "Gender reported by school",
-                      ethnicity_1 = "Ethnicity reported by school - higher level category",
-                      ethnicity_2 = "Ethnicity reported by school - lower level category",
-                      fsm = "Free school meals",
-                      sen = "Special educational needs provision",
-                      consent_form = "Consent form type I",
+  set_variable_labels(.labels = aow_denom_col_labels()) |>
+  set_variable_labels(consent_form = "Consent form type I",
                       consent_form_type = "Consent form type II",
                       consent_scenario = "Consent scenario",
                       consent_parental = "Consent: parental consent given",
