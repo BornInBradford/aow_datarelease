@@ -629,7 +629,7 @@ aow_version_by_date <- function(timestamp, launch_dates) {
 }
 
 
-aow_output_varlabels <- function(df, output = c("cat", "clip", "c")) {
+aow_output_varlabels <- function(df, output = c("clip", "cat", "c")) {
   
   labs <- sapply(var_label(df), function(x) ifelse(is.null(x), "", x))
   
