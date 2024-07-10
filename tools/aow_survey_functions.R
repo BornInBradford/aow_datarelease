@@ -629,7 +629,17 @@ aow_version_by_date <- function(timestamp, launch_dates) {
 }
 
 
+aow_output_varlabels <- function(df, output = c("cat", "clip", "c")) {
+  
+  labs <- sapply(var_label(df), function(x) ifelse(is.null(x), "", x))
+  
+  labs <- paste0(names(labs), " = ", "\"", labs, "\",")
 
+  if(output[1] == "cat") return(cat(paste0(labs, collapse = "\n")))
+  if(output[1] == "c") return(labs)
+  if(output[1] == "clip") writeClipboard(labs)
+  
+}
 
 
 
