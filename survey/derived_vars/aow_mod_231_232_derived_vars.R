@@ -48,17 +48,13 @@ remove_na <- function(x) ifelse(is.na(x), 0, x)
 
 module_all <-
   module_all %>%
- # rowwise() %>%
   #Own Financial Resources - Bespoke
   #sum scores
-#  mutate(own_fin_total = sum(c_across(awb3_4_personal_assts_1:awb3_4_personal_assts_5), na.rm = TRUE),
-#         own_fin_nas = sum(is.na(c_across(awb3_4_personal_assts_1:awb3_4_personal_assts_5))),
-#         own_fin_missing = ifelse(own_fin_nas == 5, 1, 0)) %>%
-  mutate(own_fin_total = ifelse(is.na(awb3_4_personal_assts_1), 0, awb3_4_personal_assts_1) + 
-           ifelse(is.na(awb3_4_personal_assts_2), 0, awb3_4_personal_assts_2) + 
-           ifelse(is.na(awb3_4_personal_assts_3), 0, awb3_4_personal_assts_3) + 
-           ifelse(is.na(awb3_4_personal_assts_4), 0, awb3_4_personal_assts_4) +
-           ifelse(is.na(awb3_4_personal_assts_5), 0, awb3_4_personal_assts_5),
+  mutate(own_fin_total = remove_na(awb3_4_personal_assts_1) + 
+           remove_na(awb3_4_personal_assts_2) + 
+           remove_na(awb3_4_personal_assts_3) + 
+           remove_na(awb3_4_personal_assts_4) +
+           remove_na(awb3_4_personal_assts_5),
          own_fin_nas = is.na(awb3_4_personal_assts_1) +
                              is.na(awb3_4_personal_assts_2) +
                              is.na(awb3_4_personal_assts_3) +
@@ -69,9 +65,6 @@ module_all <-
   #recode inconsistent responses
   #Food Availability - Bespoke
   #sum scores
-#  mutate(food_avail_total = sum(c_across(aw3_5_food_1:aw3_5_food_5), na.rm = TRUE),
-#         food_avail_nas = sum(is.na(c_across(aw3_5_food_1:aw3_5_food_5))),
-#         food_avail_missing = ifelse(food_avail_nas == 5, 1, 0))
   mutate(food_avail_total = remove_na(aw3_5_food_1) + 
            remove_na(aw3_5_food_2) + 
            remove_na(aw3_5_food_3) + 
@@ -140,85 +133,86 @@ module_all <- module_all %>%
 #sum scores 
 module_all <-
   module_all %>%
-  rowwise() %>%
-  mutate(rcad_ga = sum(c(TMPVAR_awb2_1_illhealth_2,                      
-                         TMPVAR_awb2_1_illhealth_3,                     
-                         TMPVAR_awb2_1_illhealth_5,
-                         TMPVAR_awb2_1_illhealth_6,                      
-                         TMPVAR_awb2_1_illhealth_7,
-                         TMPVAR_awb2_1_illhealth_9,
-                         TMPVAR_awb2_1_illhealth_11,                     
-                         TMPVAR_awb2_1_illhealth_12,
-                         TMPVAR_awb2_1_illhealth_14,
-                         TMPVAR_awb2_1_illhealth_17,                      
-                         TMPVAR_awb2_1_illhealth_18,
-                         TMPVAR_awb2_1_illhealth_20,
-                         TMPVAR_awb2_1_illhealth_22,                      
-                         TMPVAR_awb2_1_illhealth_23,
-                         TMPVAR_awb2_1_illhealth_25), na.rm = TRUE),
-         rcad_md = sum(c(TMPVAR_awb2_1_illhealth_1,
-                         TMPVAR_awb2_1_illhealth_4,
-                         TMPVAR_awb2_1_illhealth_8,
-                         TMPVAR_awb2_1_illhealth_10,
-                         TMPVAR_awb2_1_illhealth_13,
-                         TMPVAR_awb2_1_illhealth_15,
-                         TMPVAR_awb2_1_illhealth_16,
-                         TMPVAR_awb2_1_illhealth_19,
-                         TMPVAR_awb2_1_illhealth_21,
-                         TMPVAR_awb2_1_illhealth_24), na.rm = TRUE),
-         rcad_total = sum(c(rcad_ga,
-                            rcad_md)),
-         rcad_nas = sum(is.na(c(TMPVAR_awb2_1_illhealth_1,
-                                TMPVAR_awb2_1_illhealth_2,
-                                TMPVAR_awb2_1_illhealth_3,
-                                TMPVAR_awb2_1_illhealth_4,
-                                TMPVAR_awb2_1_illhealth_5,
-                                TMPVAR_awb2_1_illhealth_6,
-                                TMPVAR_awb2_1_illhealth_7,
-                                TMPVAR_awb2_1_illhealth_8,
-                                TMPVAR_awb2_1_illhealth_9,
-                                TMPVAR_awb2_1_illhealth_10,
-                                TMPVAR_awb2_1_illhealth_11,
-                                TMPVAR_awb2_1_illhealth_12,
-                                TMPVAR_awb2_1_illhealth_13,
-                                TMPVAR_awb2_1_illhealth_14,
-                                TMPVAR_awb2_1_illhealth_15,
-                                TMPVAR_awb2_1_illhealth_16,
-                                TMPVAR_awb2_1_illhealth_17,
-                                TMPVAR_awb2_1_illhealth_18,
-                                TMPVAR_awb2_1_illhealth_19,
-                                TMPVAR_awb2_1_illhealth_20,
-                                TMPVAR_awb2_1_illhealth_21,
-                                TMPVAR_awb2_1_illhealth_22,
-                                TMPVAR_awb2_1_illhealth_23,
-                                TMPVAR_awb2_1_illhealth_24,
-                                TMPVAR_awb2_1_illhealth_25))),
-         rcad_ga_miss = sum(is.na(c(TMPVAR_awb2_1_illhealth_2,                      
-                                    TMPVAR_awb2_1_illhealth_3,                     
-                                    TMPVAR_awb2_1_illhealth_5,
-                                    TMPVAR_awb2_1_illhealth_6,                      
-                                    TMPVAR_awb2_1_illhealth_7,
-                                    TMPVAR_awb2_1_illhealth_9,
-                                    TMPVAR_awb2_1_illhealth_11,                     
-                                    TMPVAR_awb2_1_illhealth_12,
-                                    TMPVAR_awb2_1_illhealth_14,
-                                    TMPVAR_awb2_1_illhealth_17,                      
-                                    TMPVAR_awb2_1_illhealth_18,
-                                    TMPVAR_awb2_1_illhealth_20,
-                                    TMPVAR_awb2_1_illhealth_22,                      
-                                    TMPVAR_awb2_1_illhealth_23,
-                                    TMPVAR_awb2_1_illhealth_25))),
-         rcad_md_miss = sum(is.na(c(TMPVAR_awb2_1_illhealth_1,
-                                    TMPVAR_awb2_1_illhealth_4,
-                                    TMPVAR_awb2_1_illhealth_8,
-                                    TMPVAR_awb2_1_illhealth_10,
-                                    TMPVAR_awb2_1_illhealth_13,
-                                    TMPVAR_awb2_1_illhealth_15,
-                                    TMPVAR_awb2_1_illhealth_16,
-                                    TMPVAR_awb2_1_illhealth_19,
-                                    TMPVAR_awb2_1_illhealth_21,
-                                    TMPVAR_awb2_1_illhealth_24))),
-         rcad_missing = ifelse(rcad_nas == 25, 1, 0)) %>%
+  mutate(rcad_ga = remove_na(TMPVAR_awb2_1_illhealth_2) +                      
+           remove_na(TMPVAR_awb2_1_illhealth_3) +                  
+           remove_na(TMPVAR_awb2_1_illhealth_5) +
+           remove_na(TMPVAR_awb2_1_illhealth_6) +                      
+           remove_na(TMPVAR_awb2_1_illhealth_7) +
+           remove_na(TMPVAR_awb2_1_illhealth_9) +
+           remove_na(TMPVAR_awb2_1_illhealth_11) +                     
+           remove_na(TMPVAR_awb2_1_illhealth_12) +
+           remove_na(TMPVAR_awb2_1_illhealth_14) +
+           remove_na(TMPVAR_awb2_1_illhealth_17) +                      
+           remove_na(TMPVAR_awb2_1_illhealth_18) +
+           remove_na(TMPVAR_awb2_1_illhealth_20) +
+           remove_na(TMPVAR_awb2_1_illhealth_22) +                      
+           remove_na(TMPVAR_awb2_1_illhealth_23) +
+           remove_na(TMPVAR_awb2_1_illhealth_25),
+         rcad_md = remove_na(TMPVAR_awb2_1_illhealth_1) +
+           remove_na(TMPVAR_awb2_1_illhealth_4) +
+           remove_na(TMPVAR_awb2_1_illhealth_8) +
+           remove_na(TMPVAR_awb2_1_illhealth_10) +
+           remove_na(TMPVAR_awb2_1_illhealth_13) +
+           remove_na(TMPVAR_awb2_1_illhealth_15) +
+           remove_na(TMPVAR_awb2_1_illhealth_16) +
+           remove_na(TMPVAR_awb2_1_illhealth_19) +
+           remove_na(TMPVAR_awb2_1_illhealth_21) +
+           remove_na(TMPVAR_awb2_1_illhealth_24),
+         rcad_total = rcad_ga +  rcad_md,
+         rcad_nas = is.na(TMPVAR_awb2_1_illhealth_1) +
+           is.na(TMPVAR_awb2_1_illhealth_2) +
+           is.na(TMPVAR_awb2_1_illhealth_3) +
+           is.na(TMPVAR_awb2_1_illhealth_4) +
+           is.na(TMPVAR_awb2_1_illhealth_5) +
+           is.na(TMPVAR_awb2_1_illhealth_6) +
+           is.na(TMPVAR_awb2_1_illhealth_7) +
+           is.na(TMPVAR_awb2_1_illhealth_8) +
+           is.na(TMPVAR_awb2_1_illhealth_9) +
+           is.na(TMPVAR_awb2_1_illhealth_10) +
+           is.na(TMPVAR_awb2_1_illhealth_11) +
+           is.na(TMPVAR_awb2_1_illhealth_12) +
+           is.na(TMPVAR_awb2_1_illhealth_13) +
+           is.na(TMPVAR_awb2_1_illhealth_14) +
+           is.na(TMPVAR_awb2_1_illhealth_15) +
+           is.na(TMPVAR_awb2_1_illhealth_16) +
+           is.na(TMPVAR_awb2_1_illhealth_17) +
+           is.na(TMPVAR_awb2_1_illhealth_18) +
+           is.na(TMPVAR_awb2_1_illhealth_19) +
+           is.na(TMPVAR_awb2_1_illhealth_20) +
+           is.na(TMPVAR_awb2_1_illhealth_21) +
+           is.na(TMPVAR_awb2_1_illhealth_22) +
+           is.na(TMPVAR_awb2_1_illhealth_23) +
+           is.na(TMPVAR_awb2_1_illhealth_24) +
+           is.na(TMPVAR_awb2_1_illhealth_25),
+         rcad_ga_miss = is.na(TMPVAR_awb2_1_illhealth_2) +                     
+           is.na(TMPVAR_awb2_1_illhealth_3) +                    
+           is.na(TMPVAR_awb2_1_illhealth_5) +
+           is.na(TMPVAR_awb2_1_illhealth_6) +                    
+           is.na(TMPVAR_awb2_1_illhealth_7) +
+           is.na(TMPVAR_awb2_1_illhealth_9) +
+           is.na(TMPVAR_awb2_1_illhealth_11) +                    
+           is.na(TMPVAR_awb2_1_illhealth_12) +
+           is.na(TMPVAR_awb2_1_illhealth_14) +
+           is.na(TMPVAR_awb2_1_illhealth_17) +                    
+           is.na(TMPVAR_awb2_1_illhealth_18) +
+           is.na(TMPVAR_awb2_1_illhealth_20) +
+           is.na(TMPVAR_awb2_1_illhealth_22) +                    
+           is.na(TMPVAR_awb2_1_illhealth_23) +
+           is.na(TMPVAR_awb2_1_illhealth_25),
+         rcad_md_miss = is.na(TMPVAR_awb2_1_illhealth_1) +
+           is.na(TMPVAR_awb2_1_illhealth_4) +
+           is.na(TMPVAR_awb2_1_illhealth_8) +
+           is.na(TMPVAR_awb2_1_illhealth_10) +
+           is.na(TMPVAR_awb2_1_illhealth_13) +
+           is.na(TMPVAR_awb2_1_illhealth_15) +
+           is.na(TMPVAR_awb2_1_illhealth_16) +
+           is.na(TMPVAR_awb2_1_illhealth_19) +
+           is.na(TMPVAR_awb2_1_illhealth_21) +
+           is.na(TMPVAR_awb2_1_illhealth_24),
+         rcad_missing = ifelse(rcad_nas == 25, 1, 0),
+         rcad_ga = ifelse(rcad_ga_miss == 15, NA, rcad_ga),
+         rcad_md = ifelse(rcad_md_miss == 10, NA, rcad_md),
+         rcad_total = ifelse(rcad_missing == 1, NA, rcad_total)) %>%
   mutate(rcad_ga = ifelse(rcad_ga_miss <= 3, rcad_ga/(15-rcad_ga_miss)*15, NA),
          rcad_md = ifelse(rcad_md_miss <= 2, rcad_md/(10-rcad_md_miss)*10, NA),
          rcad_total = ifelse(rcad_nas <= 4, rcad_total/(25-rcad_nas)*25, NA)) %>%
@@ -234,77 +228,84 @@ module_all <-
                                  ifelse(rcad_total_t < 70, "Borderline", "Clinical"))) %>%
   #SWEMWBs
   #sum scores
-  mutate(wellbeing = sum(c(awb2_2_optmstc_1_a4,
-                           awb2_2_useful_2_a4,
-                           awb2_2_relxed_3_a4,
-                           awb2_2_problems_4_a4,
-                           awb2_2_think_clr_5_a4,
-                           awb2_2_close_othrs_6_a4,
-                           awb2_2_own_mnd_7_a4,
-                           awb2_3_self_effccy), na.rm = TRUE),
-         wellbeing_nas = sum(is.na(c(awb2_2_optmstc_1_a4,
-                                     awb2_2_useful_2_a4,
-                                     awb2_2_relxed_3_a4,
-                                     awb2_2_problems_4_a4,
-                                     awb2_2_think_clr_5_a4,
-                                     awb2_2_close_othrs_6_a4,
-                                     awb2_2_own_mnd_7_a4,
-                                     awb2_3_self_effccy))),
-         wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0)) %>%
+  mutate(wellbeing = remove_na(awb2_2_optmstc_1_a4) +
+           remove_na(awb2_2_useful_2_a4) +
+           remove_na(awb2_2_relxed_3_a4) +
+           remove_na(awb2_2_problems_4_a4) +
+           remove_na(awb2_2_think_clr_5_a4) +
+           remove_na(awb2_2_close_othrs_6_a4) +
+           remove_na(awb2_2_own_mnd_7_a4) +
+           remove_na(awb2_3_self_effccy),
+         wellbeing_nas = is.na(awb2_2_optmstc_1_a4) +
+           is.na(awb2_2_useful_2_a4) +
+           is.na(awb2_2_relxed_3_a4) +
+           is.na(awb2_2_problems_4_a4) +
+           is.na(awb2_2_think_clr_5_a4) +
+           is.na(awb2_2_close_othrs_6_a4) +
+           is.na(awb2_2_own_mnd_7_a4) +
+           is.na(awb2_3_self_effccy),
+         wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0),
+         wellbeing = ifelse(wellbeing_missing == 1, NA, wellbeing))%>%
   #compute scores
   left_join(swemwbs_lookup) %>%
   mutate(swemwbs_cat = ifelse(swemwbs_total <= 19.5, "Low", 
                               ifelse(swemwbs_total < 27.5, "Normal", "High"))) %>%
   #ULS-4
   #sum scores
-  mutate(loneliness = sum(c(TMPVAR_awb2_4_loneliness_1,
-                            TMPVAR_awb2_4_loneliness_2,
-                            TMPVAR_awb2_4_loneliness_3,
-                            TMPVAR_awb2_4_loneliness_4), na.rm = TRUE),
-         loneliness_nas = sum(is.na(c(TMPVAR_awb2_4_loneliness_1,
-                                      TMPVAR_awb2_4_loneliness_2,
-                                      TMPVAR_awb2_4_loneliness_3,
-                                      TMPVAR_awb2_4_loneliness_4))),
-         loneliness_missing = ifelse(loneliness_nas == 4, 1, 0)) %>%
+  mutate(loneliness = remove_na(TMPVAR_awb2_4_loneliness_1) +
+           remove_na(TMPVAR_awb2_4_loneliness_2) +
+           remove_na(TMPVAR_awb2_4_loneliness_3) +
+           remove_na(TMPVAR_awb2_4_loneliness_4),
+         loneliness_nas = is.na(TMPVAR_awb2_4_loneliness_1) +
+           is.na(TMPVAR_awb2_4_loneliness_2) +
+           is.na(TMPVAR_awb2_4_loneliness_3) +
+           is.na(TMPVAR_awb2_4_loneliness_4),
+         loneliness_missing = ifelse(loneliness_nas == 4, 1, 0),
+         loneliness = ifelse(loneliness_missing == 1, NA, loneliness)) %>%
   #GHSQ
   #emotional subscales
-  mutate(emo_inf = sum(c(TMPVAR_awb2_9_seek_hlp_ppl_1_r4,
-                         awb2_9_seek_hlp_ppl_2,
-                         awb2_9_seek_hlp_ppl_3,
-                         awb2_9_seek_hlp_ppl_4), na.rm = TRUE),
-         emo_form = sum(c(awb2_9_seek_hlp_ppl_5,
-                          awb2_9_seek_hlp_ppl_6,
-                          awb2_9_seek_hlp_ppl_7,
-                          awb2_9_seek_hlp_ppl_8), na.rm = TRUE),
-         emo_sch = awb2_9_seek_hlp_ppl_9_a_4,
+  mutate(emo_inf = remove_na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
+           remove_na(awb2_9_seek_hlp_ppl_2) +
+           remove_na(awb2_9_seek_hlp_ppl_3) +
+           remove_na(awb2_9_seek_hlp_ppl_4),
+         emo_form = remove_na(awb2_9_seek_hlp_ppl_5) +
+           remove_na(awb2_9_seek_hlp_ppl_6) +
+           remove_na(awb2_9_seek_hlp_ppl_7) +
+           remove_na(awb2_9_seek_hlp_ppl_8),
+         emo_sch = remove_na(awb2_9_seek_hlp_ppl_9_a_4),
          #totals
-         emo_total = sum(c(emo_inf, emo_form, emo_sch), na.rm = TRUE),
-         emo_nas = sum(is.na(c(TMPVAR_awb2_9_seek_hlp_ppl_1_r4,
-                               awb2_9_seek_hlp_ppl_2,
-                               awb2_9_seek_hlp_ppl_3,
-                               awb2_9_seek_hlp_ppl_4,
-                               awb2_9_seek_hlp_ppl_5,
-                               awb2_9_seek_hlp_ppl_6,
-                               awb2_9_seek_hlp_ppl_7,
-                               awb2_9_seek_hlp_ppl_8,
-                               awb2_9_seek_hlp_ppl_9_a_4,
-                               awb2_9_seek_hlp_ppl_10))),
-         emo_missing = ifelse(emo_nas == 10, 1, 0)) %>%
+         emo_total = emo_inf + emo_form + emo_sch,
+         emo_nas = is.na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
+           is.na(awb2_9_seek_hlp_ppl_2) +
+           is.na(awb2_9_seek_hlp_ppl_3) +
+           is.na(awb2_9_seek_hlp_ppl_4) +
+           is.na(awb2_9_seek_hlp_ppl_5) +
+           is.na(awb2_9_seek_hlp_ppl_6) +
+           is.na(awb2_9_seek_hlp_ppl_7) +
+           is.na(awb2_9_seek_hlp_ppl_8) +
+           is.na(awb2_9_seek_hlp_ppl_9_a_4) +
+           is.na(awb2_9_seek_hlp_ppl_10),
+         emo_missing = ifelse(emo_nas == 10, 1, 0),
+         emo_inf = ifelse(emo_missing == 1, NA, emo_inf),
+         emo_form = ifelse(emo_missing == 1, NA, emo_form),
+         emo_sch = ifelse(emo_missing == 1, NA, emo_sch),
+         emo_total = ifelse(emo_missing == 1, NA, emo_total)) %>%
   #BRS
   #sum scores
-  mutate(brs_total = sum(c(awb2_9_resil1_a5,
-                           TMPVAR_awb2_9_resil2_a5,
-                           awb2_9_resil3_a5,
-                           TMPVAR_awb2_9_resil4_a5,
-                           awb2_9_resil5_a5,
-                           TMPVAR_awb2_9_resil6_a5), na.rm = TRUE),
-         brs_nas = sum(is.na(c(awb2_9_resil1_a5,
-                               TMPVAR_awb2_9_resil2_a5,
-                               awb2_9_resil3_a5,
-                               TMPVAR_awb2_9_resil4_a5,
-                               awb2_9_resil5_a5,
-                               TMPVAR_awb2_9_resil6_a5))),
-         brs_missing = ifelse(brs_nas == 6, 1, 0)) %>%
+  mutate(brs_total = remove_na(awb2_9_resil1_a5) +
+           remove_na(TMPVAR_awb2_9_resil2_a5) +
+           remove_na(awb2_9_resil3_a5) +
+           remove_na(TMPVAR_awb2_9_resil4_a5) +
+           remove_na(awb2_9_resil5_a5) +
+           remove_na(TMPVAR_awb2_9_resil6_a5),
+         brs_nas = is.na(awb2_9_resil1_a5) +
+           is.na(TMPVAR_awb2_9_resil2_a5) +
+           is.na(awb2_9_resil3_a5) +
+           is.na(TMPVAR_awb2_9_resil4_a5) +
+           is.na(awb2_9_resil5_a5) +
+           is.na(TMPVAR_awb2_9_resil6_a5),
+         brs_missing = ifelse(brs_nas == 6, 1, 0),
+         brs_total = ifelse(brs_missing == 1, NA, brs_total)) %>%
   #compute_scores %>%
   mutate(brs_mean = brs_total/6,
          brs_cat = ifelse(brs_mean < 3, "Low",
