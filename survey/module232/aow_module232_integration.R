@@ -15,6 +15,7 @@ pre_mod3$aow_recruitment_id |> duplicated() |> any()
 pre_mod4$aow_recruitment_id |> duplicated() |> any()
 
 new_names <- names(new_module)
+new_names_stems <- new_names |> aow_srv_var_stems()
 
 pre_rec_ids <- c(pre_mod1$aow_recruitment_id, pre_mod2$aow_recruitment_id, pre_mod3$aow_recruitment_id, pre_mod4$aow_recruitment_id) |>
   unique()
@@ -40,10 +41,10 @@ pre_mod_admin <- pre_mod_admin |>
 pre_mod_admin <- pre_mod_admin |> aow_pre_mod_admin_data()
 
 # trim previous modules down to variables carried forward and drop admin cols
-pre_mod1 <- pre_mod1 |> select(any_of(new_names)) |> select(-any_of(aow_pre_mod_drop_cols()))
-pre_mod2 <- pre_mod2 |> select(any_of(new_names)) |> select(-any_of(aow_pre_mod_drop_cols()))
-pre_mod3 <- pre_mod3 |> select(any_of(new_names)) |> select(-any_of(aow_pre_mod_drop_cols()))
-pre_mod4 <- pre_mod4 |> select(any_of(new_names)) |> select(-any_of(aow_pre_mod_drop_cols()))
+pre_mod1 <- pre_mod1 |> select(starts_with(new_names_stems)) |> select(-any_of(aow_pre_mod_drop_cols()))
+pre_mod2 <- pre_mod2 |> select(starts_with(new_names_stems)) |> select(-any_of(aow_pre_mod_drop_cols()))
+pre_mod3 <- pre_mod3 |> select(starts_with(new_names_stems)) |> select(-any_of(aow_pre_mod_drop_cols()))
+pre_mod4 <- pre_mod4 |> select(starts_with(new_names_stems)) |> select(-any_of(aow_pre_mod_drop_cols()))
 
 # merge all previous module data to be carried forward
 pre_merged <- pre_mod_admin |>
@@ -58,7 +59,7 @@ integrated <- pre_merged |> bind_rows(new_module) |>
   set_variable_labels(.labels = aow_survey_process_labels())
 
 # restore column order
-integrated <- integrated |> select(all_of(new_names))
+integrated <- integrated |> select(starts_with(new_names_stems))
 
 # export
 saveRDS(integrated, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_integrated.rds")

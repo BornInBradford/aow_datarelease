@@ -72,6 +72,17 @@ aow_miss_label <- function(type) {
   
 }
 
+aow_srv_var_stems <- function(varnames) {
+  
+  vars_df <- str_locate(varnames, "_[r|a][0-9]{1,2}") |>
+    as.data.frame() |>
+    add_column(varnames) |>
+    mutate(match_name = ifelse(!is.na(start), substr(varnames, 1, start - 1), varnames))
+  
+  return(vars_df$match_name |> unique())
+  
+}
+
 aow_dict_colnames <- function() {
   
   dict_name <- c("variable", "form", "section", "type", "label", "categories", "note", "validation_type", "validation_min", "validation_max",
