@@ -313,4 +313,100 @@ module_all <-
 
 
 
+
+################################################################################
+# dvs inherited from module 3 in 2023 release
+
+module_all <-
+  module_all %>%
+  mutate(TMPVAR_awb2_12_eat_hbt_1_a5 = awb2_12_eat_hbt_1_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_2_a5 = awb2_12_eat_hbt_2_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_3_a5 = awb2_12_eat_hbt_3_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_4_a5 = awb2_12_eat_hbt_4_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_5_a5 = awb2_12_eat_hbt_5_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_6_a5 = awb2_12_eat_hbt_6_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_7_a5 = awb2_12_eat_hbt_7_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_8_a5 = awb2_12_eat_hbt_8_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_9_a5 = awb2_12_eat_hbt_9_a5 - 1,
+         TMPVAR_awb2_12_eat_hbt_10_a5 = awb2_12_eat_hbt_10_a5 - 1,
+         TMPVAR_awb2_12_wght_1_a5 = awb2_12_wght_1_a5 - 1,
+         TMPVAR_awb2_12_wght_2_a5 = awb2_12_wght_2_a5 - 1)
+
+module_all <-
+  module_all %>%
+  
+  
+  #EDE-QS
+  #sum scores
+  mutate(edeqs_total = remove_na(TMPVAR_awb2_12_eat_hbt_1_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_2_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_3_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_4_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_5_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_6_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_7_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_8_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_9_a5) +
+           remove_na(TMPVAR_awb2_12_eat_hbt_10_a5) +
+           remove_na(TMPVAR_awb2_12_wght_1_a5) +
+           remove_na(TMPVAR_awb2_12_wght_2_a5),
+         edeqs_nas = is.na(TMPVAR_awb2_12_eat_hbt_1_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_2_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_3_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_4_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_5_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_6_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_7_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_8_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_9_a5) +
+           is.na(TMPVAR_awb2_12_eat_hbt_10_a5) +
+           is.na(TMPVAR_awb2_12_wght_1_a5) +
+           is.na(TMPVAR_awb2_12_wght_2_a5),
+         edeqs_missing = ifelse(edeqs_nas == 12, 1, 0)) %>%
+  #categorise
+  mutate(edeqs_cat = ifelse(edeqs_total < 15, "normal", "possible disorder")) 
+
+module_all <- module_all %>%
+  
+  #PAQ-A
+  #sum scores
+  mutate(paqa_total = remove_na(awb4_1_physical_actvty_1_a5) +
+           remove_na(awb4_1_physical_actvty_2_a5) +
+           remove_na(awb4_1_physical_actvty_3_a5) +
+           remove_na(awb4_1_physical_actvty_4_a5) +
+           remove_na(awb4_1_physical_actvty_5_a5) +
+           remove_na(awb4_1_physical_actvty_6_a5) +
+           remove_na(awb4_1_physical_actvty_7_a5) +
+           remove_na(awb4_1_physical_actvty_8_a5),
+         paqa_nas = is.na(awb4_1_physical_actvty_1_a5) +
+           is.na(awb4_1_physical_actvty_2_a5) +
+           is.na(awb4_1_physical_actvty_3_a5) +
+           is.na(awb4_1_physical_actvty_4_a5) +
+           is.na(awb4_1_physical_actvty_5_a5) +
+           is.na(awb4_1_physical_actvty_6_a5) +
+           is.na(awb4_1_physical_actvty_7_a5) +
+           is.na(awb4_1_physical_actvty_8_a5),
+         paqa_missing = ifelse(paqa_nas == 8, 1, 0)) %>%
+  #compute score
+  mutate(paqa_mean = paqa_total/8) 
+
+module_all <- module_all %>%
+  
+  #YAP (sedentary scale)
+  #Own Financial Resources - Bespoke
+  #sum scores
+  mutate(yapsed_total = remove_na(awb4_2_outside_schl_1_r7) +
+           remove_na(awb4_2_outside_schl_2_r7) +
+           remove_na(awb4_2_outside_schl_3_r7) +
+           remove_na(awb4_2_outside_schl_4_r7) +
+           remove_na(awb4_2_overall_a5),
+         yapsed_nas = is.na(awb4_2_outside_schl_1_r7) +
+           is.na(awb4_2_outside_schl_2_r7) +
+           is.na(awb4_2_outside_schl_3_r7) +
+           is.na(awb4_2_outside_schl_4_r7) +
+           is.na(awb4_2_overall_a5),
+         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0)) %>%
+  #compute score
+  mutate(yapsed_mean = yapsed_total/5)
+
   
