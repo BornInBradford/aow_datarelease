@@ -1,34 +1,18 @@
-# Modules 231 and 232 survey derived variables
-
-# easier to split into two different datasets, one for each module
-# only if each dv only needs vars from one module
-# makes admin data much easier to deal with and link
-# would like these to be standalone as many will want just these vars 
-# and linkage needed to the other two modules could cause confusion among users
+# Module 232 survey derived variables
 
 source("tools/aow_survey_functions.R")
 
-module231 <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_labelled.rds")
-module232 <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_labelled.rds")
+module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_labelled.rds")
 
-# joining cols - admin vars used to join modules and to derive some variables
-joining_cols <- c("aow_recruitment_id", "year_group", "gender")
+# joining cols
+joining_cols <- c("aow_recruitment_id")
 
 # admin cols, leaving out joining cols
 admin_cols <- aow_survey_column_order()[!aow_survey_column_order() %in% joining_cols]
 
 # survey cols, leaving out joining cols
-survey_cols <- c(names(module231), names(module232))[!c(names(module231), names(module232)) %in% joining_cols]
+survey_cols <- names(module)[!names(module) %in% joining_cols]
 
-# start combining module survey data
-module231 <- module231 |> select(-all_of(admin_cols))
-module232 <- module232 |> select(-all_of(admin_cols))
-
-# combined surveys
-module_all <- module231 |> full_join(module232, by = joining_cols)
-
-# check duplicates
-module_all$aow_recruitment_id |> duplicated() |> any()
 
 # load lookups
 
@@ -44,69 +28,21 @@ swemwbs_lookup <- read_csv("resources/SWEMWBS_lookup_table.csv")
 
 remove_na <- function(x) ifelse(is.na(x), 0, x)
 
-# CHANGES from mod 1
-#
-# SAIS dropped as two  aw3_6_comparison vars dropped
-# FAS dropped as some awb3_1_assets vars dropped
-# own financial resources recoded as two awb3_4_personal_assts are dropped
 
 # CHANGES from mod 2
 #
 # MSPSS dropped as awb2_5_social_spprt vars dropped
 
-# CHANGES from mod 3
-#
-# No changes
-
 # CHANGES from mod 4
 #
 # PATT-SQ dropped as awb6_8_attd_tech vars dropped
-
-################################################################################
-# dvs inherited from module 1 in 2023 release
-
-# Sum derived variables
-
-module_all <-
-  module_all %>%
-  #Own Financial Resources - Bespoke
-  #sum scores
-  mutate(own_fin_total = remove_na(awb3_4_personal_assts_1) + 
-           remove_na(awb3_4_personal_assts_2) + 
-           remove_na(awb3_4_personal_assts_3) + 
-           remove_na(awb3_4_personal_assts_4) +
-           remove_na(awb3_4_personal_assts_5),
-         own_fin_nas = is.na(awb3_4_personal_assts_1) +
-                             is.na(awb3_4_personal_assts_2) +
-                             is.na(awb3_4_personal_assts_3) +
-                             is.na(awb3_4_personal_assts_4) +
-                             is.na(awb3_4_personal_assts_5),
-         own_fin_missing = ifelse(own_fin_nas == 5, 1, 0),
-         own_fin_total = ifelse(own_fin_missing == 1, NA, own_fin_total)) %>%
-  #recode inconsistent responses
-  #Food Availability - Bespoke
-  #sum scores
-  mutate(food_avail_total = remove_na(aw3_5_food_1) + 
-           remove_na(aw3_5_food_2) + 
-           remove_na(aw3_5_food_3) + 
-           remove_na(aw3_5_food_4) + 
-           remove_na(aw3_5_food_5),
-         food_avail_nas = is.na(aw3_5_food_1) +
-                                is.na(aw3_5_food_2) +
-                                is.na(aw3_5_food_3) +
-                                is.na(aw3_5_food_4) +
-                                is.na(aw3_5_food_5),
-         food_avail_missing = ifelse(food_avail_nas == 5, 1, 0),
-         food_avail_total = ifelse(food_avail_missing == 1, NA, food_avail_total))
-           
-
 
 
 
 ################################################################################
 # dvs inherited from module 2 in 2023 release
 
-module_all <- module_all %>%
+module <- module %>%
   mutate(TMPVAR_awb2_1_illhealth_1 = awb2_1_illhealth_1 - 1,
          TMPVAR_awb2_1_illhealth_2 = awb2_1_illhealth_2 - 1,
          TMPVAR_awb2_1_illhealth_3 = awb2_1_illhealth_3 - 1,
@@ -152,8 +88,8 @@ module_all <- module_all %>%
 
 #RCADS-25
 #sum scores 
-module_all <-
-  module_all %>%
+module <-
+  module %>%
   mutate(rcad_ga = remove_na(TMPVAR_awb2_1_illhealth_2) +                      
            remove_na(TMPVAR_awb2_1_illhealth_3) +                  
            remove_na(TMPVAR_awb2_1_illhealth_5) +
@@ -335,115 +271,14 @@ module_all <-
 
 
 
-################################################################################
-# dvs inherited from module 3 in 2023 release
-
-module_all <-
-  module_all %>%
-  mutate(TMPVAR_awb2_12_eat_hbt_1_a5 = awb2_12_eat_hbt_1_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_2_a5 = awb2_12_eat_hbt_2_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_3_a5 = awb2_12_eat_hbt_3_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_4_a5 = awb2_12_eat_hbt_4_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_5_a5 = awb2_12_eat_hbt_5_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_6_a5 = awb2_12_eat_hbt_6_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_7_a5 = awb2_12_eat_hbt_7_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_8_a5 = awb2_12_eat_hbt_8_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_9_a5 = awb2_12_eat_hbt_9_a5 - 1,
-         TMPVAR_awb2_12_eat_hbt_10_a5 = awb2_12_eat_hbt_10_a5 - 1,
-         TMPVAR_awb2_12_wght_1_a5 = awb2_12_wght_1_a5 - 1,
-         TMPVAR_awb2_12_wght_2_a5 = awb2_12_wght_2_a5 - 1)
-
-module_all <-
-  module_all %>%
-  
-  
-  #EDE-QS
-  #sum scores
-  mutate(edeqs_total = remove_na(TMPVAR_awb2_12_eat_hbt_1_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_2_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_3_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_4_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_5_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_6_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_7_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_8_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_9_a5) +
-           remove_na(TMPVAR_awb2_12_eat_hbt_10_a5) +
-           remove_na(TMPVAR_awb2_12_wght_1_a5) +
-           remove_na(TMPVAR_awb2_12_wght_2_a5),
-         edeqs_nas = is.na(TMPVAR_awb2_12_eat_hbt_1_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_2_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_3_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_4_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_5_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_6_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_7_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_8_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_9_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_10_a5) +
-           is.na(TMPVAR_awb2_12_wght_1_a5) +
-           is.na(TMPVAR_awb2_12_wght_2_a5),
-         edeqs_missing = ifelse(edeqs_nas == 12, 1, 0),
-         edeqs_total = ifelse(edeqs_missing == 1, NA, edeqs_total)) %>%
-  #categorise
-  mutate(edeqs_cat = ifelse(edeqs_total < 15, "normal", "possible disorder")) 
-
-module_all <- module_all %>%
-  
-  #PAQ-A
-  #sum scores
-  mutate(paqa_total = remove_na(awb4_1_physical_actvty_1_a5) +
-           remove_na(awb4_1_physical_actvty_2_a5) +
-           remove_na(awb4_1_physical_actvty_3_a5) +
-           remove_na(awb4_1_physical_actvty_4_a5) +
-           remove_na(awb4_1_physical_actvty_5_a5) +
-           remove_na(awb4_1_physical_actvty_6_a5) +
-           remove_na(awb4_1_physical_actvty_7_a5) +
-           remove_na(awb4_1_physical_actvty_8_a5),
-         paqa_nas = is.na(awb4_1_physical_actvty_1_a5) +
-           is.na(awb4_1_physical_actvty_2_a5) +
-           is.na(awb4_1_physical_actvty_3_a5) +
-           is.na(awb4_1_physical_actvty_4_a5) +
-           is.na(awb4_1_physical_actvty_5_a5) +
-           is.na(awb4_1_physical_actvty_6_a5) +
-           is.na(awb4_1_physical_actvty_7_a5) +
-           is.na(awb4_1_physical_actvty_8_a5),
-         paqa_missing = ifelse(paqa_nas == 8, 1, 0),
-         paqa_total = ifelse(paqa_missing == 1, NA, paqa_total)) %>%
-  #compute score
-  mutate(paqa_mean = paqa_total/8) 
-
-module_all <- module_all %>%
-  
-  #YAP (sedentary scale)
-  #Own Financial Resources - Bespoke
-  #sum scores
-  mutate(yapsed_total = remove_na(awb4_2_outside_schl_1_r7) +
-           remove_na(awb4_2_outside_schl_2_r7) +
-           remove_na(awb4_2_outside_schl_3_r7) +
-           remove_na(awb4_2_outside_schl_4_r7) +
-           remove_na(awb4_2_overall_a5),
-         yapsed_nas = is.na(awb4_2_outside_schl_1_r7) +
-           is.na(awb4_2_outside_schl_2_r7) +
-           is.na(awb4_2_outside_schl_3_r7) +
-           is.na(awb4_2_outside_schl_4_r7) +
-           is.na(awb4_2_overall_a5),
-         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0),
-         yapsed_total = ifelse(yapsed_missing == 1, NA, yapsed_total)) %>%
-  #compute score
-  mutate(yapsed_mean = yapsed_total/5)
-
-
-
-
 
 
 
 ################################################################################
 # dvs inherited from module 4 in 2023 release
 
-module_all <-
-  module_all %>%
+module <-
+  module %>%
   
   #ADDI
   #sum scores
