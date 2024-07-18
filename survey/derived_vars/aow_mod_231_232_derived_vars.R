@@ -1,18 +1,31 @@
 # Modules 231 and 232 survey derived variables
 
+# easier to split into two different datasets, one for each module
+# only if each dv only needs vars from one module
+# makes admin data much easier to deal with and link
+# would like these to be standalone as many will want just these vars 
+# and linkage needed to the other two modules could cause confusion among users
+
 source("tools/aow_survey_functions.R")
 
 module231 <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_labelled.rds")
 module232 <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_labelled.rds")
 
-# admin cols, leaving out aow_recruitment_id
-admin_cols <- aow_survey_column_order()[!aow_survey_column_order() %in% c("aow_recruitment_id", "year_group", "gender")]
+# joining cols - admin vars used to join modules and to derive some variables
+joining_cols <- c("aow_recruitment_id", "year_group", "gender")
 
+# admin cols, leaving out joining cols
+admin_cols <- aow_survey_column_order()[!aow_survey_column_order() %in% joining_cols]
+
+# survey cols, leaving out joining cols
+survey_cols <- c(names(module231), names(module232))[!c(names(module231), names(module232)) %in% joining_cols]
+
+# start combining module survey data
 module231 <- module231 |> select(-all_of(admin_cols))
 module232 <- module232 |> select(-all_of(admin_cols))
 
 # combined surveys
-module_all <- module231 |> full_join(module232, by = c("aow_recruitment_id", "year_group", "gender"))
+module_all <- module231 |> full_join(module232, by = joining_cols)
 
 # check duplicates
 module_all$aow_recruitment_id |> duplicated() |> any()
@@ -40,6 +53,14 @@ remove_na <- function(x) ifelse(is.na(x), 0, x)
 # CHANGES from mod 2
 #
 # MSPSS dropped as awb2_5_social_spprt vars dropped
+
+# CHANGES from mod 3
+#
+# No changes
+
+# CHANGES from mod 4
+#
+# PATT-SQ dropped as awb6_8_attd_tech vars dropped
 
 ################################################################################
 # dvs inherited from module 1 in 2023 release
@@ -362,7 +383,8 @@ module_all <-
            is.na(TMPVAR_awb2_12_eat_hbt_10_a5) +
            is.na(TMPVAR_awb2_12_wght_1_a5) +
            is.na(TMPVAR_awb2_12_wght_2_a5),
-         edeqs_missing = ifelse(edeqs_nas == 12, 1, 0)) %>%
+         edeqs_missing = ifelse(edeqs_nas == 12, 1, 0),
+         edeqs_total = ifelse(edeqs_missing == 1, NA, edeqs_total)) %>%
   #categorise
   mutate(edeqs_cat = ifelse(edeqs_total < 15, "normal", "possible disorder")) 
 
@@ -386,7 +408,8 @@ module_all <- module_all %>%
            is.na(awb4_1_physical_actvty_6_a5) +
            is.na(awb4_1_physical_actvty_7_a5) +
            is.na(awb4_1_physical_actvty_8_a5),
-         paqa_missing = ifelse(paqa_nas == 8, 1, 0)) %>%
+         paqa_missing = ifelse(paqa_nas == 8, 1, 0),
+         paqa_total = ifelse(paqa_missing == 1, NA, paqa_total)) %>%
   #compute score
   mutate(paqa_mean = paqa_total/8) 
 
@@ -405,8 +428,47 @@ module_all <- module_all %>%
            is.na(awb4_2_outside_schl_3_r7) +
            is.na(awb4_2_outside_schl_4_r7) +
            is.na(awb4_2_overall_a5),
-         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0)) %>%
+         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0),
+         yapsed_total = ifelse(yapsed_missing == 1, NA, yapsed_total)) %>%
   #compute score
   mutate(yapsed_mean = yapsed_total/5)
 
+
+
+
+
+
+
+################################################################################
+# dvs inherited from module 4 in 2023 release
+
+module_all <-
+  module_all %>%
   
+  #ADDI
+  #sum scores
+  mutate(addi_inst_exp = remove_na(awb8_2_age_3) +
+           remove_na(awb8_2_police_5) +
+           remove_na(awb8_2_shop_6) +
+           remove_na(awb8_2_service_8) +
+           remove_na(awb8_2_int_9) +
+           remove_na(awb8_2_afraid_10),
+         addi_peer_exp = remove_na(awb8_2_club_1) +
+           remove_na(awb8_2_excl_2) +
+           remove_na(awb8_2_lang_4) +
+           remove_na(awb8_2_names_7) +
+           remove_na(awb8_2_threat_11),
+         addi_total = addi_inst_exp + addi_peer_exp,
+         addi_nas = is.na(awb8_2_age_3) +
+           is.na(awb8_2_police_5) +
+           is.na(awb8_2_shop_6) +
+           is.na(awb8_2_service_8) +
+           is.na(awb8_2_int_9) +
+           is.na(awb8_2_afraid_10) +
+           is.na(awb8_2_club_1) +
+           is.na(awb8_2_excl_2) +
+           is.na(awb8_2_lang_4) +
+           is.na(awb8_2_names_7) +
+           is.na(awb8_2_threat_11),
+         addi_missing = ifelse(addi_nas == 11, 1, 0))
+
