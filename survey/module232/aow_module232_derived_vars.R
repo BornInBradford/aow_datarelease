@@ -1,17 +1,12 @@
 # Module 232 survey derived variables
 
+
 source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_labelled.rds")
 
-# joining cols
-joining_cols <- c("aow_recruitment_id")
-
-# admin cols, leaving out joining cols
-admin_cols <- aow_survey_column_order()[!aow_survey_column_order() %in% joining_cols]
-
-# survey cols, leaving out joining cols
-survey_cols <- names(module)[!names(module) %in% joining_cols]
+# survey cols, leaving out admin cols
+survey_cols <- names(module)[!names(module) %in% aow_survey_column_order()]
 
 
 # load lookups
@@ -37,7 +32,8 @@ remove_na <- function(x) ifelse(is.na(x), 0, x)
 #
 # PATT-SQ dropped as awb6_8_attd_tech vars dropped
 
-
+labs_lbc <- c("Normal" = 1, "Borderline" = 2, "Clinical" = 3)
+labs_lnh <- c("Low" = 1, "Normal" = 2, "High" = 3)
 
 ################################################################################
 # dvs inherited from module 2 in 2023 release
@@ -171,54 +167,63 @@ module <-
          rcad_md = ifelse(rcad_md_miss == 10, NA, rcad_md),
          rcad_total = ifelse(rcad_missing == 1, NA, rcad_total)) %>%
   mutate(rcad_ga = ifelse(rcad_ga_miss <= 3, rcad_ga/(15-rcad_ga_miss)*15, NA),
+         rcad_ga = as.integer(rcad_ga),
          rcad_md = ifelse(rcad_md_miss <= 2, rcad_md/(10-rcad_md_miss)*10, NA),
-         rcad_total = ifelse(rcad_nas <= 4, rcad_total/(25-rcad_nas)*25, NA)) %>%
+         rcad_md = as.integer(rcad_md),
+         rcad_total = ifelse(rcad_nas <= 4, rcad_total/(25-rcad_nas)*25, NA),
+         rcad_total = as.integer(rcad_total)) %>%
   left_join(rcads_lookup, by = c(year_group = "year_group", gender = "gender")) %>%
   mutate(rcad_md_t = ((rcad_md- depression_int)*10)/depression_factor + 50,
          rcad_ga_t = ((rcad_ga - anxiety_int)*10)/anxiety_factor + 50,
          rcad_total_t = ((rcad_total - total_int)*10)/total_factor + 50,
-         rcad_md_cat = ifelse(rcad_md_t < 65, "Normal",
-                              ifelse(rcad_md_t < 70, "Borderline", "Clinical")),
-         rcad_ga_cat = ifelse(rcad_ga_t < 65, "Normal",
-                              ifelse(rcad_ga_t < 70, "Borderline", "Clinical")),
-         rcad_total_cat = ifelse(rcad_total_t < 65, "Normal",
-                                 ifelse(rcad_total_t < 70, "Borderline", "Clinical"))) %>%
-  #SWEMWBs
-  #sum scores
-  mutate(wellbeing = remove_na(awb2_2_optmstc_1_a4) +
-           remove_na(awb2_2_useful_2_a4) +
-           remove_na(awb2_2_relxed_3_a4) +
-           remove_na(awb2_2_problems_4_a4) +
-           remove_na(awb2_2_think_clr_5_a4) +
-           remove_na(awb2_2_close_othrs_6_a4) +
-           remove_na(awb2_2_own_mnd_7_a4) +
-           remove_na(awb2_3_self_effccy),
-         wellbeing_nas = is.na(awb2_2_optmstc_1_a4) +
-           is.na(awb2_2_useful_2_a4) +
-           is.na(awb2_2_relxed_3_a4) +
-           is.na(awb2_2_problems_4_a4) +
-           is.na(awb2_2_think_clr_5_a4) +
-           is.na(awb2_2_close_othrs_6_a4) +
-           is.na(awb2_2_own_mnd_7_a4) +
-           is.na(awb2_3_self_effccy),
-         wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0),
-         wellbeing = ifelse(wellbeing_missing == 1, NA, wellbeing))%>%
+         rcad_md_cat = ifelse(rcad_md_t < 65, 1,
+                              ifelse(rcad_md_t < 70, 2, 3)),
+         rcad_ga_cat = ifelse(rcad_ga_t < 65, 1,
+                              ifelse(rcad_ga_t < 70, 2, 3)),
+         rcad_total_cat = ifelse(rcad_total_t < 65, 1,
+                                 ifelse(rcad_total_t < 70, 2, 3))) %>%
+  set_value_labels(rcad_md_cat = labs_lbc,
+                   rcad_ga_cat = labs_lbc,
+                   rcad_total_cat = labs_lbc) %>%
+
+#SWEMWBs
+#sum scores
+mutate(wellbeing = remove_na(awb2_2_optmstc_1_a4) +
+         remove_na(awb2_2_useful_2_a4) +
+         remove_na(awb2_2_relxed_3_a4) +
+         remove_na(awb2_2_problems_4_a4) +
+         remove_na(awb2_2_think_clr_5_a4) +
+         remove_na(awb2_2_close_othrs_6_a4) +
+         remove_na(awb2_2_own_mnd_7_a4) +
+         remove_na(awb2_3_self_effccy),
+       wellbeing_nas = is.na(awb2_2_optmstc_1_a4) +
+         is.na(awb2_2_useful_2_a4) +
+         is.na(awb2_2_relxed_3_a4) +
+         is.na(awb2_2_problems_4_a4) +
+         is.na(awb2_2_think_clr_5_a4) +
+         is.na(awb2_2_close_othrs_6_a4) +
+         is.na(awb2_2_own_mnd_7_a4) +
+         is.na(awb2_3_self_effccy),
+       wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0),
+       wellbeing = ifelse(wellbeing_missing == 1, NA, wellbeing))%>%
   #compute scores
   left_join(swemwbs_lookup) %>%
-  mutate(swemwbs_cat = ifelse(swemwbs_total <= 19.5, "Low", 
-                              ifelse(swemwbs_total < 27.5, "Normal", "High"))) %>%
-  #ULS-4
-  #sum scores
-  mutate(loneliness = remove_na(TMPVAR_awb2_4_loneliness_1) +
-           remove_na(TMPVAR_awb2_4_loneliness_2) +
-           remove_na(TMPVAR_awb2_4_loneliness_3) +
-           remove_na(TMPVAR_awb2_4_loneliness_4),
-         loneliness_nas = is.na(TMPVAR_awb2_4_loneliness_1) +
-           is.na(TMPVAR_awb2_4_loneliness_2) +
-           is.na(TMPVAR_awb2_4_loneliness_3) +
-           is.na(TMPVAR_awb2_4_loneliness_4),
-         loneliness_missing = ifelse(loneliness_nas == 4, 1, 0),
-         loneliness = ifelse(loneliness_missing == 1, NA, loneliness)) %>%
+  mutate(swemwbs_cat = ifelse(swemwbs_total <= 19.5, 1, 
+                              ifelse(swemwbs_total < 27.5, 2, 3))) %>%
+  set_value_labels(swemwbs_cat = labs_lnh) %>%
+
+#ULS-4
+#sum scores
+mutate(loneliness = remove_na(TMPVAR_awb2_4_loneliness_1) +
+         remove_na(TMPVAR_awb2_4_loneliness_2) +
+         remove_na(TMPVAR_awb2_4_loneliness_3) +
+         remove_na(TMPVAR_awb2_4_loneliness_4),
+       loneliness_nas = is.na(TMPVAR_awb2_4_loneliness_1) +
+         is.na(TMPVAR_awb2_4_loneliness_2) +
+         is.na(TMPVAR_awb2_4_loneliness_3) +
+         is.na(TMPVAR_awb2_4_loneliness_4),
+       loneliness_missing = ifelse(loneliness_nas == 4, 1, 0),
+       loneliness = ifelse(loneliness_missing == 1, NA, loneliness)) %>%
   #GHSQ
   #emotional subscales
   mutate(emo_inf = remove_na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
@@ -265,8 +270,9 @@ module <-
          brs_total = ifelse(brs_missing == 1, NA, brs_total)) %>%
   #compute_scores %>%
   mutate(brs_mean = brs_total/6,
-         brs_cat = ifelse(brs_mean < 3, "Low",
-                          ifelse(brs_mean <= 4.3, "Normal", "High")))
+         brs_cat = ifelse(brs_mean < 3, 1,
+                          ifelse(brs_mean <= 4.3, 2, 3))) %>%
+  set_value_labels(brs_cat = labs_lnh)
 
 
 
@@ -306,4 +312,15 @@ module <-
            is.na(awb8_2_names_7) +
            is.na(awb8_2_threat_11),
          addi_missing = ifelse(addi_nas == 11, 1, 0))
+
+
+
+
+# trim down to admin and derived variables
+
+derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols))
+
+# export
+saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_derived.rds")
+
 

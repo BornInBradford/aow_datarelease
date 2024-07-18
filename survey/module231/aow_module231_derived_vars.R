@@ -4,14 +4,8 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_labelled.rds")
 
-# joining cols
-joining_cols <- c("aow_recruitment_id")
-
-# admin cols, leaving out joining cols
-admin_cols <- aow_survey_column_order()[!aow_survey_column_order() %in% joining_cols]
-
-# survey cols, leaving out joining cols
-survey_cols <- names(module)[!names(module) %in% joining_cols]
+# survey cols, leaving out admin cols
+survey_cols <- names(module)[!names(module) %in% aow_survey_column_order()]
 
 
 # load lookups
@@ -36,7 +30,7 @@ remove_na <- function(x) ifelse(is.na(x), 0, x)
 
 # CHANGES from mod 3
 #
-# No changes
+# edeqs_cat is now labelled categorical (1, 2) instead of text (normal, possible disorder)
 
 ################################################################################
 # dvs inherited from module 1 in 2023 release
@@ -132,7 +126,12 @@ module <-
          edeqs_missing = ifelse(edeqs_nas == 12, 1, 0),
          edeqs_total = ifelse(edeqs_missing == 1, NA, edeqs_total)) %>%
   #categorise
-  mutate(edeqs_cat = ifelse(edeqs_total < 15, "normal", "possible disorder")) 
+  mutate(edeqs_cat = ifelse(edeqs_total < 15, 
+                            1, # normal
+                            2)) |> # possible disorder
+  set_value_labels(edeqs_cat = c("normal" = 1, "possible disorder" = 2))
+
+                            
 
 module <- module %>%
   
@@ -181,5 +180,10 @@ module <- module %>%
 
 
 
+# trim down to admin and derived variables
 
+derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols))
+
+# export
+saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_derived.rds")
 
