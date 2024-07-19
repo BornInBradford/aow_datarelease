@@ -30,21 +30,21 @@ gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
 * Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(master matched) gen(linkage)
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(matched) nogen
 
-* Save a dataset of not linked
+/* Save a dataset of not linked
 preserve
 keep if linkage==1
 keep aow_recruitment_id date_time_collection hw_height hw_weight
 export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_y9schoolvisit_notlinked.csv", replace
 restore
+*/
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
 gen date_measurement = date(strdate, "YMD")
 format date_measurement %td
 drop date_time_collection strdate
-
 
 * Drop if no height and weight measurements
 drop if hw_height==. & hw_weight==.
@@ -73,8 +73,22 @@ replace cbmi = bmi if bmi!=. & cbmi==.
 sum cheight cweight cbmi, det
 
 * Some implausible values here. Check them against bioimpedance data
-sort cheight
+
+* Identify height differences between the datasets
+gen heightdiff = abs(cheight - height)
+sum heightdiff
+edit aow_recruitment_id date_measurement cheight height cweight weight cbmi bmi heightdiff if heightdiff>1 & heightdiff<.
+/* Some of the cheights are clearly wrong i.e. the weight value has been entered; I will update these. For others, it is obvious from the BMI which one is incorrect. For others still, either height is feasible so I will have to drop these */
 replace cheight = height if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
+replace cbmi = bmi if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
+replace heightdiff=. if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
+
+replace cheight=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
+replace cbmi=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
+replace heightdiff=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
+
+drop if heightdiff>1 & heightdiff<.
+**# UP TO HERE
 
 sort cweight
 replace cweight = weight if aow_recruitment_id=="aow1077643" & date_measurement==d(25apr2023)
