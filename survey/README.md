@@ -12,9 +12,16 @@ Each of the scripts described below starts by importing and ends by exporting in
 
 An html report of the `linked` data frame is produced to assist with the next steps.
 
-3. `aow_module{x}_derived_vars.R` derives new variables, e.g. scale scores; does any required question version merging and drops any unnecessary variables. Outputs `aow_survey_module{x}_derived.rds`
+3. `aow_module{x}_integration.R` integrates the current release with any previous survey releases where longitudinal variables can be formed across releases. Outputs `aow_survey_module{x}_integrated.rds`
 
-4. `aow_module{x}_labelling.R` carries out final labelling of variables and values and does any general tidying required. Outputs `aow_survey_module{x}_labelled.rds`
+An html report of the `integrated` data frame is produced to assist with the next steps.
 
-An html report of the `labelled` data frame is produced. This is the final output data file.
+4. `aow_module{x}_labelling.R` carries out final labelling of raw survey module variables and values and does any general tidying required. Outputs `aow_survey_module{x}_labelled.rds`
 
+An html report of the `labelled` data frame is produced. This is the final output data file for the raw survey variables.
+
+5. `aow_module{x}_derived_vars.R` derives new variables, e.g. scale scores, and adds these to a new dataset. Outputs `aow_survey_module{x}_derived.rds`
+
+6. `aow_module{x}_derived_labelling.R` carries out final labelling of raw survey module variables and values and does any general tidying required. Outputs `aow_survey_module{x}_derived_labelled.rds`
+
+An html report of the `derived labelled` data frame is produced. This is the final output data file for the derived variables.
