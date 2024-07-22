@@ -235,6 +235,8 @@ mutate(loneliness = remove_na(TMPVAR_awb2_4_loneliness_1) +
            remove_na(awb2_9_seek_hlp_ppl_7) +
            remove_na(awb2_9_seek_hlp_ppl_8),
          emo_sch = remove_na(awb2_9_seek_hlp_ppl_9_a_4),
+         emo_sch = case_when(emo_sch < 0 ~ NA,
+                             TRUE ~ emo_sch),
          #totals
          emo_total = emo_inf + emo_form + emo_sch,
          emo_nas = is.na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
