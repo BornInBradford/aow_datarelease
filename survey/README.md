@@ -2,9 +2,9 @@
 
 These scripts produce the Age of Wonder survey data files. The surveys are organised into separate data collection instruments called 'modules', and the pipeline and outputs follow this modular structure.
 
-There is a separate pipeline for each survey module, each of which follows the same processing and output steps. The modular pipelines can be run end to end a module at a time from the `aow_module{x}_full_pipeline.R` scripts. Or, for convenience, all four modules can be run in one go from `run_all.R`.
+There is a separate pipeline for each survey module, each of which follows the same processing and output steps. The modular pipelines can be run end to end a module at a time from the `aow_module{x}_full_pipeline.R` scripts. Or, for convenience, all modules can be run in one go from `run_all.R`.
 
-Each of the scripts described below starts by importing and ends by exporting independently named files, so each script can be run independently if required. However, to run the pipeline from end to end follow these steps in order:
+Each of the scripts described below starts by importing and ends by exporting independently named data (rds) files, so each script can be run independently if required. However, to run the pipeline from end to end follow these steps in order:
 
 1. `aow_module{x}_survey_merge_miss.R` merges online/offline versions of the survey and tags missing values according to survey version where possible. Outputs `aow_survey_module{x}_merged.rds`
 
