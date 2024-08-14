@@ -34,6 +34,8 @@ remove_na <- function(x) ifelse(is.na(x), 0, x)
 
 labs_lbc <- c("Normal" = 1, "Borderline" = 2, "Clinical" = 3)
 labs_lnh <- c("Low" = 1, "Normal" = 2, "High" = 3)
+labs_sdqh4 <- c("Close to average" = 1, "Slightly raised" = 2, "High" = 3, "Very high" = 4)
+labs_sdql4 <- c("Close to average" = 1, "Slightly lowered" = 2, "Low" = 3, "Very Low" = 4)
 
 ################################################################################
 # dvs inherited from module 2 in 2023 release
@@ -79,7 +81,30 @@ module <- module %>%
          TMPVAR_awb2_11_psychosis_1_r4 = ifelse(awb2_11_psychosis_1_r4 == 3, 0, awb2_11_psychosis_1_r4),
          TMPVAR_awb2_11_psychosis_4_r4 = ifelse(awb2_11_psychosis_4_r4 == 3, 0, awb2_11_psychosis_4_r4),
          TMPVAR_awb2_11_psychosis_9_r4 = ifelse(awb2_11_psychosis_9_r4 == 3, 0, awb2_11_psychosis_9_r4)) %>%
-  mutate(TMPVAR_awb2_9_seek_hlp_ppl_1_r4 = ifelse(awb2_9_seek_hlp_ppl_1_r4 == 8, 0, awb2_9_seek_hlp_ppl_1_r4))
+  mutate(TMPVAR_awb2_9_seek_hlp_ppl_1_r4 = ifelse(awb2_9_seek_hlp_ppl_1_r4 == 8, 0, awb2_9_seek_hlp_ppl_1_r4)) %>%
+  mutate(TMPVAR_awb2_1_sdq_7_a10 = case_when(awb2_1_sdq_7_a10 == 0 ~ 2,
+                                             awb2_1_sdq_7_a10 == 1 ~ 1,
+                                             awb2_1_sdq_7_a10 == 2 ~ 0),
+         TMPVAR_awb2_1_sdq_21_a10 = case_when(
+           awb2_1_sdq_21_a10 == 0 ~ 2,
+           awb2_1_sdq_21_a10 == 1 ~ 1,
+           awb2_1_sdq_21_a10 == 2 ~ 0
+         ),
+         TMPVAR_awb2_1_sdq_25_a10 = case_when(
+           awb2_1_sdq_25_a10 == 0 ~ 2,
+           awb2_1_sdq_25_a10 == 1 ~ 1,
+           awb2_1_sdq_25_a10 == 2 ~ 0
+         ),
+         TMPVAR_awb2_1_sdq_11_a10 = case_when(
+           awb2_1_sdq_11_a10 == 0 ~ 2,
+           awb2_1_sdq_11_a10 == 1 ~ 1,
+           awb2_1_sdq_11_a10 == 2 ~ 0
+         ),
+         TMPVAR_awb2_1_sdq_14_a10 = case_when(
+           awb2_1_sdq_14_a10 == 0 ~ 2,
+           awb2_1_sdq_14_a10 == 1 ~ 1,
+           awb2_1_sdq_14_a10 == 2 ~ 0
+         ))
 
 
 #RCADS-25
@@ -185,6 +210,108 @@ module <-
   set_value_labels(rcad_md_cat = labs_lbc,
                    rcad_ga_cat = labs_lbc,
                    rcad_total_cat = labs_lbc) %>%
+  
+#SDQ
+#sum scores
+mutate(sdq_emotion = remove_na(awb2_1_sdq_3_a10)+
+         remove_na(awb2_1_sdq_8_a10)+
+         remove_na(awb2_1_sdq_13_a10)+
+         remove_na(awb2_1_sdq_16_a10)+
+         remove_na(awb2_1_sdq_24_a10),
+       sdq_emotion_miss = is.na(awb2_1_sdq_3_a10)+
+         is.na(awb2_1_sdq_8_a10)+
+         is.na(awb2_1_sdq_13_a10)+
+         is.na(awb2_1_sdq_16_a10)+
+         is.na(awb2_1_sdq_24_a10),
+       sdq_conduct = remove_na(awb2_1_sdq_5_a10)+
+         remove_na(TMPVAR_awb2_1_sdq_7_a10)+
+         remove_na(awb2_1_sdq_12_a10)+
+         remove_na(awb2_1_sdq_18_a10)+
+         remove_na(awb2_1_sdq_22_a10),
+       sdq_conduct_miss = is.na(awb2_1_sdq_5_a10)+
+         is.na(TMPVAR_awb2_1_sdq_7_a10)+
+         is.na(awb2_1_sdq_12_a10)+
+         is.na(awb2_1_sdq_18_a10)+
+         is.na(awb2_1_sdq_22_a10),
+       sdq_hyperact = remove_na(awb2_1_sdq_2_a10)+
+         remove_na(awb2_1_sdq_10_a10)+
+         remove_na(awb2_1_sdq_15_a10)+
+         remove_na(TMPVAR_awb2_1_sdq_21_a10)+
+         remove_na(TMPVAR_awb2_1_sdq_25_a10),
+       sdq_hyperact_miss = is.na(awb2_1_sdq_2_a10)+
+         is.na(awb2_1_sdq_10_a10)+
+         is.na(awb2_1_sdq_15_a10)+
+         is.na(TMPVAR_awb2_1_sdq_21_a10)+
+         is.na(TMPVAR_awb2_1_sdq_25_a10),
+       sdq_peer = remove_na(awb2_1_sdq_6_a10)+
+         remove_na(TMPVAR_awb2_1_sdq_11_a10)+
+         remove_na(TMPVAR_awb2_1_sdq_14_a10)+
+         remove_na(awb2_1_sdq_19_a10)+
+         remove_na(awb2_1_sdq_23_a10),
+       sdq_peer_miss = is.na(awb2_1_sdq_6_a10)+
+         is.na(TMPVAR_awb2_1_sdq_11_a10)+
+         is.na(TMPVAR_awb2_1_sdq_14_a10)+
+         is.na(awb2_1_sdq_19_a10)+
+         is.na(awb2_1_sdq_23_a10),
+       sdq_prosoc = remove_na(awb2_1_sdq_1_a10)+
+         remove_na(awb2_1_sdq_4_a10)+
+         remove_na(awb2_1_sdq_9_a10)+
+         remove_na(awb2_1_sdq_17_a10)+
+         remove_na(awb2_1_sdq_20_a10),
+       sdq_prosoc_miss = is.na(awb2_1_sdq_1_a10)+
+         is.na(awb2_1_sdq_4_a10)+
+         is.na(awb2_1_sdq_9_a10)+
+         is.na(awb2_1_sdq_17_a10)+
+         is.na(awb2_1_sdq_20_a10)) %>%
+  #scale missing scores if at least 3 completed
+  mutate(sdq_emotion = case_when(sdq_emotion_miss <= 2 ~ round((5/(5-sdq_emotion_miss))*sdq_emotion),
+                                 sdq_emotion_miss < 2 ~ NA),
+         sdq_conduct = case_when(sdq_conduct_miss <= 2 ~ round((5/(5-sdq_conduct_miss))*sdq_conduct),
+                                 sdq_conduct_miss < 2 ~ NA),
+         sdq_hyperact = case_when(sdq_hyperact_miss <= 2 ~ round((5/(5-sdq_hyperact_miss))*sdq_hyperact),
+                                 sdq_hyperact_miss < 2 ~ NA),
+         sdq_peer = case_when(sdq_peer_miss <= 2 ~ round((5/(5-sdq_peer_miss))*sdq_peer),
+                                 sdq_peer_miss < 2 ~ NA),
+         sdq_prosoc = case_when(sdq_prosoc_miss <= 2 ~ round((5/(5-sdq_prosoc_miss))*sdq_prosoc),
+                                 sdq_prosoc_miss < 2 ~ NA)) %>%
+  #calculate total and externalising/internalising (note should be NA if any subscale missing hence no removal of NAs)
+  mutate(sdq_total = sdq_emotion+
+           sdq_conduct+
+           sdq_hyperact+
+           sdq_peer,
+         sdq_external = sdq_conduct + sdq_hyperact,
+         sdq_internal = sdq_emotion + sdq_peer) %>%
+  #assign categories
+  mutate(sdq_emotion_cat = case_when(sdq_emotion <= 4 ~ 1,
+                                     sdq_emotion == 5 ~ 2,
+                                     sdq_emotion == 6 ~ 3,
+                                     sdq_emotion >= 7 ~ 4),
+         sdq_conduct_cat = case_when(sdq_conduct <= 3 ~ 1,
+                                     sdq_conduct == 4 ~ 2,
+                                     sdq_conduct == 5 ~ 3,
+                                     sdq_conduct >=6 ~ 4),
+         sdq_hyperact_cat = case_when(sdq_hyperact <= 5 ~ 1,
+                                      sdq_hyperact == 6 ~ 2,
+                                      sdq_hyperact == 7 ~ 3,
+                                      sdq_hyperact >= 8 ~ 4),
+         sdq_peer_cat = case_when(sdq_peer <= 2 ~ 1,
+                                  sdq_peer == 3 ~ 2,
+                                  sdq_peer == 4 ~ 3,
+                                  sdq_peer >= 5 ~ 4),
+         sdq_prosoc_cat = case_when(sdq_prosoc >= 7 ~ 1,
+                                    sdq_prosoc == 6 ~ 2,
+                                    sdq_prosoc == 5 ~ 3,
+                                    sdq_prosoc <= 4 ~ 4),
+         sdq_total_cat = case_when(sdq_total <= 14 ~ 1,
+                                   sdq_total %in% c(15, 16, 17) ~ 2,
+                                   sdq_total %in% c(18, 19) ~ 3,
+                                   sdq_total >=20 ~ 4)) %>%
+  set_value_labels(sdq_emotion_cat = labs_sdqh4,
+                   sdq_conduct_cat = labs_sdqh4,
+                   sdq_hyperact_cat = labs_sdqh4,
+                   sdq_peer_cat = labs_sdqh4,
+                   sdq_prosoc_cat = labs_sdql4,
+                   sdq_total_cat = labs_sdqh4) %>%
 
 #SWEMWBs
 #sum scores
