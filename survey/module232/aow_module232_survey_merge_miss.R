@@ -1,12 +1,12 @@
-# Module 2 survey online/offline merge and tidy up
+# Module 232 survey online/offline merge and tidy up
 
 source("tools/aow_survey_functions.R")
 
-redcap_project_name <- "aow_module_2_online_survey"
+redcap_project_name <- "aow_module_232_online_survey"
 
 # data
-online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Online.dta")
-offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module2_Offline.dta")
+online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\Survey_Module232_Online.dta")
+offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\Survey_Module232_Offline.dta")
 
 # set min and max survey versions in this data
 # NB if version var is missing it sets min/max to Inf/-Inf and all modified vars will be removed
@@ -16,9 +16,9 @@ min_offline_version <- min(offline$mod2_version, na.rm = TRUE)
 max_offline_version <- max(offline$mod2_version, na.rm = TRUE)
 
 # data dictionary
-online_dict <- read_csv("survey/redcap/AoWModule2OnlineSurvey_DataDictionary_2023-06-15.csv",
+online_dict <- read_csv("survey/redcap/AoWModule232OnlineSurvey_DataDictionary_2024-07-02.csv",
                         col_names = aow_dict_colnames(), skip = 1)
-offline_dict <- read_csv("survey/redcap/AoWModule2OfflineForm_DataDictionary_2023-06-15.csv",
+offline_dict <- read_csv("survey/redcap/AoWModule232OfflineForm_DataDictionary_2024-07-02.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
 # drop validation columns that have unpredictable value types
@@ -42,17 +42,20 @@ vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_
          on_categories = categories,
          off_categories)
 
-# there's an extra space in one of the offline labels so this is fine
+# no label conflicts
 
 # add survey indicator to each dataset --- label values once appended 
 online <- online %>% mutate(survey_mode = 1) # 1=online
 offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
+# value types incorrectly read as numeric
+# process here
 
 
 # add missing/changed question indicators to data dictionaries
 online_dict <- online_dict |> aow_add_dict_cols()
 offline_dict <- offline_dict |> aow_add_dict_cols() 
+
 
 # trim data down to match in-version data dict vars
 online <- online |> aow_trim_var_versions_data(online_dict, min_online_version, max_online_version)
@@ -83,23 +86,11 @@ mod_allcols_order <- names(mod_allcols)
 mod_allcols$year_group <- NULL
 mod_allcols <- mod_allcols |> left_join(yrgp_lkup)
 
-# merge all survey timestamps - creates duplicate but we'll deal with these later
+# merge all survey timestamps - might creates duplicates but we'll deal with these later
 mod_allcols <- mod_allcols |> left_join(timestamps)
 
 # check conflicting value labels
 warnings()
-
-
-# fix version control issue
-# awb2_9_seek_hlp_ppl_9 was missing from offline prior to version 6
-# when it was replaced by awb2_9_seek_hlp_ppl_9_a_4 in both online/offline
-# merge into awb2_9_seek_hlp_ppl_9_a_4 (the name to be used going forward)
-mod_allcols <- mod_allcols |> aow_miss_cat_online("awb2_9_seek_hlp_ppl_9_a_4")
-mod_allcols <- mod_allcols |> mutate(awb2_9_seek_hlp_ppl_9_a_4 = case_when(survey_version < 6 ~ awb2_9_seek_hlp_ppl_9,
-                                                                       TRUE ~ awb2_9_seek_hlp_ppl_9_a_4))
-mod_allcols <- mod_allcols |> select(-awb2_9_seek_hlp_ppl_9)
-offline_dict <- offline_dict |> filter(variable != "awb2_9_seek_hlp_ppl_9")
-online_dict <- online_dict |> filter(variable != "awb2_9_seek_hlp_ppl_9")
 
 
 # add checkbox options to value labels
@@ -134,8 +125,8 @@ add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat")
 
 
 
-
 # add year group missing vars
+
 year_group <- offline_dict |> bind_rows(online_dict) |>
   filter(!is.na(year_group)) |>
   select(variable, type, year_group) |>
@@ -238,6 +229,6 @@ if(nrow(removed_txt > 0)) {
 # restore column order
 mod_allcols <- mod_allcols |> select(any_of(mod_allcols_order), everything())
 
-
 # export
-saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module2_merged.rds")
+saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_merged.rds")
+

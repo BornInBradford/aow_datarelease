@@ -72,6 +72,17 @@ aow_miss_label <- function(type) {
   
 }
 
+aow_srv_var_stems <- function(varnames) {
+  
+  vars_df <- str_locate(varnames, "_[r|a][0-9]{1,2}") |>
+    as.data.frame() |>
+    add_column(varnames) |>
+    mutate(match_name = ifelse(!is.na(start), substr(varnames, 1, start - 1), varnames))
+  
+  return(vars_df$match_name |> unique())
+  
+}
+
 aow_dict_colnames <- function() {
   
   dict_name <- c("variable", "form", "section", "type", "label", "categories", "note", "validation_type", "validation_min", "validation_max",
@@ -102,6 +113,58 @@ aow_redcap_txt_type <- function() {
   types <- c("text", "notes")
   
   return(types)
+  
+}
+
+aow_denom_col_labels <- function(full = TRUE) {
+  
+  col_labs <- list(aow_person_id = "Age of Wonder person ID",
+                   BiBPersonID = "BiB cohort person ID",
+                   is_bib = "Participant is in original BiB cohort",
+                   aow_recruitment_id = "Age of Wonder year group recruitment ID",
+                   birth_year = "Year of birth",
+                   birth_month = "Month of birth",
+                   recruitment_era = "Recruitment era (academic year)",
+                   age_recruitment_y = "Age at recruitment in years",
+                   age_recruitment_m = "Age at recruitment in months",
+                   school_id = "Pseudo school ID",
+                   year_group = "Year group at recruitment",
+                   form_tutor_id = "Pseudo recruitment form tutor ID",
+                   gender = "Gender reported by school",
+                   ethnicity_1 = "Ethnicity reported by school - higher level category",
+                   ethnicity_2 = "Ethnicity reported by school - lower level category")
+  
+  col_labs_full <- list(upn = "Unique Pupil Number",
+                        birth_date = "Date of birth",
+                        postcode = "Home postcode",
+                        LSOA11CD = "Home LSOA code, 2011 boundaries",
+                        IMD_2019_score = "Home IMD 2019 score",
+                        IMD_2019_decile = "Home IMD 2019 decile, national scale",
+                        recruitment_date = "Recruitment date (import of class list)",
+                        recruitment_year = "Recruitment year",
+                        recruitment_month = "Recruitment month",
+                        school_establishment_no = "School local authority establishment number",
+                        school = "School name",
+                        form_tutor = "Form tutor at recruitment",
+                        fsm = "Free school meals",
+                        sen = "Special educational needs provision")
+  
+  if(full) col_labs <- append(col_labs, col_labs_full)
+  
+  return(col_labs)
+  
+}
+
+aow_survey_process_labels <- function() {
+  
+  col_labs <- list(age_survey_y = "Age (years) at survey date",
+                   age_survey_m = "Age (months) at survey date",
+                   survey_date = "Date survey taken",
+                   survey_version = "Survey version",
+                   survey_mode = "Survey taken online or offline?"
+                   )
+  
+  return(col_labs)
   
 }
 
@@ -170,16 +233,96 @@ aow_survey_column_order <- function() {
   
 }
 
+aow_pre_mod_drop_cols <- function() {
+  
+  cols <- c("aow_person_id",
+            "BiBPersonID",
+            "is_bib",
+            "recruitment_era",
+            "age_recruitment_y",
+            "age_recruitment_m",
+            "gender",
+            "ethnicity_1",
+            "ethnicity_2",
+            "birth_year",
+            "birth_month",
+            "school_id",
+            "year_group",
+            "form_tutor_id",
+            "age_survey_y",
+            "age_survey_m",
+            "survey_date",
+            "survey_version",
+            "survey_mode"
+  )
+  
+  return(cols)
+  
+}
+
+
+aow_pre_mod_admin_data <- function(pre_mod_admin) {
+  
+  pre_mod_admin <- pre_mod_admin |>
+    group_by(aow_recruitment_id) |>
+    summarise(aow_person_id = ifelse(all(is.na(aow_person_id)), NA, min(aow_person_id, na.rm = TRUE)),
+              BiBPersonID = ifelse(all(is.na(BiBPersonID)), NA, min(BiBPersonID, na.rm = TRUE)),
+              is_bib = ifelse(all(is.na(is_bib)), NA, min(is_bib, na.rm = TRUE)),
+              recruitment_era = ifelse(all(is.na(recruitment_era)), NA, min(recruitment_era, na.rm = TRUE)),
+              age_recruitment_y = ifelse(all(is.na(age_recruitment_y)), NA, min(age_recruitment_y, na.rm = TRUE)),
+              age_recruitment_m = ifelse(all(is.na(age_recruitment_m)), NA, min(age_recruitment_m, na.rm = TRUE)),
+              gender = ifelse(all(is.na(gender)), NA, min(gender, na.rm = TRUE)),
+              ethnicity_1 = ifelse(all(is.na(ethnicity_1)), NA, min(ethnicity_1, na.rm = TRUE)),
+              ethnicity_2 = ifelse(all(is.na(ethnicity_2)), NA, min(ethnicity_2, na.rm = TRUE)),
+              birth_year = ifelse(all(is.na(birth_year)), NA, min(birth_year, na.rm = TRUE)),
+              birth_month = ifelse(all(is.na(birth_month)), NA, min(birth_month, na.rm = TRUE)),
+              school_id = ifelse(length(unique(school_id)) > 1, "various - see module specific data", min(school_id, na.rm = TRUE)),
+              year_group = ifelse(length(unique(year_group)) > 1, -1, min(year_group, na.rm = TRUE)),
+              form_tutor_id = ifelse(length(unique(form_tutor_id)) > 1, "various - see module specific data", min(form_tutor_id, na.rm = TRUE)),
+              age_survey_y = min(age_survey_y, na.rm = TRUE),
+              age_survey_m = min(age_survey_m, na.rm = TRUE),
+              survey_date = min(survey_date, na.rm = TRUE),
+              survey_version = ifelse(all(is.na(survey_version)), NA, ifelse(length(unique(survey_version)) > 1, -1, min(survey_version, na.rm = TRUE))),
+              survey_mode = ifelse(length(unique(survey_mode)) > 1, 3, min(survey_mode, na.rm = TRUE))) |>
+    ungroup() |>
+    add_value_labels(survey_mode = c(Online = 1, Offline = 2, Mixed = 3),
+                     survey_version = c("v01" = 1,
+                                        "v02" = 2,
+                                        "v03" = 3,
+                                        "v04" = 4,
+                                        "v05" = 5,
+                                        "v06" = 6,
+                                        "v07" = 7,
+                                        "v08" = 8,
+                                        "v09" = 9,
+                                        "v10" = 10,
+                                        "v11" = 11,
+                                        "v12" = 12,
+                                        "v13" = 13,
+                                        "v14" = 14,
+                                        "v15" = 15,
+                                        "v16" = 16,
+                                        "v17" = 17,
+                                        "v18" = 18,
+                                        "v19" = 19,
+                                        "v20" = 20,
+                                        "various - see module specific data" = -1)
+    ) |>
+    set_variable_labels(.labels = aow_denom_col_labels(full = FALSE)) 
+  
+  return(pre_mod_admin)
+
+}
 
 # process redcap data dictionaries
 aow_add_dict_cols <- function(df) {
   
-  df <- df |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                         grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ substr(variable, nchar(variable), nchar(variable)),
-                                                           grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
-                                       hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
-                                       year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+"))
+  df <- df |> mutate(added = case_when(grepl(aow_srv_regexp("add_rad"), variable) ~ str_split_i(variable, "_", -1) |> str_replace("\\D*", ""),
+                                       grepl(aow_srv_regexp("add_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                     revised = case_when(grepl(aow_srv_regexp("rev_rad"), variable) ~ str_split_i(variable, "_", -1) |> str_replace("\\D*", ""),
+                                         grepl(aow_srv_regexp("rev_chk"), variable) ~ str_split(variable, "_") |> tail(n=4) |> head(n=1) |> str_replace("\\D*", "")),
+                     hidden = case_when(grepl("hidden", note, ignore.case = TRUE) ~ str_extract(note, "[\\d]+")),
+                     year_group = case_when(grepl("year_group", branching) ~ str_extract(branching, "[\\d]+"))
   )
   
   return(df)
@@ -497,7 +640,17 @@ aow_version_by_date <- function(timestamp, launch_dates) {
 }
 
 
+aow_output_varlabels <- function(df, output = c("clip", "cat", "c")) {
+  
+  labs <- sapply(var_label(df), function(x) ifelse(is.null(x), "", x))
+  
+  labs <- paste0(names(labs), " = ", "\"", labs, "\",")
 
+  if(output[1] == "cat") return(cat(paste0(labs, collapse = "\n")))
+  if(output[1] == "c") return(labs)
+  if(output[1] == "clip") writeClipboard(labs)
+  
+}
 
 
 

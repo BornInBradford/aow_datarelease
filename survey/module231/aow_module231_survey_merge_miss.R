@@ -1,12 +1,12 @@
-# Module 1 survey online/offline merge and tidy up
+# Module 231 survey online/offline merge and tidy up
 
 source("tools/aow_survey_functions.R")
 
-redcap_project_name <- "aow_module_1_online_survey"
+redcap_project_name <- "aow_module_231_online_survey"
 
 # data
-online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module1_Online.dta")
-offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\tmpSurvey_Module1_Offline.dta")
+online <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\Survey_Module231_Online.dta")
+offline <- read_dta("U:\\Born in Bradford - AOW Raw Data\\redcap\\surveys\\data\\Survey_Module231_Offline.dta")
 
 # set min and max survey versions in this data
 # NB if version var is missing it sets min/max to Inf/-Inf and all modified vars will be removed
@@ -16,9 +16,9 @@ min_offline_version <- min(offline$mod1_version, na.rm = TRUE)
 max_offline_version <- max(offline$mod1_version, na.rm = TRUE)
 
 # data dictionary
-online_dict <- read_csv("survey/redcap/AoWModule1OnlineSurvey_DataDictionary_2023-06-15.csv",
+online_dict <- read_csv("survey/redcap/AoWModule231OnlineSurvey_DataDictionary_2024-07-02.csv",
                         col_names = aow_dict_colnames(), skip = 1)
-offline_dict <- read_csv("survey/redcap/AoWModule1OfflineForm_DataDictionary_2023-06-15.csv",
+offline_dict <- read_csv("survey/redcap/AoWModule231OfflineForm_DataDictionary_2024-07-02.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
 # drop validation columns that have unpredictable value types
@@ -42,49 +42,20 @@ vlabel_conflict <- online_dict |> inner_join(select(offline_dict, variable, off_
          on_categories = categories,
          off_categories)
 
-# country of birth categories are in a different order but are in fact numbered the same
-names1 <- online$awb1_2_country_brth |> val_labels() |> names()
-names2 <- offline$awb1_2_country_brth |> val_labels() |> names()
-all(names1 == names2)
-
-# One says Christian, the other says Christianity
-names1 <- online$awb1_2y_religion_r4 |> val_labels() |> names()
-names2 <- offline$awb1_2y_religion_r4 |> val_labels() |> names()
-names1
-names2
-
-# checkbox, so the labels don't exist in a column attribute
-# one says please, the other doesn't
-vlabel_conflict$on_categories[3]
-vlabel_conflict$off_categories[3]
-
-vlabel_conflict$on_categories[4]
-vlabel_conflict$off_categories[4]
-
-vlabel_conflict$on_categories[5]
-vlabel_conflict$off_categories[5]
-
-vlabel_conflict$on_categories[6]
-vlabel_conflict$off_categories[6]
-
-vlabel_conflict$on_categories[7]
-vlabel_conflict$off_categories[7]
-
-# The label conflicts are all trivial differences and can be ignored
+# no label conflicts
 
 # add survey indicator to each dataset --- label values once appended 
 online <- online %>% mutate(survey_mode = 1) # 1=online
 offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
 # value types incorrectly read as numeric
-offline$awb3_3_home_2_jb_othr_1 <- as.character(offline$awb3_3_home_2_jb_othr_1)
-offline$awb3_3_home_2_jb_othr_2 <- as.character(offline$awb3_3_home_2_jb_othr_2)
-
+# process here
 
 
 # add missing/changed question indicators to data dictionaries
 online_dict <- online_dict |> aow_add_dict_cols()
 offline_dict <- offline_dict |> aow_add_dict_cols() 
+
 
 # trim data down to match in-version data dict vars
 online <- online |> aow_trim_var_versions_data(online_dict, min_online_version, max_online_version)
@@ -115,7 +86,7 @@ mod_allcols_order <- names(mod_allcols)
 mod_allcols$year_group <- NULL
 mod_allcols <- mod_allcols |> left_join(yrgp_lkup)
 
-# merge all survey timestamps - creates duplicate but we'll deal with these later
+# merge all survey timestamps - might creates duplicates but we'll deal with these later
 mod_allcols <- mod_allcols |> left_join(timestamps)
 
 # check conflicting value labels
@@ -259,5 +230,5 @@ if(nrow(removed_txt > 0)) {
 mod_allcols <- mod_allcols |> select(any_of(mod_allcols_order), everything())
 
 # export
-saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module1_merged.rds")
+saveRDS(mod_allcols, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_merged.rds")
 

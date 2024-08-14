@@ -23,9 +23,14 @@ srv1 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW
 srv2 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module2_labelled.rds")
 srv3 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module3_labelled.rds")
 srv4 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module4_labelled.rds")
+srv231 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module231_labelled.rds")
+srv232 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module232_labelled.rds")
+
 
 
 dat_df <- denom |> select(aow_recruitment_id) |>
+  left_join(srv231 |> select(aow_recruitment_id) |> mutate(has_survey_m231 = 1) |> unique()) |>
+  left_join(srv232 |> select(aow_recruitment_id) |> mutate(has_survey_m232 = 1) |> unique()) |>
   left_join(srv1 |> select(aow_recruitment_id) |> mutate(has_survey_m1 = 1) |> unique()) |>
   left_join(srv2 |> select(aow_recruitment_id) |> mutate(has_survey_m2 = 1) |> unique()) |>
   left_join(srv3 |> select(aow_recruitment_id) |> mutate(has_survey_m3 = 1) |> unique()) |>
@@ -36,15 +41,17 @@ dat_df <- denom |> select(aow_recruitment_id) |>
   left_join(htwt |> select(aow_recruitment_id) |> mutate(has_htwt = 1) |> unique())
 
 dat_df <- dat_df |> mutate(across(starts_with("has_"), ~if_else(!is.na(.), 1, 0))) |>
-  mutate(has_survey = ifelse(has_survey_m1 == 1 | has_survey_m2 == 1 | has_survey_m3 == 1 | has_survey_m4 == 1, 1, 0),
+  mutate(has_survey = ifelse(has_survey_m231 | has_survey_m232 | has_survey_m1 == 1 | has_survey_m2 == 1 | has_survey_m3 == 1 | has_survey_m4 == 1, 1, 0),
          has_measure = ifelse(has_bioimp == 1 | has_bp == 1 | has_skinfld == 1 | has_htwt == 1, 1, 0),
          has_data = ifelse(has_survey == 1 | has_measure == 1, 1, 0))
 
-dat_df <- dat_df |> set_variable_labels(has_survey_m1 = "Has AoW survey module 1",
-                                        has_survey_m2 = "Has AoW survey module 2",
-                                        has_survey_m3 = "Has AoW survey module 3",
-                                        has_survey_m4 = "Has AoW survey module 4",
-                                        has_survey = "Has any AoW survey",
+dat_df <- dat_df |> set_variable_labels(has_survey_m231 = "Has AoW 2024 release survey module 231",
+                                        has_survey_m232 = "Has AoW 2024 release survey module 232",
+                                        has_survey_m1 = "Has AoW 2023 release survey module 1",
+                                        has_survey_m2 = "Has AoW 2023 release survey module 2",
+                                        has_survey_m3 = "Has AoW 2023 release survey module 3",
+                                        has_survey_m4 = "Has AoW 2023 release survey module 4",
+                                        has_survey = "Has any AoW survey from any release",
                                         has_bioimp = "Has AoW bioimpedance",
                                         has_bp = "Has AoW blood pressures",
                                         has_skinfld = "Has AoW skinfolds",
@@ -55,20 +62,24 @@ dat_df <- dat_df |> set_variable_labels(has_survey_m1 = "Has AoW survey module 1
 
 has_labs <- c(Yes = 1, No = 0)
 
-dat_df <- dat_df |> set_value_labels(has_survey_m1 = has_labs,
-                                        has_survey_m2 = has_labs,
-                                        has_survey_m3 = has_labs,
-                                        has_survey_m4 = has_labs,
-                                        has_survey = has_labs,
-                                        has_bioimp = has_labs,
-                                        has_bp = has_labs,
-                                        has_skinfld = has_labs,
-                                        has_htwt = has_labs,
-                                        has_measure = has_labs,
-                                        has_data = has_labs
+dat_df <- dat_df |> set_value_labels(has_survey_m231 = has_labs,
+                                     has_survey_m232 = has_labs,
+                                     has_survey_m1 = has_labs,
+                                     has_survey_m2 = has_labs,
+                                     has_survey_m3 = has_labs,
+                                     has_survey_m4 = has_labs,
+                                     has_survey = has_labs,
+                                     has_bioimp = has_labs,
+                                     has_bp = has_labs,
+                                     has_skinfld = has_labs,
+                                     has_htwt = has_labs,
+                                     has_measure = has_labs,
+                                     has_data = has_labs
 )
 
 dat_df <- dat_df |> select(aow_recruitment_id,
+                           has_survey_m231,
+                           has_survey_m232,
                            has_survey_m1,
                            has_survey_m2,
                            has_survey_m3,
