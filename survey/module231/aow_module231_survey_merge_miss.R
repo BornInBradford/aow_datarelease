@@ -125,30 +125,6 @@ add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat")
 
 
 
-# add year group missing vars
-
-year_group <- offline_dict |> bind_rows(online_dict) |>
-  filter(!is.na(year_group)) |>
-  select(variable, type, year_group) |>
-  unique()
-year_group_cat <- year_group |> filter(type %in% aow_redcap_cat_type()) |>
-  select(variable, year_group) |> unique()
-year_group_txt <- year_group |> filter(type %in% aow_redcap_txt_type()) |>
-  select(variable, year_group) |> unique()
-
-# loop through variables - categorical
-if(nrow(year_group_cat > 0)) {
-  for(v in 1:nrow(year_group_cat)) {
-    mod_allcols <- mod_allcols |> aow_miss_cat_yrgrp(year_group_cat$variable[v], year_group_cat$year_group[v])
-  }
-}
-# loop through variables - text
-if(nrow(year_group_txt > 0)) {
-  for(v in 1:nrow(year_group_txt)) {
-    mod_allcols <- mod_allcols |> aow_miss_txt_yrgrp(year_group_txt$variable[v], year_group_txt$year_group[v])
-  }
-}
-
 
 # add version when added missing vars
 added <- offline_dict |> bind_rows(online_dict) |>
