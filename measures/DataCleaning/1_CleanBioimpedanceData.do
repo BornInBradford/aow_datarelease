@@ -7,6 +7,10 @@
 
 	Date created				: 	17th July 2023
 	
+	Date amended				:	11th  July 2024
+	
+	Reason for amendment		:	To include data from academic year 2023/24
+	
 	Stata version				: 	17.0
 
 	__________________________________________________________________________
@@ -17,6 +21,7 @@ version 17
 clear all
 
 use "U:\Born in Bradford - AOW Raw Data\sql\bioimpedance\data\AOW_Person_Bioimpedance.dta", clear
+count/* n=3,739 */
 
 * Rename ID and make lower case so can merge with denominator data
 gen aow_recruitment_id1 = lower(AoWRecruitmentID)
@@ -30,6 +35,14 @@ order aow_recruitment_id
 * Merge with denominator 
 merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(master matched) 
 drop SEX FIRSTNAME LASTNAME BIRTHDATE PATNR FLAG
+
+* Save the unmerged records
+preserve
+keep if _merge==1
+export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_notlinked.csv", replace
+restore
+
+drop if _merge==1
 
 * Generate a date variable from date/time 
 gen date_measurement = dofc(DATETIME)
@@ -79,17 +92,26 @@ drop birth_date
 * Check measurements	
 sum height weight bmi fatp fatm pmm ffm tbw imp, det
 
-* Save a dataset of not linked
-preserve
-keep if _merge==1
-keep aow_recruitment_id date_measurement age_y height - imp
-export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_notlinked.csv", replace
-restore
+scatter height weight
+list aow_recruitment_id height weight bmi fatp fatm pmm ffm if height<150 & (weight>85 & weight<.)
 
-* Save a dataset excluding those not linked
-keep if _merge==3
+scatter bmi fatp
+scatter bmi fatp, mlabel(aow_recruitment_id)
+
+/* three outliers:
+aow1128552
+aow1053511
+aow1149384
+ */
+list aow_recruitment_id height weight bmi fatp fatm pmm ffm if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1053511" | aow_recruitment_id=="aow1149384" 
+
+/* none of these look right; the fatp/patm/ppm/ffm are disproportionate to the BMI so I'm going to drop them */
+drop if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1053511" | aow_recruitment_id=="aow1149384" 
+
 drop _merge
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", replace
+compress
+
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20240918.dta", replace
 
 
 
