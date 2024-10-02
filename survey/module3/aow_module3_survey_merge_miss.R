@@ -134,12 +134,23 @@ offline_dict <- offline_dict |> filter(!variable %in% c("awb4_2_outside_schl_1_a
                                                         "awb4_2_outside_schl_2_a5", 
                                                         "awb4_2_outside_schl_3_a5", 
                                                         "awb4_2_outside_schl_4_a5", 
-                                                        "awb4_2_outside_schl_5_a5"))
+                                                        "awb4_2_outside_schl_5_a5")) |>
+  mutate(revised = case_when(variable == "awb4_2_outside_schl_1_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_2_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_3_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_4_r7" ~ NA,
+                             TRUE ~ revised))
+                             
 online_dict <- online_dict |> filter(!variable %in% c("awb4_2_outside_schl_1_a5",
                                                       "awb4_2_outside_schl_2_a5", 
                                                       "awb4_2_outside_schl_3_a5", 
                                                       "awb4_2_outside_schl_4_a5", 
-                                                      "awb4_2_outside_schl_5_a5"))
+                                                      "awb4_2_outside_schl_5_a5")) |>
+  mutate(revised = case_when(variable == "awb4_2_outside_schl_1_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_2_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_3_r7" ~ NA,
+                             variable == "awb4_2_outside_schl_4_r7" ~ NA,
+                             TRUE ~ revised))
 
 # merge into awb5_1_food_dt_6_r7 which is used going forward 
 mod_allcols <- mod_allcols |> mutate(awb5_1_food_dt_6_r7 = case_when(survey_mode == 1 ~ coalesce(awb5_1_food_dt_6_r7, awb5_1_food_dt_6),
