@@ -21,23 +21,34 @@ new_names_stems <- new_names |> aow_srv_var_stems()
 pre_rec_ids <- c(pre_mod1$aow_recruitment_id, pre_mod2$aow_recruitment_id, pre_mod3$aow_recruitment_id, pre_mod4$aow_recruitment_id) |>
   unique()
 
+# year_group value type has changed
+format_year_group <- function(df) {
+
+  df <- df |>
+    mutate(year_group = year_group |> trimws() |> as.integer()) |>
+    set_value_labels(year_group = c("Year 7" = 7,
+                                    "Year 8" = 8,
+                                    "Year 9" = 9,
+                                    "Year 10" = 10,
+                                    "Year 11" = 11,
+                                    "Year 12" = 12,
+                                    "Year 13" = 13,
+                                    "various - see module specific data" = -1))
+
+  return(df)
+  
+}
+
+pre_mod1 <- pre_mod1 |> format_year_group()
+pre_mod2 <- pre_mod2 |> format_year_group()
+pre_mod3 <- pre_mod3 |> format_year_group()
+pre_mod4 <- pre_mod4 |> format_year_group()
+
 # derive previous module merged administrative dataset
 pre_mod_admin <- pre_mod1 |> select(any_of(aow_survey_column_order())) |>
   bind_rows(pre_mod2 |> select(any_of(aow_survey_column_order()))) |>
   bind_rows(pre_mod3 |> select(any_of(aow_survey_column_order()))) |>
   bind_rows(pre_mod4 |> select(any_of(aow_survey_column_order())))
-
-# year_group value type has changed
-pre_mod_admin <- pre_mod_admin |>
-  mutate(year_group = year_group |> trimws() |> as.integer()) |>
-  set_value_labels(year_group = c("Year 7" = 7,
-                                  "Year 8" = 8,
-                                  "Year 9" = 9,
-                                  "Year 10" = 10,
-                                  "Year 11" = 11,
-                                  "Year 12" = 12,
-                                  "Year 13" = 13,
-                                  "various - see module specific data" = -1))
 
 pre_mod_admin <- pre_mod_admin |> aow_pre_mod_admin_data()
 
