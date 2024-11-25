@@ -72,7 +72,7 @@ lab var ffm "Fat free mass (kg)"
 rename PMM pmm
 lab var pmm "Predicted muscle mass (kg)"
 rename TBW tbw
-lab var tbw "Total body water (kg)"
+lab var tbw "Total body water (%)"
 rename IMP imp
 lab var imp "Impedance (ohms)"
 lab var aow_recruitment_id "Age of Wonder recruitment ID"
@@ -111,7 +111,17 @@ drop if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1053511" | ao
 drop _merge
 compress
 
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20240918.dta", replace
+* Final check
+graph matrix height weight bmi fatp fatm pmm ffm tbw imp
+
+scatter fatm pmm, mlabel(aow_recruitment_id)
+edit aow_recruitment_id height weight bmi fatp fatm pmm ffm tbw imp if aow_recruitment_id=="aow1038470"
+edit aow_recruitment_id height weight bmi fatp fatm pmm ffm tbw imp if pmm>80
+
+drop if aow_recruitment_id=="aow1149954" | aow_recruitment_id=="aow1038470"
+
+
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", replace
 
 
 

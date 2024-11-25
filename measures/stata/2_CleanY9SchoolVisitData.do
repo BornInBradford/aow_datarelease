@@ -36,7 +36,7 @@ merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\
 preserve
 keep if _merge==1
 keep aow_recruitment_id aow_person_id BiBPersonID date_time_collection hw_height hw_weight
-count	/* n=79 */
+count	/* n=78 */
 export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_y9schoolvisit_notlinked.csv", replace
 restore
 
@@ -50,66 +50,62 @@ format date_measurement %td
 drop date_time_collection strdate
 
 * Drop if no height and weight measurements
-drop if hw_height==. & hw_weight==.
-
-* Rename height and weight
-rename hw_height height
-rename hw_weight weight
-
-* Generate and format BMI
-gen bmi = weight/height^2 * 10000
-replace bmi = round(bmi, 0.1)
+drop if hw_height==. & hw_weight==.	/* n=1,014 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
-/* First rename master variables as I want to check them */
-rename height cheight
-rename weight cweight
-rename bmi cbmi
 
-merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight bmi) nogen
+merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight) nogen
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
-replace cheight = height if height!=. & cheight==.
-replace cweight = weight if weight!=. & cweight==.
-replace cbmi = bmi if bmi!=. & cbmi==.
+replace hw_height = height if height!=. & hw_height==.
+replace hw_weight = weight if weight!=. & hw_weight==.
 
 * Check values 
-sum cheight cweight cbmi, det
+sum hw_height hw_weight, det
+scatter hw_height hw_weight, mlabel(aow_recruitment_id)
+list aow_recruitment_id if hw_weight>800 & hw_weight<.
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1203082"
+replace hw_weight=51.2 if aow_recruitment_id=="aow1203082"
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1186105"
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1212273"
+replace hw_height=. if aow_recruitment_id=="aow1212273"
 
 * Some implausible values here. Check them against bioimpedance data
 
 * Identify height differences between the datasets
-gen heightdiff = abs(cheight - height)
+gen heightdiff = abs(hw_height - height)
 sum heightdiff
-*edit aow_recruitment_id date_measurement cheight height cweight weight cbmi bmi heightdiff if heightdiff>1 & heightdiff<.
-/* Some of the cheights are clearly wrong i.e. the weight value has been entered; I will update these. For others, it is obvious from the BMI which one is incorrect. For others still, either height is feasible so I will have to drop these 
-replace cheight = height if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
-replace cbmi = bmi if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
-replace heightdiff=. if aow_recruitment_id=="aow1059260" & date_measurement==d(12dec2022)
+edit aow_recruitment_id date_measurement hw_height height hw_weight weight heightdiff if heightdiff>1 & heightdiff<.
+/* Either height is feasible. For consistency, I will prioritise the bioimpedance measurements */ 
+replace hw_height = height if heightdiff>1 & heightdiff<.
+replace hw_weight = weight if heightdiff>1 & heightdiff<.
 
-replace cheight=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
-replace cbmi=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
-replace heightdiff=. if aow_recruitment_id=="aow1159037" & date_measurement==d(28nov2022)
-*/
-drop if heightdiff>1 & heightdiff<.
+* Identify weight differences between the datasets
+gen weightdiff = abs(hw_weight - weight)
+sum weightdiff
+edit aow_recruitment_id date_measurement hw_height height hw_weight weight weightdiff if weightdiff>1 & weightdiff<.
+/* Prioritise the bioimpedance measurements */ 
+replace hw_weight = weight if weightdiff>1 & weightdiff<.
 
-sort cweight
-*edit aow_recruitment_id date_measurement cheight height cweight weight cbmi bmi if aow_recruitment_id=="aow1077643" | aow_recruitment_id=="aow1056258" 
-/*
-replace cweight = weight if aow_recruitment_id=="aow1077643" & date_measurement==d(25apr2023)
-replace cbmi = bmi if aow_recruitment_id=="aow1077643" & date_measurement==d(25apr2023)
+* Drop bioimpedance data
+drop height weight heightdiff weightdiff
 
-replace cweight = weight if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
-replace cbmi = bmi if aow_recruitment_id=="aow1056258" & date_measurement==d(28nov2022)
-*/
+* Generate and format BMI
+gen bmi = hw_weight/hw_height^2 * 10000
+replace bmi = round(bmi, 0.1)
 
-* Drop bioimpedance variables
-drop height weight bmi 
+* Rename variables 
+rename hw_height height
+rename hw_weight weight
 
-* Rename variables again
-rename cheight height
-rename cweight weight
-rename cbmi bmi
+* Re-check measurements	
+sum height weight bmi, det
+
+scatter height weight
+* Remove outlier
+drop if height<120
+
+graph matrix height weight bmi
 
 * Generate age variables
 gen age_m = (date_measurement - birth_date) / 30.4375
@@ -128,25 +124,7 @@ lab var aow_recruitment_id "Age of Wonder recruitment ID"
 * Order variables
 order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
 
-* Check measurements	
-tabstat height weight bmi, s(p50 min max) f(%9.2f)
-sum height weight bmi, det
-
-/* Errors:
-	aow1109172 height and weight both = 175.3; remove record
-	aow1095991 height=157.5, weight=158; remove record
-	aow1050913 height and weight both = 40.9; remove record	
-	aow1203082 weight=851.21; set weight and bmi to missing
-	aow1212273 height=16, weight=66; remove record
-*/
-
-*replace height=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
-*replace bmi=. if aow_recruitment_id=="aow1050913" & date_measurement==d(28nov2022)
-
-* Set bmi to 1dp 
-replace bmi = round(bmi, 0.1)
-
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20240918.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight.dta", replace
 
 
 
@@ -182,7 +160,7 @@ drop birth_date
 
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.
-count	/* n=5,226 */
+count	/* n=5,148 */
 
 * Order variables
 order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
@@ -196,49 +174,35 @@ lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 
 **** Identify implausible values and export data for checking
-preserve
-keep aow_recruitment_id date_measurement age_y - bp_dia_2
+*preserve
+*keep aow_recruitment_id date_measurement age_y - bp_dia_2
 
-* Summary stats
-sum bp*, det	
+*** Summary stats systolic
+sum bp_sys_1 bp_sys_2, det	
+scatter bp_sys_1 bp_sys_2
 
-/* Some don't look plausible. 
+* There are still some huge differences between the two readings here, I will set them to missing if diff>50
+gen sbpdiff = abs(bp_sys_1 - bp_sys_2)
+replace bp_sys_1=. if sbpdiff>50 & sbpdiff<.
+replace bp_sys_2=. if sbpdiff>50 & sbpdiff<.
+scatter bp_sys_1 bp_sys_2
 
-SPB 1st and 99th percentile = 93 and 163 (lowest and highest of both readings)
-DPB 1st and 99th percentile = 54 and 119 (lowest and highest of both readings)
-*/
+*** Summary stats diastolic
+sum bp_dia_1 bp_dia_2, det	
 
-* Generate a flag if <1st or >99th percentile
+scatter bp_dia_1 bp_dia_2
+
+* There are still some huge differences between the two readings here, I will set them to missing if diff>50
+gen dbpdiff = abs(bp_dia_1 - bp_dia_2)
+replace bp_dia_1=. if dbpdiff>50 & dbpdiff<.
+replace bp_dia_2=. if dbpdiff>50 & dbpdiff<.
+
+/* Generate a flag if <1st or >99th percentile
 gen sbp_lowhi_percentile_flag = .
 replace sbp_lowhi_percentile=1 if (bp_sys_1<93 | bp_sys_2<93) | ((bp_sys_1>163 & bp_sys_1<.) | (bp_sys_2>163 & bp_sys_2<.))
 
 gen dbp_lowhi_percentile_flag = .
 replace dbp_lowhi_percentile=1 if (bp_dia_1<54 | bp_dia_2<54) | ((bp_dia_1>119  & bp_dia_1<.) | (bp_dia_2>119 & bp_dia_2<.))
-
-
-* Generate differences between first and second readings
-* SBP
-*gen sbpdiff = (bp_sys_1 - bp_sys_2)
-*sum sbpdiff
-gen sbpdiff_abs = abs(bp_sys_1 - bp_sys_2)
-sum sbpdiff_abs
-/*
-    Variable |        Obs        Mean    Std. dev.       Min        Max
--------------+---------------------------------------------------------
-     sbpdiff |      5,156    8.732556    9.539512          0    138.861
-*/
-
-
-* DBP
-*gen dbpdiff = (bp_dia_1 - bp_dia_2)
-*sum dbpdiff
-gen dbpdiff_abs = abs(bp_dia_1 - bp_dia_2)
-sum dbpdiff_abs
-/*
-    Variable |        Obs        Mean    Std. dev.       Min        Max
--------------+---------------------------------------------------------
- dbpdiff_abs |      5,156    7.029674    9.810086          0        124
-*/
 
 order bp_sys_1 bp_sys_2 sbp_lowhi_percentile sbpdiff_abs bp_dia_1 bp_dia_2 dbp_lowhi_percentile dbpdiff_abs, after(age_y)
 
@@ -251,24 +215,27 @@ replace dbpdiff_flag=1 if dbpdiff_abs>20 &  dbpdiff_abs<.
 
 * keep flagged 
 keep if sbp_lowhi_percentile_flag==1 | dbp_lowhi_percentile_flag==1 | sbpdiff_flag==1 | dbpdiff_flag==1 
-count	/* n=657. This is a lot! */
+count	/* n=566. This is a lot! */
 
 /* Drop high / low readings as long as the difference is <20 */
 drop if (sbp_lowhi_percentile_flag==1 & sbpdiff_abs<20) & (dbp_lowhi_percentile_flag==1 & dbpdiff_abs<20)
-count	/* n=655 */
+count	/* n=2 */
 
 /* Drop readings where the difference is <20 */
 drop if sbpdiff_abs<20 & dbpdiff_abs<20
-count	/* n=574 */
+count	/* n=482 */
 
 export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\bp_checks.csv", replace
 restore
-
-
-
-/* Save
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
 */
+
+* SBP and DBP
+scatter bp_sys_1 bp_dia_1
+scatter bp_sys_2 bp_dia_2
+
+* Save
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
+
 
 
 *------------------------------------------------------------------------------*
@@ -314,7 +281,9 @@ lab var age_y "Age (years) at measurement"
 lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Summary stats
-sum sk*, det	/* all look plausible */
+sum sk*, det	
+scatter sk_tricep sk_subscap
+/* all look plausible */
 
 * Save
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk.dta", replace
