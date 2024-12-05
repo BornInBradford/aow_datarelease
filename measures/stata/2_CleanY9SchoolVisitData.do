@@ -29,19 +29,16 @@ keep date_time_collection hw_aow_id hw_height hw_weight
 gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
 
-* Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id)
-
-* Save a dataset of not linked
+/* Save a dataset of not linked
 preserve
 keep if _merge==1
 keep aow_recruitment_id aow_person_id BiBPersonID date_time_collection hw_height hw_weight
 count	/* n=78 */
 export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_y9schoolvisit_notlinked.csv", replace
 restore
-
 keep if _merge==3
 drop _merge
+*/
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
@@ -54,7 +51,7 @@ drop if hw_height==. & hw_weight==.	/* n=1,014 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
 
-merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight) nogen
+merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241121.dta", keepusing(height weight) nogen
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace hw_height = height if height!=. & hw_height==.
@@ -107,6 +104,9 @@ drop if height<120
 
 graph matrix height weight bmi
 
+* Merge with denominator 
+merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(3)
+
 * Generate age variables
 gen age_m = (date_measurement - birth_date) / 30.4375
 replace age_m = floor(age_m)
@@ -124,7 +124,9 @@ lab var aow_recruitment_id "Age of Wonder recruitment ID"
 * Order variables
 order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
 
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight.dta", replace
+drop _merge
+
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20241121.dta", replace
 
 
 
@@ -232,9 +234,10 @@ restore
 * SBP and DBP
 scatter bp_sys_1 bp_dia_1
 scatter bp_sys_2 bp_dia_2
+drop *diff
 
 * Save
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp_20241121.dta", replace
 
 
 
@@ -279,6 +282,8 @@ lab var date_measurement "Date of measurement"
 lab var age_m "Age (months) at measurement"
 lab var age_y "Age (years) at measurement"
 lab var aow_recruitment_id "Age of Wonder recruitment ID"
+lab var sk_tricep "Triceps skinfold (mm)"
+lab var sk_subscap "Subscapular skinfold (mm)"
 
 * Summary stats
 sum sk*, det	
@@ -286,7 +291,7 @@ scatter sk_tricep sk_subscap
 /* all look plausible */
 
 * Save
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk_20241121.dta", replace
 
 
 
