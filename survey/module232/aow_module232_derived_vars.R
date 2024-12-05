@@ -447,7 +447,33 @@ module <-
 
 # trim down to admin and derived variables
 
-derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols))
+vars_to_drop <- c("rcad_nas",
+                  "rcad_ga_miss",
+                  "rcad_md_miss",
+                  "rcad_missing",
+                  "depression_int",
+                  "depression_factor",
+                  "anxiety_int",
+                  "anxiety_factor",
+                  "total_int",
+                  "total_factor",
+                  "sdq_emotion_miss",
+                  "sdq_conduct_miss",
+                  "sdq_hyperact_miss",
+                  "sdq_peer_miss",
+                  "sdq_prosoc_miss",
+                  "wellbeing_nas",
+                  "wellbeing_missing",
+                  "loneliness_nas",
+                  "loneliness_missing",
+                  "emo_nas",
+                  "emo_missing",
+                  "brs_nas",
+                  "brs_missing",
+                  "addi_nas",
+                  "addi_missing")
+
+derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols), -all_of(vars_to_drop))
 
 # export
 saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module232_derived.rds")

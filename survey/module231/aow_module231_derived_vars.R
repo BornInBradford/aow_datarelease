@@ -182,7 +182,18 @@ module <- module %>%
 
 # trim down to admin and derived variables
 
-derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols))
+vars_to_drop <- c("own_fin_nas",
+                  "own_fin_missing",
+                  "food_avail_nas",
+                  "food_avail_missing",
+                  "edeqs_nas",
+                  "edeqs_missing",
+                  "paqa_nas",
+                  "paqa_missing",
+                  "yapsed_nas",
+                  "yapsed_missing")
+
+derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols), -all_of(vars_to_drop))
 
 # export
 saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_derived.rds")
