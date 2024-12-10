@@ -10,15 +10,17 @@ module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/su
 
 ## Labelling derived variables
 
-module <- module |> set_variable_labels(rcad_ga = "Revised childrens anxiety and depression scale. General anxiety raw score",
-                                        rcad_md = "Revised childrens anxiety and depression scale. Major depression raw score",
-                                        rcad_total = "Revised childrens anxiety and depression scale. Total raw score",
-                                        rcad_md_t = "RCADS Depression (higher = more depressed). Scaled score",
-                                        rcad_ga_t = "RCADS Anxiety (higher = more anxiety). Scaled score",
-                                        rcad_total_t = "RCADS Combined Total scaled score",
-                                        rcad_md_cat = "Revised childrens anxiety and depression scale. Major depression category",
-                                        rcad_ga_cat = "Revised childrens anxiety and depression scale. General anxiety category",
-                                        rcad_total_cat = "Revised childrens anxiety and depression scale. Total category",
+
+
+module <- module |> set_variable_labels(rcad_ga = "RCADS-25 General anxiety. Raw score",
+                                        rcad_md = "RCADS-25 Major depression. Raw score",
+                                        rcad_total = "RCADS-25 Anxiety and depression. Raw score",
+                                        rcad_md_t = "RCADS-25 Major depression (higher = more depressed). Scaled score",
+                                        rcad_ga_t = "RCADS-25 General anxiety (higher = more anxiety). Scaled score",
+                                        rcad_total_t = "RCADS-25 Anxiety and depression. Scaled score",
+                                        rcad_md_cat = "RCADS-25 Major depression category",
+                                        rcad_ga_cat = "RCADS-25 General anxiety category",
+                                        rcad_total_cat = "RCADS-25 Anxiety and depression category",
                                         sdq_emotion = "Strengths and Difficulties Questionnaire (SDQ): Emotional Problems Score",
                                         sdq_emotion_cat = "SDQ: Emotional Problems Score. 4-band classification",
                                         sdq_conduct = "Stengths and Difficulties Questionnaire (SDQ): Conduct Problems Score",
