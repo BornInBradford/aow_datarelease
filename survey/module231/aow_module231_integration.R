@@ -61,6 +61,9 @@ integrated <- pre_merged |> bind_rows(new_module) |>
 # restore column order
 integrated <- integrated |> select(starts_with(new_names_stems))
 
+# drop unnecessary vars
+integrated <- integrated |> select(-awb3_1y_save_mny_a5)
+
 # export
 saveRDS(integrated, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_integrated.rds")
 
