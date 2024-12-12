@@ -32,6 +32,11 @@ gen aow_recruitment_id = strrtrim(aow_recruitment_id1)
 drop AoWRecruitmentID aow_recruitment_id1
 order aow_recruitment_id
 
+* Check for recruitment id duplicates
+bysort aow_recruitment_id: gen total = _N
+tab total	/* all are unique */
+drop total
+
 * Merge with denominator 
 merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(master matched) 
 drop SEX FIRSTNAME LASTNAME BIRTHDATE PATNR FLAG
@@ -120,8 +125,10 @@ edit aow_recruitment_id height weight bmi fatp fatm pmm ffm tbw imp if pmm>80
 
 drop if aow_recruitment_id=="aow1149954" | aow_recruitment_id=="aow1038470"
 
+order aow_recruitment_id aow_person_id BiBPersonID is_bib recruitment_era gender ethnicity_1 ethnicity_2 birth_year birth_month date_measurement - imp
+drop age_recruitment_y - form_tutor_id
 
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241121.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", replace
 
 
 

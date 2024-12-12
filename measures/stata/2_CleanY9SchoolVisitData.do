@@ -5,7 +5,9 @@
 
 	Purpose Of Program 			: 	To clean the AoW year 9 measurements data
 
-	Date created				: 	13th July 2023
+	Date created				: 	13th July 2024
+	
+	Amended						:	12th December 2024
 	
 	Stata version				: 	17.0
 
@@ -16,42 +18,82 @@ version 17
 
 clear all
 
+
 *------------------------------------------------------------------------------*
-* Height and weight
+* Drop duplicates
 *------------------------------------------------------------------------------*
 
 use "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\AoWYear9SchoolVisit.dta", clear
 
-* Drop variables not required
-keep date_time_collection hw_aow_id hw_height hw_weight
+* Keep relevant variables
+keep hw_aow_id date_time_collection hw_height hw_weight bp_arm_circ_a4 bp_cuff_size_a4 bp_clothing_a4 bp_sys_1 bp_dia_1 bp_sys_2 bp_dia_2 sk_tricep sk_subscap
 
 * Rename ID and make lower case so can merge with denominator data
 gen aow_recruitment_id = lower(hw_aow_id)
 drop hw_aow_id
-
-/* Save a dataset of not linked
-preserve
-keep if _merge==1
-keep aow_recruitment_id aow_person_id BiBPersonID date_time_collection hw_height hw_weight
-count	/* n=78 */
-export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_y9schoolvisit_notlinked.csv", replace
-restore
-keep if _merge==3
-drop _merge
-*/
+lab var aow_recruitment_id "Age of Wonder recruitment ID"
 
 * Generate a date variable from date/time 
 gen strdate = substr(date_time_collection, 1, 10)
 gen date_measurement = date(strdate, "YMD")
 format date_measurement %td
 drop date_time_collection strdate
+order aow_recruitment_id date_measurement
+lab var date_measurement "Date of measurement"
+
+* Drop duplicates
+duplicates drop
+
+* Drop if no measurement data
+drop if hw_height==. & hw_weight==. & bp_sys_1==. & bp_dia_1==. & sk_tricep==. & sk_subscap==.
+
+* Drop records where we cannot identify the recruitment era
+drop if aow_recruitment_id=="aow1002641"
+drop if aow_recruitment_id=="aow1002666"
+
+* Drop duplicate recruitment IDs (keeping the earliest measurement). Two duplicates need to be dropped entirely. 
+bysort aow_recruitment_id (date_measurement): gen count=_n
+keep if count==1
+drop count
+
+* Merge with denominator 
+merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) nogen 
+
+* Generate age variables
+gen age_m = (date_measurement - birth_date) / 30.4375
+replace age_m = floor(age_m)
+gen age_y = (date_measurement - birth_date) / 365.25
+replace age_y = floor(age_y)
+drop birth_date
+lab var age_m "Age in months at measurement"
+lab var age_y "Age in years at measurement"
+
+order aow_recruitment_id aow_person_id BiBPersonID is_bib recruitment_era gender ethnicity_1 ethnicity_2 birth_year birth_month date_measurement age_m age_y hw_height - sk_subscap
+
+drop upn- has_data
+
+compress
+save "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\meas_denom.dta", replace
+
+
+*------------------------------------------------------------------------------*
+* Height and weight
+*------------------------------------------------------------------------------*
+
+preserve
+
+* Drop variables not required
+keep aow_recruitment_id - hw_weight
 
 * Drop if no height and weight measurements
-drop if hw_height==. & hw_weight==.	/* n=1,014 */
+drop if hw_height==. & hw_weight==.	/* n=15 */
+
+* Drop duplicates
+duplicates drop	/* n=0 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
 
-merge m:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241121.dta", keepusing(height weight) nogen
+merge 1:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", keepusing(height weight) nogen 
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace hw_height = height if height!=. & hw_height==.
@@ -90,6 +132,7 @@ drop height weight heightdiff weightdiff
 * Generate and format BMI
 gen bmi = hw_weight/hw_height^2 * 10000
 replace bmi = round(bmi, 0.1)
+lab var bmi "BMI (kg/m2)"
 
 * Rename variables 
 rename hw_height height
@@ -104,76 +147,49 @@ drop if height<120
 
 graph matrix height weight bmi
 
-* Merge with denominator 
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id  BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) keep(3)
-
-* Generate age variables
-gen age_m = (date_measurement - birth_date) / 30.4375
-replace age_m = floor(age_m)
-gen age_y = (date_measurement - birth_date) / 365.25
-replace age_y = floor(age_y)
-drop birth_date
-
-* Label
-lab var date_measurement "Date of measurement"
-lab var age_m "Age (months) at measurement"
-lab var age_y "Age (years) at measurement"
-lab var bmi "BMI (kg/m2)"
-lab var aow_recruitment_id "Age of Wonder recruitment ID"
+* Re-check measurements	
+sum height weight bmi, det
 
 * Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
+order age_m age_y, after(date_measurement)
 
-drop _merge
+* Recheck recruitment id
+codebook aow_recruitment_id aow_person_id
 
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20241121.dta", replace
+/* We have 5,124 unique out of 5,353 - how is this happening? */
+drop if aow_person_id==""	/* n=244 */
+codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
 
+* Check the duplicate person IDs
+bysort aow_person_id (date_measurement): gen count = _n
+bysort aow_person_id: gen total = _N
+tab total
+edit if total==2
 
+* One person have implausible values
+drop if aow_person_id=="2371a91556b9ce5c0e39cd09d9f80e17cf1c3ecf"
 
+* Keep earliest date
+keep if count==1
+drop total count
+
+compress
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20241212.dta", replace
+
+restore
 
 *------------------------------------------------------------------------------*
 * Blood pressure
 *------------------------------------------------------------------------------*
 
-use "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\AoWYear9SchoolVisit.dta", clear
+preserve
 
 * Drop variables not required
-keep date_time_collection hw_aow_id bp_sys_1 bp_dia_1 bp_sys_2 bp_dia_2
-
-* Rename ID and make lower case so can merge with denominator data
-gen aow_recruitment_id = lower(hw_aow_id)
-drop hw_aow_id
-
-* Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) nogen keep(matched)
-
-* Generate a date variable from date/time 
-gen strdate = substr(date_time_collection, 1, 10)
-gen date_measurement = date(strdate, "YMD")
-format date_measurement %td
-drop date_time_collection strdate
-
-* Generate age variables
-gen age_m = (date_measurement - birth_date) / 30.4375
-replace age_m = floor(age_m)
-gen age_y = (date_measurement - birth_date) / 365.25
-replace age_y = floor(age_y)
-drop birth_date
+keep aow_recruitment_id - age_y bp_arm_circ_a4 - bp_dia_2
 
 * Drop if no bp measurements
-drop if bp_sys_1==. & bp_dia_1==.
-count	/* n=5,148 */
-
-* Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
-
-* Label
-rename gender sex
-lab var date_measurement "Date of measurement"
-lab var age_m "Age (months) at measurement"
-lab var age_y "Age (years) at measurement"
-lab var aow_recruitment_id "Age of Wonder recruitment ID"
-
+drop if bp_sys_1==. & bp_dia_1==.	/* n=327 */
+count	/* n=4,798 */
 
 **** Identify implausible values and export data for checking
 *preserve
@@ -199,89 +215,46 @@ gen dbpdiff = abs(bp_dia_1 - bp_dia_2)
 replace bp_dia_1=. if dbpdiff>50 & dbpdiff<.
 replace bp_dia_2=. if dbpdiff>50 & dbpdiff<.
 
-/* Generate a flag if <1st or >99th percentile
-gen sbp_lowhi_percentile_flag = .
-replace sbp_lowhi_percentile=1 if (bp_sys_1<93 | bp_sys_2<93) | ((bp_sys_1>163 & bp_sys_1<.) | (bp_sys_2>163 & bp_sys_2<.))
-
-gen dbp_lowhi_percentile_flag = .
-replace dbp_lowhi_percentile=1 if (bp_dia_1<54 | bp_dia_2<54) | ((bp_dia_1>119  & bp_dia_1<.) | (bp_dia_2>119 & bp_dia_2<.))
-
-order bp_sys_1 bp_sys_2 sbp_lowhi_percentile sbpdiff_abs bp_dia_1 bp_dia_2 dbp_lowhi_percentile dbpdiff_abs, after(age_y)
-
-* Flag if difference between readings is >20
-gen sbpdiff_flag=.
-replace sbpdiff_flag=1 if sbpdiff_abs>20 & sbpdiff_abs<.
-
-gen dbpdiff_flag=.
-replace dbpdiff_flag=1 if dbpdiff_abs>20 &  dbpdiff_abs<.
-
-* keep flagged 
-keep if sbp_lowhi_percentile_flag==1 | dbp_lowhi_percentile_flag==1 | sbpdiff_flag==1 | dbpdiff_flag==1 
-count	/* n=566. This is a lot! */
-
-/* Drop high / low readings as long as the difference is <20 */
-drop if (sbp_lowhi_percentile_flag==1 & sbpdiff_abs<20) & (dbp_lowhi_percentile_flag==1 & dbpdiff_abs<20)
-count	/* n=2 */
-
-/* Drop readings where the difference is <20 */
-drop if sbpdiff_abs<20 & dbpdiff_abs<20
-count	/* n=482 */
-
-export delimited using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\bp_checks.csv", replace
-restore
-*/
-
 * SBP and DBP
 scatter bp_sys_1 bp_dia_1
 scatter bp_sys_2 bp_dia_2
 drop *diff
 
+* Check all recruitment and person ids are unique
+codebook aow_recruitment_id aow_person_id
+
+/* We have 4,793 unique person IDs out of 4,798 */
+drop if aow_person_id==""	/* n=0 */
+
+bysort aow_person_id (date_measurement): gen count = _n
+bysort aow_person_id: gen total = _N
+tab total
+edit if total==2
+
+keep if count==1
+drop total count
+
+codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
+
+
 * Save
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp_20241121.dta", replace
+compress
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp_20241212.dta", replace
 
-
+restore
 
 *------------------------------------------------------------------------------*
 * Skin folds
 *------------------------------------------------------------------------------*
 
-use "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\AoWYear9SchoolVisit.dta", clear
 
 * Drop variables not required
-keep date_time_collection hw_aow_id sk_tricep sk_subscap
-
-* Rename ID and make lower case so can merge with denominator data
-gen aow_recruitment_id = lower(hw_aow_id)
-drop hw_aow_id
-
-* Merge with denominator to get sex and dob
-merge m:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id) nogen keep(matched)
-
-* Generate a date variable from date/time 
-gen strdate = substr(date_time_collection, 1, 10)
-gen date_measurement = date(strdate, "YMD")
-format date_measurement %td
-drop date_time_collection strdate
-
-* Generate age variables
-gen age_m = (date_measurement - birth_date) / 30.4375
-replace age_m = floor(age_m)
-gen age_y = (date_measurement - birth_date) / 365.25
-replace age_y = floor(age_y)
-drop birth_date
+keep aow_recruitment_id - age_y sk_tricep sk_subscap
 
 * Drop if no skin fold measurements
-drop if sk_tricep==. & sk_subscap==.
+drop if sk_tricep==. & sk_subscap==.	/* n=798 */
 
-* Order variables
-order aow_person_id BiBPersonID is_bib aow_recruitment_id recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id date_measurement age_m age_y 
-
-* Label
-rename gender sex
-lab var date_measurement "Date of measurement"
-lab var age_m "Age (months) at measurement"
-lab var age_y "Age (years) at measurement"
-lab var aow_recruitment_id "Age of Wonder recruitment ID"
+* Relabel
 lab var sk_tricep "Triceps skinfold (mm)"
 lab var sk_subscap "Subscapular skinfold (mm)"
 
@@ -290,11 +263,33 @@ sum sk*, det
 scatter sk_tricep sk_subscap
 /* all look plausible */
 
+* Check all recruitment and person ids are unique
+codebook aow_recruitment_id aow_person_id
+
+/* We have 4,322 unique person IDs out of 4,327 */
+drop if aow_person_id==""	/* n=0 */
+
+bysort aow_person_id (date_measurement): gen count = _n
+bysort aow_person_id: gen total = _N
+tab total
+edit if total==2
+
+* Some have implausibly different values
+drop if aow_person_id=="2371a91556b9ce5c0e39cd09d9f80e17cf1c3ecf"
+drop if aow_person_id=="9dea1a09b711772e3a7c5dbb3a9a777430bd9bf4"
+drop if aow_person_id=="debc9dd4673040eaf032d4172559ab8cb2e40541"
+
+keep if count==1
+drop total count
+
+codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
+
 * Save
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk_20241121.dta", replace
+compress
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk_20241212.dta", replace
 
 
-
+erase "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\meas_denom.dta"
 
 
 
