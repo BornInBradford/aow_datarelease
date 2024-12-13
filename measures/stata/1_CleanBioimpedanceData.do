@@ -125,8 +125,7 @@ edit aow_recruitment_id height weight bmi fatp fatm pmm ffm tbw imp if pmm>80
 
 drop if aow_recruitment_id=="aow1149954" | aow_recruitment_id=="aow1038470"
 
-order aow_recruitment_id aow_person_id BiBPersonID is_bib recruitment_era gender ethnicity_1 ethnicity_2 birth_year birth_month date_measurement - imp
-drop age_recruitment_y - form_tutor_id
+drop date
 
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", replace
 

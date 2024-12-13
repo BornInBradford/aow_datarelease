@@ -57,7 +57,7 @@ keep if count==1
 drop count
 
 * Merge with denominator 
-merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) nogen 
+merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\denom\data\denom_identifiable.dta", keep(3) nogen keepusing(gender birth_date aow_person_id BiBPersonID is_bib recruitment_era age_recruitment_y age_recruitment_m gender ethnicity_1 ethnicity_2 birth_year birth_month birth_month school_id year_group form_tutor_id)
 
 * Generate age variables
 gen age_m = (date_measurement - birth_date) / 30.4375
@@ -68,9 +68,8 @@ drop birth_date
 lab var age_m "Age in months at measurement"
 lab var age_y "Age in years at measurement"
 
-order aow_recruitment_id aow_person_id BiBPersonID is_bib recruitment_era gender ethnicity_1 ethnicity_2 birth_year birth_month date_measurement age_m age_y hw_height - sk_subscap
-
-drop upn- has_data
+order aow_recruitment_id aow_person_id BiBPersonID - age_y 
+drop bp_arm_circ_a4 bp_cuff_size_a4 bp_clothing_a4
 
 compress
 save "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\meas_denom.dta", replace
@@ -93,7 +92,7 @@ duplicates drop	/* n=0 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
 
-merge 1:1 aow_recruitment_id date_measurement using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", keepusing(height weight) nogen 
+merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", keepusing(height weight) nogen 
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace hw_height = height if height!=. & hw_height==.
@@ -171,7 +170,7 @@ drop if aow_person_id=="2371a91556b9ce5c0e39cd09d9f80e17cf1c3ecf"
 
 * Keep earliest date
 keep if count==1
-drop total count
+drop total count date_measurement
 
 compress
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20241212.dta", replace
@@ -185,7 +184,7 @@ restore
 preserve
 
 * Drop variables not required
-keep aow_recruitment_id - age_y bp_arm_circ_a4 - bp_dia_2
+keep aow_recruitment_id - date_measurement bp*
 
 * Drop if no bp measurements
 drop if bp_sys_1==. & bp_dia_1==.	/* n=327 */
@@ -232,7 +231,7 @@ tab total
 edit if total==2
 
 keep if count==1
-drop total count
+drop total count date_measurement
 
 codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
 
@@ -249,7 +248,7 @@ restore
 
 
 * Drop variables not required
-keep aow_recruitment_id - age_y sk_tricep sk_subscap
+keep aow_recruitment_id - date_measurement sk_tricep sk_subscap
 
 * Drop if no skin fold measurements
 drop if sk_tricep==. & sk_subscap==.	/* n=798 */
@@ -280,7 +279,7 @@ drop if aow_person_id=="9dea1a09b711772e3a7c5dbb3a9a777430bd9bf4"
 drop if aow_person_id=="debc9dd4673040eaf032d4172559ab8cb2e40541"
 
 keep if count==1
-drop total count
+drop total count date_measurement
 
 codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
 
