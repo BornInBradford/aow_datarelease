@@ -100,7 +100,9 @@ replace hw_weight = weight if weight!=. & hw_weight==.
 
 * Check values 
 sum hw_height hw_weight, det
-scatter hw_height hw_weight, mlabel(aow_recruitment_id)
+scatter hw_height hw_weight
+
+, mlabel(aow_recruitment_id)
 list aow_recruitment_id if hw_weight>800 & hw_weight<.
 edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1203082"
 replace hw_weight=51.2 if aow_recruitment_id=="aow1203082"
