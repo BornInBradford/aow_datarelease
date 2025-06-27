@@ -72,7 +72,7 @@ order aow_recruitment_id aow_person_id BiBPersonID - age_y
 drop bp_arm_circ_a4 bp_cuff_size_a4 bp_clothing_a4
 
 compress
-save "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\meas_denom.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_denom.dta", replace
 
 
 *------------------------------------------------------------------------------*
@@ -92,7 +92,7 @@ duplicates drop	/* n=0 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
 
-merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance_20241212.dta", keepusing(height weight) nogen 
+merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight) nogen 
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace hw_height = height if height!=. & hw_height==.
@@ -100,9 +100,8 @@ replace hw_weight = weight if weight!=. & hw_weight==.
 
 * Check values 
 sum hw_height hw_weight, det
-scatter hw_height hw_weight
+scatter hw_height hw_weight, mlabel(aow_recruitment_id)
 
-, mlabel(aow_recruitment_id)
 list aow_recruitment_id if hw_weight>800 & hw_weight<.
 edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1203082"
 replace hw_weight=51.2 if aow_recruitment_id=="aow1203082"
@@ -175,7 +174,7 @@ keep if count==1
 drop total count date_measurement
 
 compress
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight_20241212.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight.dta", replace
 
 restore
 
@@ -240,7 +239,7 @@ codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now 
 
 * Save
 compress
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp_20241212.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
 
 restore
 
@@ -287,10 +286,10 @@ codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now 
 
 * Save
 compress
-save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk_20241212.dta", replace
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_sk.dta", replace
 
 
-erase "U:\Born in Bradford - AOW Raw Data\redcap\measures\data\meas_denom.dta"
+erase "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_denom.dta"
 
 
 
