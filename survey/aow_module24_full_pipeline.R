@@ -19,12 +19,12 @@ if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confid
                                                    "Survey module 24 *unlinked* data frame")
 
 # 3. integrate with existing survey releases: union with previous output, merge/recode questions if needed, drop unnecessary vars
-#    output = module 231 integrated
-source("survey/module231/aow_module231_integration.R")
+#    output = module 24 integrated
+source("survey/module24/aow_module24_integration.R")
 
 # output report if required
-if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_integrated.rds",
-                                                   "Survey module 231 integrated with previous release")
+if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module24_integrated.rds",
+                                                   "Survey module 24 integrated with previous release")
 
 
 # 4. final labelling of variables and values and general tidying

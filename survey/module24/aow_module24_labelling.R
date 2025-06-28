@@ -1,8 +1,8 @@
-# Module 231 survey labelling and tidying
+# Module 24 survey labelling and tidying
 
 source("tools/aow_survey_functions.R")
 
-module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_integrated.rds")
+module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module24_integrated.rds")
 
 
 # drop some variables we don't want to keep

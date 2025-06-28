@@ -45,6 +45,8 @@ mod_select <- mod_allcols |>
   select(-any_of(aow_survey_drop_cols())) |>
   select(any_of(aow_survey_column_order()), everything())
 
+mod_select <- mod_select |> select(-record, -record_id)
+
 # export
 saveRDS(mod_select, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module24_linked.rds")
 saveRDS(data_not_in_denom, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module24_notlinked.rds")

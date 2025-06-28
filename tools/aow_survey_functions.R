@@ -287,7 +287,7 @@ aow_pre_mod_admin_data <- function(pre_mod_admin) {
               form_tutor_id = ifelse(length(unique(form_tutor_id)) > 1, "various - see module specific data", min(form_tutor_id, na.rm = TRUE)),
               age_survey_y = ifelse(all(is.na(age_survey_y)), min(age_survey_y), min(age_survey_y, na.rm = TRUE)),
               age_survey_m = ifelse(all(is.na(age_survey_m)), min(age_survey_m), min(age_survey_m, na.rm = TRUE)),
-              survey_date = as.Date(ifelse(all(is.na(survey_date)), as.Date(min(survey_date)), as.Date(min(survey_date, na.rm = TRUE)))),
+              survey_date = as.Date(ifelse(all(is.na(survey_date)), as.Date(min(survey_date)), as.Date(min(survey_date, na.rm = TRUE))), origin = "1970-01-01"),
               survey_version = ifelse(all(is.na(survey_version)), NA, ifelse(length(unique(survey_version)) > 1, -1, min(survey_version, na.rm = TRUE))),
               survey_mode = ifelse(length(unique(survey_mode)) > 1, 3, min(survey_mode, na.rm = TRUE))) |>
     ungroup() |>
