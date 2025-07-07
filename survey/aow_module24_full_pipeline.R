@@ -36,15 +36,15 @@ if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confid
                                                    "Survey module 24 main labelled data frame")
 
 
-# 5. generate derived variables for module 231
-#    output = module 231 derived
-source("survey/module231/aow_module231_derived_vars.R")
+# 5. generate derived variables for module 24
+#    output = module 24 derived
+source("survey/module24/aow_module24_derived_vars.R")
 
 # 6. final labelling of derived variables and values and general tidying
 #    output = module 231 derived labelled
-source("survey/module231/aow_module231_derived_labelling.R")
+source("survey/module24/aow_module24_derived_labelling.R")
 
 # output report if required
-if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module231_derived_labelled.rds",
-                                                   "Survey module 231 derived variables labelled")
+if(getOption("aow_output_reports")) aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module24_derived_labelled.rds",
+                                                   "Survey module 24 derived variables labelled")
 

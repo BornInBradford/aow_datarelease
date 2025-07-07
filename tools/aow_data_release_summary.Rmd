@@ -22,12 +22,7 @@ bioimp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\A
 bp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_bp.rds")
 sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_sk.rds")
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
-srv1 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module1_labelled.rds")
-srv2 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module2_labelled.rds")
-srv3 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module3_labelled.rds")
-srv4 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module4_labelled.rds")
-srv231 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module231_labelled.rds")
-srv232 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module232_labelled.rds")
+srv24 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module24_labelled.rds")
 
 
 yg_plot <- function(df, title) {
@@ -100,8 +95,7 @@ datatable(summ_df_bib,
 
 ```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-srv231 |> yg_plot("AoW data: survey module 231")
-srv232 |> yg_plot("AoW data: survey module 232")
+srv24 |> yg_plot("AoW data: survey module 24")
 
 ```
 
