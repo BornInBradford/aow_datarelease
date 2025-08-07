@@ -14,6 +14,8 @@ library(ggplot2)
 library(hrbrthemes)
 library(viridis)
 library(DT)
+library(labelled)
+library(epivaultr)
 
 # load data frames
 
@@ -24,6 +26,7 @@ sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
 srv24 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module24_labelled.rds")
 
+fn_is_bib <- function(df) df |> mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB"))
 
 yg_plot <- function(df, title) {
   
@@ -34,30 +37,219 @@ yg_plot <- function(df, title) {
     geom_bar(position = "stack", stat = "count") +
     facet_wrap(vars(recruitment_era), ncol = 1, scales = "free_y") +
     scale_fill_viridis(discrete=TRUE, option = "cividis", begin = 0.25, end = 0.90) +
-    labs(title = title) +
+    labs(title = title, fill = NULL, x = NULL, y = NULL) +
     theme_ipsum(plot_title_face = "plain")
   
   return(g)
   
 }
 
+yg_plot_gu <- function(df, title) {
+  
+  g <- df |> mutate(has_gu_survey = as_factor(has_gu_survey),
+                    year_group = as_factor(year_group)) |>
+                    #year_group = ordered(year_group, c("8", "9", "10"))) |>
+    ggplot(aes(fill = has_gu_survey, x = year_group, group = has_gu_survey)) + 
+    geom_bar(position = "stack", stat = "count") +
+    facet_wrap(vars(recruitment_era), ncol = 1, scales = "free_y") +
+    scale_fill_viridis(discrete=TRUE, option = "cividis", begin = 0.25, end = 0.90) +
+    labs(title = title, fill = NULL, x = NULL, y = NULL) +
+    theme_ipsum(plot_title_face = "plain")
+  
+  return(g)
+  
+}
+
+denom <- denom |> fn_is_bib()
+bioimp <- bioimp |> fn_is_bib()
+bp <- bp |> fn_is_bib()
+sk <- sk |> fn_is_bib()
+htwt <- htwt |> fn_is_bib()
+srv24 <- srv24 |> fn_is_bib()
+
+# couple of bioimpedance measures in year 8?
+bioimp <- bioimp |> filter(year_group == 9)
+
+ev_con <- ev_connect(ev_server = "bhts-bibrf22", ev_database = "EpiVault")
+
+cohort_gu <- ev_simple_fetch(con = ev_con,
+                             project = "BiB_GrowingUp",
+                             table = "participant_pathway")
+
+cohort_gu <- cohort_gu |> filter(participant_type == 2) |>
+  select(BiBPersonID, has_gu_child_survey_cc, has_gu_child_survey_ac)
+
+recruited <- denom |> 
+  group_by(recruitment_era, year_group, is_bib) |> 
+  summarise(n = n_distinct(aow_person_id)) |>
+  mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB")) |>
+  ungroup()
+
+recruited$recruitment_era <- to_factor(recruited$recruitment_era)
+recruited$year_group <- to_factor(recruited$year_group)
+recruited$is_bib <- to_factor(recruited$is_bib)
+
+recruited_gu <- denom |> 
+  filter(is_bib == "BiB") |>
+  left_join(cohort_gu, by = "BiBPersonID") |>
+  mutate(has_gu_survey = ifelse(has_gu_child_survey_cc == 1 | has_gu_child_survey_ac == 1, "GU survey", "No GU survey"))
+
+recruited_gu$recruitment_era <- to_factor(recruited_gu$recruitment_era)
+recruited_gu$year_group <- to_factor(recruited_gu$year_group)
+recruited_gu$has_gu_survey <- to_factor(recruited_gu$has_gu_survey)
+
+recode_has_survey <- function(x) ifelse(!is.na(x) & !is.null(x), "Yes", "-")
+
+
+recruits_2223 <- denom |> filter(has_survey == 1) |>
+  mutate(year_group_2022 = case_when(recruitment_era == "2022-23" ~ year_group,
+                                     recruitment_era == "2023-24" ~ year_group - 1,
+                                     recruitment_era == "2024-25" ~ year_group - 2)) |>
+  select(aow_person_id, year_group_2022, is_bib, year_group, has_survey) |>
+  unique() |>
+  pivot_wider(names_from = c(year_group),
+              names_glue = "year_{year_group}",
+              values_from = has_survey) |>
+  mutate(across(-c(aow_person_id, year_group_2022, is_bib), recode_has_survey)) |>
+  count(year_group_2022, is_bib, year_8, year_9, year_10) |>
+  pivot_wider(names_from = c(is_bib),
+              values_from = n) |>
+  group_by(year_group_2022) |>
+  mutate(BiB = ifelse(is.na(BiB), 0, BiB),
+         Total = `BiB` + `Not BiB`,
+         year_group_2022 = paste0("Year ", year_group_2022),
+         BiB = paste0("(", BiB, " BiB)")) |>
+  ungroup()
+
+recruits_2223_grouped <- recruits_2223 |> mutate(bibtemp = Total - `Not BiB`) |>
+  group_by(year_group_2022) |>
+  summarise(`Any repeats` = sum(Total[nchar(paste0(year_8, year_9, year_10)) > 5]),
+            `Any repeats BiB` = paste0("(", sum(bibtemp[nchar(paste0(year_8, year_9, year_10)) > 5]), " BiB)"),
+            Total = sum(Total),
+            `Total BiB` = paste0("(", sum(bibtemp), " BiB)")
+            ) |>
+   arrange(year_group_2022 == "Year 10")
+
 options(DT.options = list(pageLength = 25,
                           dom = "t"))
 
 
+
 ```
 
-# AoW denominator
+# All AoW recruits
 
-All recruited participants to date, i.e. full class lists received from schools.
+### AoW Y8-10 class lists received
+
+All recruited participants to date, i.e. full class lists received from schools across Y8-10, excluding any late withdrawals.
 
 ```{r denom_plot, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-denom |> yg_plot("AoW recruitment denominator: complete class lists")
+denom |> yg_plot("All AoW recruited: complete class lists")
 
 ```
 
-# Participants with data
+
+
+### Survey module summaries
+
+```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+srv24 |> yg_plot("AoW data: survey module 24")
+
+```
+
+
+
+### School visit measures summaries
+
+```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+bioimp |> yg_plot("AoW school visit: bioimpedance")
+bp |> yg_plot("AoW school visit: blood pressure")
+sk |> yg_plot("AoW school visit: skinfolds")
+htwt |> yg_plot("AoW school visit: height and weight")
+
+
+```
+
+
+### Repeat survey responses
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+recruits_2223_grouped |> 
+  group_by(year_group_2022) |>
+  gt(row_group_as_column = TRUE) |>
+  tab_header("Totals by year group subcohort") |>
+  tab_spanner(label = "Any repeat surveys",
+              columns = c(`Any repeats`, `Any repeats BiB`)) |>
+  tab_spanner(label = "Total surveys",
+              columns = c(Total, `Total BiB`)) |>
+  cols_align(
+    align = "right",
+    columns = c(Total, `Any repeats`)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = c(`Total BiB`, `Any repeats BiB`)
+  ) |>
+  cols_label(`Total` = "",
+             `Total BiB` = "",
+             `Any repeats` = "",
+             `Any repeats BiB` = "") |>
+  tab_stubhead(label = "Year group in 2022")    
+
+recruits_2223 |> 
+  group_by(year_group_2022) |>
+  gt(row_group_as_column = TRUE) |>
+  tab_header("Broken down by response year") |>
+  cols_hide(columns = c(`Not BiB`)) |>
+  tab_spanner(label = "Survey response in year",
+              columns = c(year_8, year_9, year_10)) |>
+  cols_move(
+    columns = BiB,
+    after = Total
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c(year_8, year_9, year_10)
+  ) |>
+  cols_align(
+    align = "right",
+    columns = c(Total)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = c(BiB)
+  ) |>
+  cols_label(year_8 = "Year 8", 
+             year_9 = "Year 9", 
+             year_10 = "Year 10",
+             BiB = "") |>
+  tab_stubhead(label = "Year group in 2022")
+
+```
+
+
+# BiB participants only
+
+### BiB participants in AoW with Growing Up surveys
+
+Just the participants from the original BiB cohort recruited to AoW, and how many of them had a child survey (adult or child completed) from the Growing Up follow-up.
+
+```{r bib_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+recruited_gu |> yg_plot_gu("AoW recruits with Growing Up surveys")
+
+```
+
+
+
+# Detailed tables
+
+### Participants with data
 
 ```{r summary_tbl, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -74,7 +266,8 @@ datatable(summ_df,
 
 ```
 
-# Participants with data, split by BiB membership
+
+### Participants with data, split by BiB membership
 
 ```{r summary_tbl_bib, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -91,24 +284,3 @@ datatable(summ_df_bib,
 
 ```
 
-# Survey module summaries
-
-```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
-
-srv24 |> yg_plot("AoW data: survey module 24")
-
-```
-
-
-
-# School visit measures summaries
-
-```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
-
-bioimp |> yg_plot("AoW school visit: bioimpedance")
-bp |> yg_plot("AoW school visit: blood pressure")
-sk |> yg_plot("AoW school visit: skinfolds")
-htwt |> yg_plot("AoW school visit: height and weight")
-
-
-```
