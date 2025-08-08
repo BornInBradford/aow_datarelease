@@ -1,5 +1,6 @@
 ---
-title: "Age of Wonder data release summary"
+title: "Age of Wonder data summary"
+subtitle: "Recruitment and data collection to end of July 2025"
 output:
   html_document:
     toc: true
@@ -26,14 +27,14 @@ sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
 srv24 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module24_labelled.rds")
 
-fn_is_bib <- function(df) df |> mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB"))
+fmt_is_bib <- function(df) df |> mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB"))
+fmt_has_event <- function(x) ifelse(!is.na(x) & !is.null(x), "Yes", "-")
 
 yg_plot <- function(df, title) {
   
   g <- df |> mutate(is_bib = as_factor(is_bib),
                     year_group = as_factor(year_group)) |>
-                    #year_group = ordered(year_group, c("8", "9", "10"))) |>
-    ggplot(aes(fill = is_bib, x = year_group, group = is_bib)) + 
+                    ggplot(aes(fill = is_bib, x = year_group, group = is_bib)) + 
     geom_bar(position = "stack", stat = "count") +
     facet_wrap(vars(recruitment_era), ncol = 1, scales = "free_y") +
     scale_fill_viridis(discrete=TRUE, option = "cividis", begin = 0.25, end = 0.90) +
@@ -48,8 +49,7 @@ yg_plot_gu <- function(df, title) {
   
   g <- df |> mutate(has_gu_survey = as_factor(has_gu_survey),
                     year_group = as_factor(year_group)) |>
-                    #year_group = ordered(year_group, c("8", "9", "10"))) |>
-    ggplot(aes(fill = has_gu_survey, x = year_group, group = has_gu_survey)) + 
+                    ggplot(aes(fill = has_gu_survey, x = year_group, group = has_gu_survey)) + 
     geom_bar(position = "stack", stat = "count") +
     facet_wrap(vars(recruitment_era), ncol = 1, scales = "free_y") +
     scale_fill_viridis(discrete=TRUE, option = "cividis", begin = 0.25, end = 0.90) +
@@ -60,12 +60,12 @@ yg_plot_gu <- function(df, title) {
   
 }
 
-denom <- denom |> fn_is_bib()
-bioimp <- bioimp |> fn_is_bib()
-bp <- bp |> fn_is_bib()
-sk <- sk |> fn_is_bib()
-htwt <- htwt |> fn_is_bib()
-srv24 <- srv24 |> fn_is_bib()
+denom <- denom |> fmt_is_bib()
+bioimp <- bioimp |> fmt_is_bib()
+bp <- bp |> fmt_is_bib()
+sk <- sk |> fmt_is_bib()
+htwt <- htwt |> fmt_is_bib()
+srv24 <- srv24 |> fmt_is_bib()
 
 # couple of bioimpedance measures in year 8?
 bioimp <- bioimp |> filter(year_group == 9)
@@ -98,37 +98,72 @@ recruited_gu$recruitment_era <- to_factor(recruited_gu$recruitment_era)
 recruited_gu$year_group <- to_factor(recruited_gu$year_group)
 recruited_gu$has_gu_survey <- to_factor(recruited_gu$has_gu_survey)
 
-recode_has_survey <- function(x) ifelse(!is.na(x) & !is.null(x), "Yes", "-")
+repeat_counter <- function(df) {
+  
+  df |>
+    mutate(year_group_2022 = case_when(recruitment_era == "2022-23" ~ year_group,
+                                       recruitment_era == "2023-24" ~ year_group - 1,
+                                       recruitment_era == "2024-25" ~ year_group - 2)) |>
+    select(aow_person_id, year_group_2022, is_bib, year_group, has_event) |>
+    unique() |>
+    pivot_wider(names_from = c(year_group),
+                names_glue = "year_{year_group}",
+                values_from = has_event) |>
+    mutate(across(-c(aow_person_id, year_group_2022, is_bib), fmt_has_event)) |>
+    count(year_group_2022, is_bib, year_8, year_9, year_10) |>
+    pivot_wider(names_from = c(is_bib),
+                values_from = n) |>
+    group_by(year_group_2022) |>
+    mutate(BiB = ifelse(is.na(BiB), 0, BiB),
+           Total = `BiB` + `Not BiB`,
+           year_group_2022 = paste0("Year ", year_group_2022),
+           BiB = paste0("(", BiB, " BiB)")) |>
+    ungroup()
+  
+}
 
+repeat_counter_grouped <- function(df) {
+  
+  df <- df |>
+    group_by(year_group_2022) |>
+    summarise(`Any repeats` = sum(Total[nchar(paste0(year_8, year_9, year_10)) > 5]),
+              `Any repeats BiB` = paste0("(", sum(bibtemp[nchar(paste0(year_8, year_9, year_10)) > 5]), " BiB)"),
+              temp_bib_repeats = sum(bibtemp[nchar(paste0(year_8, year_9, year_10)) > 5]),
+              Total = sum(Total),
+              `Total BiB` = paste0("(", sum(bibtemp), " BiB)"),
+              bibtemp = sum(bibtemp)
+    ) |>
+    arrange(year_group_2022 == "Year 10") |>
+    ungroup()
+  
+  df |>
+    add_row(year_group_2022 = "TOTAL",
+            `Any repeats` = sum(df$`Any repeats`),
+            `Any repeats BiB` = paste0("(", sum(df$temp_bib_repeats), " BiB)"),
+            Total = sum(df$Total),
+            `Total BiB` = paste0("(", sum(df$bibtemp), " BiB)")
+    ) |>
+    select(-bibtemp, -temp_bib_repeats)
 
-recruits_2223 <- denom |> filter(has_survey == 1) |>
-  mutate(year_group_2022 = case_when(recruitment_era == "2022-23" ~ year_group,
-                                     recruitment_era == "2023-24" ~ year_group - 1,
-                                     recruitment_era == "2024-25" ~ year_group - 2)) |>
-  select(aow_person_id, year_group_2022, is_bib, year_group, has_survey) |>
-  unique() |>
-  pivot_wider(names_from = c(year_group),
-              names_glue = "year_{year_group}",
-              values_from = has_survey) |>
-  mutate(across(-c(aow_person_id, year_group_2022, is_bib), recode_has_survey)) |>
-  count(year_group_2022, is_bib, year_8, year_9, year_10) |>
-  pivot_wider(names_from = c(is_bib),
-              values_from = n) |>
-  group_by(year_group_2022) |>
-  mutate(BiB = ifelse(is.na(BiB), 0, BiB),
-         Total = `BiB` + `Not BiB`,
-         year_group_2022 = paste0("Year ", year_group_2022),
-         BiB = paste0("(", BiB, " BiB)")) |>
-  ungroup()
+}
 
-recruits_2223_grouped <- recruits_2223 |> mutate(bibtemp = Total - `Not BiB`) |>
-  group_by(year_group_2022) |>
-  summarise(`Any repeats` = sum(Total[nchar(paste0(year_8, year_9, year_10)) > 5]),
-            `Any repeats BiB` = paste0("(", sum(bibtemp[nchar(paste0(year_8, year_9, year_10)) > 5]), " BiB)"),
-            Total = sum(Total),
-            `Total BiB` = paste0("(", sum(bibtemp), " BiB)")
-            ) |>
-   arrange(year_group_2022 == "Year 10")
+surveys_2223 <- denom |> 
+  mutate(has_event = has_survey) |> 
+  filter(has_event == 1) |>
+  repeat_counter()
+
+surveys_2223_grouped <- surveys_2223 |> 
+  mutate(bibtemp = Total - `Not BiB`) |>
+  repeat_counter_grouped()
+
+recruits_2223 <- denom |>
+  filter(recruitment_era != "2021-22") |>
+  mutate(has_event = 1) |>
+  repeat_counter()
+
+recruits_2223_grouped <- recruits_2223 |> 
+  mutate(bibtemp = Total - `Not BiB`) |>
+  repeat_counter_grouped()
 
 options(DT.options = list(pageLength = 25,
                           dom = "t"))
@@ -137,11 +172,20 @@ options(DT.options = list(pageLength = 25,
 
 ```
 
+The following report gives a breakdown of Age of Wonder (AoW) recruitment volumes and patterns over the years of the study, with counts of completed datasets of each type. 
+
+Please note the following omissions:
+
+  - Surveys have not been processed for the pilot year (2021-22) so are not counted here.
+  - Blood samples are not counted as the data has not been cleaned yet.
+  - CKAT is not included as work to prepare this dataset is ongoing.
+  - Only recruitment and data collection from Y8 to Y10 is included. Data collected in older age groups will be released separately after the 2025-26 academic year.
+
 # All AoW recruits
 
 ### AoW Y8-10 class lists received
 
-All recruited participants to date, i.e. full class lists received from schools across Y8-10, excluding any late withdrawals.
+All recruited participants to date, i.e. full class lists received from schools across Y8-10 in each recruitment year, excluding any late withdrawals.
 
 ```{r denom_plot, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -151,7 +195,9 @@ denom |> yg_plot("All AoW recruited: complete class lists")
 
 
 
-### Survey module summaries
+### Participants with data
+
+Number of participants with completed datasets of each type across Y8-10 in each recruitment year.
 
 ```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -159,9 +205,6 @@ srv24 |> yg_plot("AoW data: survey module 24")
 
 ```
 
-
-
-### School visit measures summaries
 
 ```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -173,13 +216,80 @@ htwt |> yg_plot("AoW school visit: height and weight")
 
 ```
 
+### Repeat recruits
 
-### Repeat survey responses
+The following tables break down the number of participants recruited in each year by whether or not they are recruited in more than one year ("repeat recruits"). The second table "Broken down by recruitment year" gives counts by specific pattern of repeat recruitments over a participant's year group at recruitment. 
+
+The cohort is split by their 2022 year group. We are excluding the pilot year in these counts (2021-22).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 
 recruits_2223_grouped |> 
+  group_by(year_group_2022) |>
+  gt(row_group_as_column = TRUE) |>
+  tab_header("Totals by year group subcohort") |>
+  tab_spanner(label = "Any repeat recruits",
+              columns = c(`Any repeats`, `Any repeats BiB`)) |>
+  tab_spanner(label = "Total recruits",
+              columns = c(Total, `Total BiB`)) |>
+  cols_align(
+    align = "right",
+    columns = c(Total, `Any repeats`)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = c(`Total BiB`, `Any repeats BiB`)
+  ) |>
+  cols_label(`Total` = "",
+             `Total BiB` = "",
+             `Any repeats` = "",
+             `Any repeats BiB` = "") |>
+  tab_stubhead(label = "Year group in 2022")    
+
+recruits_2223 |> 
+  group_by(year_group_2022) |>
+  gt(row_group_as_column = TRUE) |>
+  tab_header("Broken down by recruitment year") |>
+  cols_hide(columns = c(`Not BiB`)) |>
+  tab_spanner(label = "Recruited in year",
+              columns = c(year_8, year_9, year_10)) |>
+  cols_move(
+    columns = BiB,
+    after = Total
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c(year_8, year_9, year_10)
+  ) |>
+  cols_align(
+    align = "right",
+    columns = c(Total)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = c(BiB)
+  ) |>
+  cols_label(year_8 = "Year 8", 
+             year_9 = "Year 9", 
+             year_10 = "Year 10",
+             BiB = "") |>
+  tab_stubhead(label = "Year group in 2022")
+
+```
+
+
+
+### Repeat survey responses
+
+The following tables break down the number of participants with survey responses in each year by whether or not they have a survey response in more than one year ("repeat surveys"). The second table "Broken down by response year" gives counts by specific pattern of repeat survey reponses over a participant's year group at recruitment. 
+
+The cohort is split by their 2022 year group. We are excluding the pilot year in these counts (2021-22).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+surveys_2223_grouped |> 
   group_by(year_group_2022) |>
   gt(row_group_as_column = TRUE) |>
   tab_header("Totals by year group subcohort") |>
@@ -201,7 +311,7 @@ recruits_2223_grouped |>
              `Any repeats BiB` = "") |>
   tab_stubhead(label = "Year group in 2022")    
 
-recruits_2223 |> 
+surveys_2223 |> 
   group_by(year_group_2022) |>
   gt(row_group_as_column = TRUE) |>
   tab_header("Broken down by response year") |>
@@ -249,6 +359,8 @@ recruited_gu |> yg_plot_gu("AoW recruits with Growing Up surveys")
 
 # Detailed tables
 
+The following tables give detailed counts of participants with completed datasets of each type, split by the academic year of recruitment (which we call `recruitment_era`) and the year group they were in at the time.
+
 ### Participants with data
 
 ```{r summary_tbl, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
@@ -259,7 +371,8 @@ summ_df <- denom |> group_by(recruitment_era, year_group) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(recruitment_era, year_group, everything()) |>
-  arrange(recruitment_era, year_group)
+  arrange(recruitment_era, year_group) |>
+  relocate(has_data, .after = total)
 
 datatable(summ_df,
           rownames = FALSE)
@@ -277,7 +390,8 @@ summ_df_bib <- denom |> group_by(is_bib, recruitment_era, year_group) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(recruitment_era, year_group, is_bib, everything()) |>
-  arrange(recruitment_era, year_group, is_bib)
+  arrange(recruitment_era, year_group, is_bib) |>
+  relocate(has_data, .after = total)
 
 datatable(summ_df_bib,
           rownames = FALSE)
