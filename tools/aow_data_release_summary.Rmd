@@ -165,6 +165,25 @@ recruits_2223_grouped <- recruits_2223 |>
   mutate(bibtemp = Total - `Not BiB`) |>
   repeat_counter_grouped()
 
+# headline table
+head_denom <- denom |> filter(recruitment_era != "2021-22") |>
+  select(aow_person_id, is_bib, has_data, has_survey, has_measure) |>
+  group_by(aow_person_id) |>
+  summarise(is_bib = max(is_bib),
+            has_data = max(has_data),
+            has_survey = max(has_survey),
+            has_measure = max(has_measure))
+
+head_denom_bib <- head_denom |> filter(is_bib == "BiB")
+
+head_tab <- data.frame(count = character(0), all_aow = integer(0), bib = integer(0))
+
+head_tab <- head_tab |>
+  add_row(count = "Total number of individuals recruited", all_aow = length(head_denom$aow_person_id), bib = length(head_denom_bib$aow_person_id)) |>
+  add_row(count = "Number with any data at any time", all_aow = sum(head_denom$has_data), bib = sum(head_denom_bib$has_data)) |>
+  add_row(count = "Number with a survey at any time", all_aow = sum(head_denom$has_survey), bib = sum(head_denom_bib$has_survey)) |>
+  add_row(count = "Number with a health measure at any time", all_aow = sum(head_denom$has_measure), bib = sum(head_denom_bib$has_measure))
+
 options(DT.options = list(pageLength = 25,
                           dom = "t"))
 
@@ -180,6 +199,34 @@ Please note the following omissions:
   - Blood samples are not counted as the data has not been cleaned yet.
   - CKAT is not included as work to prepare this dataset is ongoing.
   - Only recruitment and data collection from Y8 to Y10 is included. Data collected in older age groups will be released separately after the 2025-26 academic year.
+
+# Headline counts of individuals
+
+Number of individuals recruited to Age of Wonder and those with some data. Additionally, how many of those are in the original BiB cohort. 
+
+*Note these numbers exclude the pilot year 2021-22 as we have limited data from this year. If this year were to be included we would have 22853 total individuals in AoW, 5984 of which in BiB*
+
+26% of participants recruited to AoW are in the original BiB cohort. We collect some data at some point from 79% of new recruits.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+head_tab |> 
+  gt() |>
+  cols_align(
+    align = "right",
+    columns = c(all_aow, bib)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = c(count)
+  ) |>
+  cols_label(count = "",
+             all_aow = "All of AoW",
+             bib = "BiB participants")
+
+```
+
 
 # All AoW recruits
 
@@ -197,11 +244,11 @@ denom |> yg_plot("All AoW recruited: complete class lists")
 
 ### Participants with data
 
-Number of participants with completed datasets of each type across Y8-10 in each recruitment year.
+Number of participants with completed datasets of each type across Y8-10 in each recruitment year. The plot below reflects data in the module 24 dataset released in 2025. This incorporates survey responses from all years excluding the pilot year where questions were carried forward. In other words, it contains responses to all questions from module 24 and all responses to matching questions from previous modules in previous years, creating a longitudinal survey dataset.
 
 ```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-srv24 |> yg_plot("AoW data: survey module 24")
+srv24 |> yg_plot("AoW surveys")
 
 ```
 
