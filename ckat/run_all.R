@@ -24,6 +24,7 @@ source("build_ckat_cog_denominator.R")
 # 16899                     28290                     28290                     16950 
 # TRK_WITH_task_events.csv 
 # 28240
+source("ckat_events_data.R")
 
 # all_dvs_processeddata_ckat.rds
 # key-value pairs containing the processed data

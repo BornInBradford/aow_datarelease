@@ -57,7 +57,8 @@ participants |> select(-UploadTime) |> duplicated() |> which() |> length()
 
 # take the first recorded upload where duplicated
 participants <- participants |> arrange(UploadTime)
-participants <- participants[!(participants |> select(-UploadTime) |> duplicated()), ]
+participants <- participants[!(participants$aow_recruitment_id |> duplicated()), ]
+participants <- participants |> unique()
 
 # build ckat denominator with session info
 ckat_sessions <- transmute(participants,
@@ -131,6 +132,15 @@ ckat_sessions <- transmute(participants,
 
 
 saveRDS(ckat_sessions, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/ckat/data/ckat_participant_sessions.rds")
+
+ckat_linkage <- ckat_sessions |> select(-p_presentation,
+                                        -ts_completed,
+                                        -ts_interrupted,
+                                        -ts_errors,
+                                        -ts_notes,
+                                        -ckat_version)
+
+saveRDS(ckat_linkage, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/ckat/data/ckat_linkage_denominator.rds")
 
 
 
