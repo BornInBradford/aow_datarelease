@@ -3,6 +3,7 @@
 library(tidyr)
 library(dplyr)
 library(labelled)
+library(lubridate)
 
 # get denominator
 denom <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_identifiable.rds")
@@ -80,6 +81,8 @@ ckat_sessions <- transmute(participants,
                                                        .default = TEST_START),
                            test_end_time = case_when(TEST_END == "empty" ~ NA,
                                                      .default = TEST_END),
+                           age_test_y = (birth_date %--% test_date) %/% years(1),
+                           age_test_m = (birth_date %--% test_date) %/% months(1),
                            p_handedness = case_when(HANDEDNESS == "Left" ~ 1L,
                                                               HANDEDNESS == "Right" ~ 2L,
                                                               HANDEDNESS == "empty" ~ -1L),
@@ -114,6 +117,8 @@ ckat_sessions <- transmute(participants,
                       test_date = "Test session date",
                       test_start_time = "Test session start time",
                       test_end_time = "Test session end time",
+                      age_test_y = "Age in years at CKAT test session",
+                      age_test_m = "Age in months at CKAT test session",
                       p_handedness = "Participant handedness recorded during test session",
                       p_presentation = "Particpant present, absent or declined consent for test session",
                       ts_completed = "Test session complete - flagged by software",
