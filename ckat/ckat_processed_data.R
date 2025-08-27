@@ -13,6 +13,10 @@ denom <- readRDS(file.path(ckat_output, "ckat_linkage_denominator.rds"))
 # get raw processed data
 procdat <- readRDS(file.path(ckat_input, "all_dvs_processeddata_ckat.rds"))
 
+# no session ids so for deduplicating we're going to need to know original row number
+# (and trust they are still in order!)
+
+
 # explore
 table(procdat$FileName)
 
@@ -28,11 +32,16 @@ procdat <- procdat |> transmute(aow_recruitment_id = tolower(FilePath),
                                 value = as.numeric(Value),
                                 variable = Variable)
 
-aim <- procdat |> filter(task == "aim") |> select(-task)
-ste <- procdat |> filter(task == "ste") |> select(-task)
-trk <- procdat |> filter(task == "trk") |> select(-task)
+# also remove simple duplicates
+aim <- procdat |> filter(task == "aim") |> select(-task) |> unique()
+ste <- procdat |> filter(task == "ste") |> select(-task) |> unique()
+trk <- procdat |> filter(task == "trk") |> select(-task) |> unique()
 
-# there are duplicate ids in here which emans we can't pivot without somehow removing them
+# there are duplicate ids in here which means we can't pivot without somehow removing them
+# first try removing NAs
+ste <- ste |> filter(!is.na(value))
+# find the dupes
+ste_dupes <- ste |> filter(aow_recruitment_id %in% ste$aow_recruitment_id[select(ste, aow_recruitment_id, variable) |> duplicated()])
 ste <- ste |> pivot_wider(id_cols = "aow_recruitment_id",
                           names_from = "variable",
                           values_from = "value")
