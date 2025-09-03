@@ -3,6 +3,7 @@
 library(tidyr)
 library(dplyr)
 library(labelled)
+library(readxl)
 
 ckat_input <- file.path("U:/Born in Bradford - AOW Raw Data/sql/ckat/data")
 ckat_output <- file.path("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/ckat/data")
@@ -37,12 +38,49 @@ aim <- procdat |> filter(task == "aim") |> select(-task) |> unique()
 ste <- procdat |> filter(task == "ste") |> select(-task) |> unique()
 trk <- procdat |> filter(task == "trk") |> select(-task) |> unique()
 
+
+
 # there are duplicate ids in here which means we can't pivot without somehow removing them
-# first try removing NAs
-ste <- ste |> filter(!is.na(value))
+
+## AIM
+# first try removing NAs and those not in denom
+aim <- aim |> filter(!is.na(value)) |>
+  semi_join(denom, by = "aow_recruitment_id")
 # find the dupes
-ste_dupes <- ste |> filter(aow_recruitment_id %in% ste$aow_recruitment_id[select(ste, aow_recruitment_id, variable) |> duplicated()])
-ste <- ste |> pivot_wider(id_cols = "aow_recruitment_id",
-                          names_from = "variable",
-                          values_from = "value")
+aim_dupes <- aim$aow_recruitment_id[select(aim, aow_recruitment_id, variable) |> duplicated()] |> unique()
+aim <- aim |> filter(!aow_recruitment_id %in% aim_dupes) |>
+  pivot_wider(id_cols = "aow_recruitment_id",
+              names_from = "variable",
+              values_from = "value")
+
+## STE
+# first try removing NAs and those not in denom
+ste <- ste |> filter(!is.na(value)) |>
+  semi_join(denom, by = "aow_recruitment_id")
+# find the dupes
+ste_dupes <- ste$aow_recruitment_id[select(ste, aow_recruitment_id, variable) |> duplicated()] |> unique()
+ste <- ste |> filter(!aow_recruitment_id %in% ste_dupes) |> 
+  pivot_wider(id_cols = "aow_recruitment_id",
+              names_from = "variable",
+              values_from = "value")
+
+## TRK
+# first try removing NAs and those not in denom
+trk <- trk |> filter(!is.na(value)) |>
+  semi_join(denom, by = "aow_recruitment_id")
+# find the dupes
+trk_dupes <- trk$aow_recruitment_id[select(trk, aow_recruitment_id, variable) |> duplicated()] |> unique()
+trk <- trk |> filter(!aow_recruitment_id %in% trk_dupes) |> 
+  pivot_wider(id_cols = "aow_recruitment_id",
+              names_from = "variable",
+              values_from = "value")
+
+# join to session info
+aim_joined <- denom |> inner_join(aim, by = "aow_recruitment_id")
+ste_joined <- denom |> inner_join(ste, by = "aow_recruitment_id")
+trk_joined <- denom |> inner_join(trk, by = "aow_recruitment_id")
+
+
+# read labels
+ckat_labels <- read_xlsx("U:/Born in Bradford - AOW Raw Data/sql/ckat/docs/ckat_cog_variable_labelling.xlsx")
 
