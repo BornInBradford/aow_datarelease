@@ -81,6 +81,19 @@ ste_joined <- denom |> inner_join(ste, by = "aow_recruitment_id")
 trk_joined <- denom |> inner_join(trk, by = "aow_recruitment_id")
 
 
-# read labels
+# do labelling
 ckat_labels <- read_xlsx("U:/Born in Bradford - AOW Raw Data/sql/ckat/docs/ckat_cog_variable_labelling.xlsx")
+
+set_ckat_labels <- as.list(ckat_labels$label)
+names(set_ckat_labels) <- ckat_labels$variable
+
+aim_joined <- aim_joined |> set_variable_labels(.labels = set_ckat_labels, .strict = FALSE)
+ste_joined <- ste_joined |> set_variable_labels(.labels = set_ckat_labels, .strict = FALSE)
+trk_joined <- trk_joined |> set_variable_labels(.labels = set_ckat_labels, .strict = FALSE)
+
+# export
+saveRDS(aim_joined, file.path(ckat_output, "ckat_processed_dvs_aim.rds"))
+saveRDS(ste_joined, file.path(ckat_output, "ckat_processed_dvs_ste.rds"))
+saveRDS(trk_joined, file.path(ckat_output, "ckat_processed_dvs_trk.rds"))
+
 

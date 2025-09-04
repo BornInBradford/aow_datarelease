@@ -32,6 +32,8 @@ source("ckat/ckat_events_data.R")
 # AIM_dvs.csv STE_dvs.csv TRK_dvs.csv 
 # 3901260       87874      361146
 
+source("ckat/ckat_processed_data.R")
+
 # AIM_movement_data_ckat.rds
 # TRK_STE_Movement_data_ckat.rds
 
