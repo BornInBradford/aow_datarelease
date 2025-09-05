@@ -73,5 +73,6 @@ source("ckat/ckat_processed_data.R")
 # BDR_dvs.csv CRS_dvs.csv FDR_dvs.csv FLK_dvs.csv  PS_dvs.csv 
 # 89264        1424       90784       43032       95148
 
+source("ckat/cognitive_processed_data.R")
 
 

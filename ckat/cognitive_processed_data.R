@@ -121,10 +121,10 @@ flk_joined <- flk_joined |> set_variable_labels(.labels = set_cog_labels, .stric
 ps_joined <- ps_joined |> set_variable_labels(.labels = set_cog_labels, .strict = FALSE)
 
 # export
-saveRDS(bdr_joined, file.path(ckat_output, "cog_processed_dvs_bdr.rds"))
-saveRDS(crs_joined, file.path(ckat_output, "cog_processed_dvs_crs.rds"))
-saveRDS(fdr_joined, file.path(ckat_output, "cog_processed_dvs_fdr.rds"))
-saveRDS(flk_joined, file.path(ckat_output, "cog_processed_dvs_flk.rds"))
-saveRDS(ps_joined, file.path(ckat_output, "cog_processed_dvs_ps.rds"))
+saveRDS(bdr_joined, file.path(cog_output, "cog_processed_dvs_bdr.rds"))
+saveRDS(crs_joined, file.path(cog_output, "cog_processed_dvs_crs.rds"))
+saveRDS(fdr_joined, file.path(cog_output, "cog_processed_dvs_fdr.rds"))
+saveRDS(flk_joined, file.path(cog_output, "cog_processed_dvs_flk.rds"))
+saveRDS(ps_joined, file.path(cog_output, "cog_processed_dvs_ps.rds"))
 
 
