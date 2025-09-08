@@ -36,7 +36,7 @@ For more info on the output files, see the `denom` directory README. These outpu
 
 ### 2. School visits measures
 
-The scripts for creating the bioimpedance, heights/weights, skinfolds and blood pressures data files are in `measures/DataCleaning` and need to be run in Stata.
+The scripts for creating the bioimpedance, heights/weights, skinfolds and blood pressures data files are in `measures/stata` and need to be run in Stata.
 
 Data frame reports can be generated, but for this the data needs to be converted to .rds format. To do the conversion, run `measures/measures_convert_to_rds.R`. Then create the html reports by running `measures/measures_reports.R`.
 
