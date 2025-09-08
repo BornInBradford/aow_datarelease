@@ -528,7 +528,8 @@ module <- module %>%
                       awb6_1_neg_exp_othr_r5 = "You've had a negative experience of social media for another reason",
                       awb6_1_pos_neg = "Has your experience of using social media been mostly positive or negative?",
                       awb6_6_int_hme = "Do you have access to the internet at home?",
-                      awb6_6_int_hme_gd = "How good is your internet at home?"
+                      awb6_6_int_hme_gd = "How good is your internet at home?",
+                      money_behav_1_a20 = "I often buy things on impulse"
   )
 
 

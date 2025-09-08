@@ -31,11 +31,26 @@ mod_allcols <- mod_allcols |> inner_join(denom, by = "aow_recruitment_id") |>
          age_survey_y = (birth_date %--% survey_date) %/% years(1),
          age_survey_m = (birth_date %--% survey_date) %/% months(1))
 
+# how many are missing a survey date?
+missdate <- length(which(is.na(mod_allcols$survey_date)))
+missdate
+
+# drop these if small
+if(missdate < 50) {
+  
+  mod_allcols <- mod_allcols |> filter(!is.na(survey_date))
+  
+} else {
+  
+  stop("Too many records are missing dates: n missing = ", missdate)
+  
+}
+
+
 # count !NAs to help deduplicate
 mod_allcols$valid_values = rowSums(!is.na(mod_allcols)) # much faster than using rowwise()
 
 # deduplicate
-# - prefer records with dates
 # - select most complete row
 mod_allcols <- mod_allcols |> group_by(aow_recruitment_id) |>
   slice_max(n = 1, order_by = valid_values, with_ties = FALSE) |>
