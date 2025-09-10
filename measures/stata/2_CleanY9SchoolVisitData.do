@@ -48,8 +48,12 @@ duplicates drop
 drop if hw_height==. & hw_weight==. & bp_sys_1==. & bp_dia_1==. & sk_tricep==. & sk_subscap==.
 
 * Drop records where we cannot identify the recruitment era
-drop if aow_recruitment_id=="aow1002641"
-drop if aow_recruitment_id=="aow1002666"
+*drop if aow_recruitment_id=="aow1002641"
+*drop if aow_recruitment_id=="aow1002666"
+
+* Check for duplicate recruitment IDs
+duplicates tag aow_recruitment_id, generate(tag)
+tab tag
 
 * Drop duplicate recruitment IDs (keeping the earliest measurement). Two duplicates need to be dropped entirely. 
 bysort aow_recruitment_id (date_measurement): gen count=_n
@@ -79,7 +83,7 @@ save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_d
 * Height and weight
 *------------------------------------------------------------------------------*
 
-preserve
+use "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_denom.dta", clear
 
 * Drop variables not required
 keep aow_recruitment_id - hw_weight
@@ -92,7 +96,7 @@ duplicates drop	/* n=0 */
 
 * Check to see whether bioimpedance heights/weights are in this dataset
 
-merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight) nogen 
+merge 1:1 aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keepusing(height weight) nogen keep(1 3)
 
 * For matched variables, replace any measurements missing from Y9 measurements with those from bioimpedance
 replace hw_height = height if height!=. & hw_height==.
@@ -105,9 +109,17 @@ scatter hw_height hw_weight, mlabel(aow_recruitment_id)
 list aow_recruitment_id if hw_weight>800 & hw_weight<.
 edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1203082"
 replace hw_weight=51.2 if aow_recruitment_id=="aow1203082"
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1159037"
+replace hw_height=151 if aow_recruitment_id=="aow1159037"
+replace hw_weight=40.4 if aow_recruitment_id=="aow1159037"
 edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1186105"
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1050913"
+// Height has been entered same value as weight (40.9); no corresponding bioimpedance data
+edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1059260"
+replace hw_height=146 if aow_recruitment_id=="aow1059260"
 edit aow_recruitment_id hw_height hw_weight height weight if aow_recruitment_id=="aow1212273"
 replace hw_height=. if aow_recruitment_id=="aow1212273"
+// Incorrect height (16)
 
 * Some implausible values here. Check them against bioimpedance data
 
@@ -143,12 +155,18 @@ sum height weight bmi, det
 
 scatter height weight
 * Remove outlier
-drop if height<120
+replace height=. if height<50
 
-graph matrix height weight bmi
+graph matrix height weight bmi, mlabel(aow_recruitment_id)
+edit aow_recruitment_id aow_person_id date_measurement height weight bmi if aow_recruitment_id=="aow1186105"
+// Outlier but plausible
 
 * Re-check measurements	
 sum height weight bmi, det
+
+edit aow_recruitment_id height weight bmi if bmi>50 & bmi<.
+// BMI calculated when no height available. Set to missing
+replace bmi=. if aow_recruitment_id=="aow1050913" | aow_recruitment_id=="aow1212273"
 
 * Order variables
 order age_m age_y, after(date_measurement)
@@ -156,40 +174,28 @@ order age_m age_y, after(date_measurement)
 * Recheck recruitment id
 codebook aow_recruitment_id aow_person_id
 
-/* We have 5,124 unique out of 5,353 - how is this happening? */
-drop if aow_person_id==""	/* n=244 */
-codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
-
 * Check the duplicate person IDs
 bysort aow_person_id (date_measurement): gen count = _n
 bysort aow_person_id: gen total = _N
 tab total
-edit if total==2
-
-* One person have implausible values
-drop if aow_person_id=="2371a91556b9ce5c0e39cd09d9f80e17cf1c3ecf"
-
-* Keep earliest date
-keep if count==1
-drop total count date_measurement
+edit aow_recruitment_id aow_person_id date_measurement height weight bmi if total==2
+// Due to measurements in the last two academic years
+drop count total
 
 compress
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_heightweight.dta", replace
-
-restore
 
 *------------------------------------------------------------------------------*
 * Blood pressure
 *------------------------------------------------------------------------------*
 
-preserve
-
+use "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_denom.dta", clear
 * Drop variables not required
 keep aow_recruitment_id - date_measurement bp*
 
 * Drop if no bp measurements
-drop if bp_sys_1==. & bp_dia_1==.	/* n=327 */
-count	/* n=4,798 */
+drop if bp_sys_1==. & bp_dia_1==.	/* n=274 */
+count	/* n=4,855 */
 
 **** Identify implausible values and export data for checking
 *preserve
@@ -218,41 +224,36 @@ replace bp_dia_2=. if dbpdiff>50 & dbpdiff<.
 * SBP and DBP
 scatter bp_sys_1 bp_dia_1
 scatter bp_sys_2 bp_dia_2
+// implausible diastolic values
+replace bp_dia_2=. if bp_dia_2<25
 drop *diff
 
 * Check all recruitment and person ids are unique
 codebook aow_recruitment_id aow_person_id
 
-/* We have 4,793 unique person IDs out of 4,798 */
-drop if aow_person_id==""	/* n=0 */
-
+/* We have 4,850 unique person IDs out of 4,855 */
 bysort aow_person_id (date_measurement): gen count = _n
 bysort aow_person_id: gen total = _N
 tab total
-edit if total==2
-
-keep if count==1
-drop total count date_measurement
-
-codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
-
+edit aow_recruitment_id aow_person_id date_measurement bp_sys_1 bp_dia_1 bp_sys_2 bp_dia_2 count total if total==2
+// Due to readings completed in both academic years
+drop total count 
 
 * Save
 compress
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bp.dta", replace
 
-restore
 
 *------------------------------------------------------------------------------*
 * Skin folds
 *------------------------------------------------------------------------------*
 
-
+use "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\meas_denom.dta", clear
 * Drop variables not required
 keep aow_recruitment_id - date_measurement sk_tricep sk_subscap
 
 * Drop if no skin fold measurements
-drop if sk_tricep==. & sk_subscap==.	/* n=798 */
+drop if sk_tricep==. & sk_subscap==.	/* n=799 */
 
 * Relabel
 lab var sk_tricep "Triceps skinfold (mm)"
@@ -265,24 +266,6 @@ scatter sk_tricep sk_subscap
 
 * Check all recruitment and person ids are unique
 codebook aow_recruitment_id aow_person_id
-
-/* We have 4,322 unique person IDs out of 4,327 */
-drop if aow_person_id==""	/* n=0 */
-
-bysort aow_person_id (date_measurement): gen count = _n
-bysort aow_person_id: gen total = _N
-tab total
-edit if total==2
-
-* Some have implausibly different values
-drop if aow_person_id=="2371a91556b9ce5c0e39cd09d9f80e17cf1c3ecf"
-drop if aow_person_id=="9dea1a09b711772e3a7c5dbb3a9a777430bd9bf4"
-drop if aow_person_id=="debc9dd4673040eaf032d4172559ab8cb2e40541"
-
-keep if count==1
-drop total count date_measurement
-
-codebook aow_recruitment_id aow_person_id	/* all recruitment IDs are unique now */
 
 * Save
 compress

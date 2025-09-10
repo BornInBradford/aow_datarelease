@@ -7,9 +7,9 @@
 
 	Date created				: 	17th July 2023
 	
-	Date amended				:	11th  July 2024
+	Date amended				:	4th September 2025
 	
-	Reason for amendment		:	To include data from academic year 2023/24
+	Reason for amendment		:	To include data from academic year 2024/25
 	
 	Stata version				: 	17.0
 
@@ -102,16 +102,21 @@ list aow_recruitment_id height weight bmi fatp fatm pmm ffm if height<150 & (wei
 
 scatter bmi fatp
 scatter bmi fatp, mlabel(aow_recruitment_id)
+// Can't see IDs
+list aow_recruitment_id if (bmi>30 & bmi<.) & fatp<10
+list aow_recruitment_id if (bmi<20) & fatp>70
+
 
 /* three outliers:
-aow1128552
-aow1053511
-aow1149384
+ aow1128552 
+ aow1247188 
+ aow1149384 
+ 
  */
-list aow_recruitment_id height weight bmi fatp fatm pmm ffm if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1053511" | aow_recruitment_id=="aow1149384" 
+list aow_recruitment_id height weight bmi fatp fatm pmm ffm if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1247188" | aow_recruitment_id=="aow1149384" 
 
 /* none of these look right; the fatp/patm/ppm/ffm are disproportionate to the BMI so I'm going to drop them */
-drop if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1053511" | aow_recruitment_id=="aow1149384" 
+drop if aow_recruitment_id=="aow1128552" | aow_recruitment_id=="aow1247188" | aow_recruitment_id=="aow1149384" 
 
 drop _merge
 compress
@@ -125,7 +130,7 @@ edit aow_recruitment_id height weight bmi fatp fatm pmm ffm tbw imp if pmm>80
 
 drop if aow_recruitment_id=="aow1149954" | aow_recruitment_id=="aow1038470"
 
-drop date
+drop Flag_Post16 CreateDate
 
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", replace
 
