@@ -125,6 +125,21 @@ denom <- denom_all |>
 denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
   filter(!is.na(birth_date) & birth_date != as.Date("1900-01-01"))
 
+# some schools have sent SEN type (e.g. "Severe Learning Difficulty")
+# instead of provision as requested. We can assume they are on SEN
+# register and in receipt of some support but we don't know what level
+# so creating a "SEN provision at unspecified level" category
+sen_type <- c("SEN support No specialist assessment of need type",
+              "Speech, Language and Communication Needs",
+              "Social, Emotional and Mental Health",
+              "Other Difficulty/Disability",              
+              "Autistic Spectrum Disorder",                     
+              "Severe Learning Difficulty",                       
+              "Moderate Learning Difficulty",                     
+              "Quality First Teaching") |>
+  tolower()
+
+
 # recoding and value labelling
 denom <- denom |> 
   
@@ -155,16 +170,15 @@ denom <- denom |>
   
   # special educational needs
   mutate(sen = sen |> tolower() |> trimws(),
-         sen = case_when(sen %in% c("n") ~ 0L,
-                         sen %in% c("k") ~ 1L,
-                         sen %in% c("e") ~ 2L,
+         sen = case_when(sen %in% c("n", "no") ~ 0L,
+                         sen %in% c("k", "k1", "k2", "k3", "ks+") ~ 1L,
+                         sen %in% c("e", "ehc") ~ 2L,
+                         sen %in% sen_type ~ 3L,
                          TRUE ~ as.integer(NA))) |>
-  # NB some schools have sent SEN type (e.g. "Severe Learning Difficulty")
-  #    instead of provision as requested. Nullifying these while we find out
-  #    whether there's any way to infer provision from type
   set_value_labels(sen = c("No special educational need" = 0, 
                            "Special educational need support" = 1,
-                           "Education, Health and Care Plan" = 2)) |>
+                           "Education, Health and Care Plan" = 2,
+                           "SEN provision at unspecified level" = 3)) |>
   
   # ethnicity higher level - some remapping to 2021 census categories
   # https://www.ethnicity-facts-figures.service.gov.uk/style-guide/ethnic-groups
