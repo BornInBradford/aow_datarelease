@@ -21,7 +21,7 @@ version 17
 clear all
 
 use "U:\Born in Bradford - AOW Raw Data\sql\bioimpedance\data\AOW_Person_Bioimpedance.dta", clear
-count/* n=3,739 */
+count/* n=5,803 */
 
 * Rename ID and make lower case so can merge with denominator data
 gen aow_recruitment_id1 = lower(AoWRecruitmentID)
@@ -133,5 +133,50 @@ drop if aow_recruitment_id=="aow1149954" | aow_recruitment_id=="aow1038470"
 drop Flag_Post16 CreateDate
 
 save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", replace
+
+
+********************************************************************************
+* Now run the do file "CleanY9SchoolVisitData.do"
+* When running the above do file, discrepancies between heights were identified.
+* As we don't know which are the correct ones, the heights in the school visit
+* data have been set to missing. For the bioimpedance data, I will drop these, as
+* any incorrect height measurements will impact on the other bioimpedance 
+* measurements
+********************************************************************************
+
+// Import the csv file containing the incorrect heights
+import delimited "U:\Born In Bradford - Confidential - Data\BiB\processing\AoW\measures\data\HeightErrors_20250930.csv", clear
+
+// Merge with previously cleaned data file, keeping only the records that are not matched with the csv file
+merge 1:1 aow_person_id aow_recruitment_id using "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", keep(2) nogen
+
+// Save dataset. Because there's already a dataset already called aow_bioimpedance, have to name this something else
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance2.dta", replace
+clear
+
+// Erase original dataset
+erase "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta"
+
+// Open new dataset and rename
+use "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance2.dta", clear
+save "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance.dta", replace
+erase "U:\Born In Bradford - Confidential\Data\BiB\processing\AoW\measures\data\aow_bioimpedance2.dta"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

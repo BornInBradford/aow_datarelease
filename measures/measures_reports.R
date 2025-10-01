@@ -14,3 +14,6 @@ aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/measu
 aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/measures/data/aow_sk.rds",
                "School visit measures: skinfolds")
 
+aow_df_summary("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/bloods/data/aow_bloods.rds",
+               "School visit blood tests")
+

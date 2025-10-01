@@ -2,16 +2,24 @@
 
 These scripts produce the Age of Wonder school-based health measures data files. 
 
-### `DataCleaning/1_CleanBioimpedanceData.do`
+### `stata/1_CleanBioimpedanceData.do`
 
 Stata script to create the bioimpedance output data file.
 
-### `DataCleaning/2_CleanY9SchoolVisitData.do`
+### `stata/2_CleanY9SchoolVisitData.do`
 
 Stata script to create the school visit measures that are captured in REDCap. This produces outputs for:
 * height and weight, including derived variables such as BMI and z scores
 * blood pressure
 * skinfolds
+
+### `stata/3_CleanBioimpedanceData2.do`
+
+Stata script that runs another iteration of the bioimpedance cleaning using data from the final health and weight data.
+
+### `stata/4_CleanBloodsData.do`
+
+Stata script to create the blood tests data file.
 
 ### `measures_convert_to_rds.R`
 

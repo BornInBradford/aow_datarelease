@@ -25,6 +25,7 @@ bioimp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\A
 bp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_bp.rds")
 sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_sk.rds")
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
+bld <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\bloods\\data\\aow_bloods.rds")
 srv24 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module24_labelled.rds")
 
 fmt_is_bib <- function(df) df |> mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB"))
@@ -65,6 +66,7 @@ bioimp <- bioimp |> fmt_is_bib()
 bp <- bp |> fmt_is_bib()
 sk <- sk |> fmt_is_bib()
 htwt <- htwt |> fmt_is_bib()
+bld <- bld |> fmt_is_bib()
 srv24 <- srv24 |> fmt_is_bib()
 
 # couple of bioimpedance measures in year 8?
@@ -196,7 +198,6 @@ The following report gives a breakdown of Age of Wonder (AoW) recruitment volume
 Please note the following omissions:
 
   - Surveys have not been processed for the pilot year (2021-22) so are not counted here.
-  - Blood samples are not counted as the data has not been cleaned yet.
   - CKAT is not included as work to prepare this dataset is ongoing.
   - Only recruitment and data collection from Y8 to Y10 is included. Data collected in older age groups will be released separately after the 2025-26 academic year.
 
@@ -259,7 +260,7 @@ bioimp |> yg_plot("AoW school visit: bioimpedance")
 bp |> yg_plot("AoW school visit: blood pressure")
 sk |> yg_plot("AoW school visit: skinfolds")
 htwt |> yg_plot("AoW school visit: height and weight")
-
+bld |> yg_plot("AoW school visit: blood tests")
 
 ```
 
