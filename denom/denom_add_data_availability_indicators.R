@@ -20,6 +20,7 @@ bp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\
 sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_sk.rds")
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
 bld <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\bloods\\data\\aow_bloods.rds")
+ckat <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\ckat\\data\\ckat_participant_sessions.rds")
 srv1 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module1_labelled.rds")
 srv2 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module2_labelled.rds")
 srv3 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module3_labelled.rds")
@@ -42,7 +43,8 @@ dat_df <- denom |> select(aow_recruitment_id) |>
   left_join(bp |> select(aow_recruitment_id) |> mutate(has_bp = 1) |> unique()) |>
   left_join(sk |> select(aow_recruitment_id) |> mutate(has_skinfld = 1) |> unique()) |>
   left_join(htwt |> select(aow_recruitment_id) |> mutate(has_htwt = 1) |> unique()) |>
-  left_join(bld |> select(aow_recruitment_id) |> mutate(has_bloods = 1) |> unique())
+  left_join(bld |> select(aow_recruitment_id) |> mutate(has_bloods = 1) |> unique()) |>
+  left_join(ckat |> select(aow_recruitment_id) |> mutate(has_ckcog = 1) |> unique())
 
 dat_df <- dat_df |> mutate(across(starts_with("has_"), ~if_else(!is.na(.), 1, 0))) |>
   mutate(has_survey = ifelse(has_survey_m24 | has_survey_m231 | has_survey_m232 | has_survey_m1 == 1 | has_survey_m2 == 1 | has_survey_m3 == 1 | has_survey_m4 == 1, 1, 0),
@@ -62,6 +64,7 @@ dat_df <- dat_df |> set_variable_labels(has_survey_m24 = "Has AoW 2025 release s
                                         has_skinfld = "Has AoW skinfolds",
                                         has_htwt = "Has AoW height/weight",
                                         has_bloods = "Has AoW blood tests",
+                                        has_ckcog = "Has AoW CKAT and cognitive testing",
                                         has_measure = "Has any AoW health measure",
                                         has_data = "Has any AoW data"
 )
@@ -81,6 +84,7 @@ dat_df <- dat_df |> set_value_labels(has_survey_m24 = has_labs,
                                      has_skinfld = has_labs,
                                      has_htwt = has_labs,
                                      has_bloods = has_labs,
+                                     has_ckcog = has_labs,
                                      has_measure = has_labs,
                                      has_data = has_labs
 )
@@ -99,6 +103,7 @@ dat_df <- dat_df |> select(aow_recruitment_id,
                            has_skinfld,
                            has_htwt,
                            has_bloods,
+                           has_ckcog,
                            has_measure,
                            has_data)
 
