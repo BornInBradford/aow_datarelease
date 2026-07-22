@@ -1,4 +1,3 @@
-
 library(tidyverse)
 library(haven)
 library(dplyr)
@@ -22,13 +21,19 @@ consent <- read_dta(file.path(input_path, "AOW_Consent.dta"))
 schoolrec <- read_dta(file.path(input_path, "AOW_School_RecruitmentList.dta"))
 cohort <- read_dta(file.path(input_path, "BiB_Cohort.dta"))
 
-# read postcode to lsoa lookup and select only required variables (postcode and LSOA code)
+# read postcode to lsoa lookup and select only required variables (postcode and LSOA code) for 2011
 postcode_lsoa_lookup <- read_csv(file.path(resources_path, "postcode_lsoa_lookup.zip")) %>%
   select(postcode = pcds,
          LSOA11CD = lsoa11cd) 
 
+# read postcode to lsoa lookup and select only required variables (postcode and LSOA code) for 2021
+postcode_lsoa_lookup_21 <- read_csv(file.path(resources_path, "postcode_lsoa_lookup_2021.zip")) %>%
+  select(postcode = pcds,
+         LSOA21CD = lsoa21cd) 
+
 # read IMD 2019 variables 
 imd2019 <- read.csv(file.path(resources_path, "imd2019_for_aow.csv"))
+imd2025 <- read.csv(file.path(resources_path, "imd2025_for_aow.csv"))
 
 # check duplicates
 consent$AoWRecruitmentID[duplicated(consent$AoWRecruitmentID) |> which()]
@@ -118,8 +123,9 @@ denom <- denom_all |>
             consent_bldst1 = ConBloodStor1,
             consent_bldst2 = ConBloodStor2) %>%
   left_join(postcode_lsoa_lookup, by = "postcode") %>% # join postcode to lsoa lookup. to enable joining of IMD data
-  left_join(imd2019, by = "LSOA11CD") # join IMD 2019 data via LSOA code
-
+  left_join(postcode_lsoa_lookup_21, by = "postcode") %>% 
+  left_join(imd2019, by = "LSOA11CD") %>% # join IMD 2019 data via LSOA11 code
+  left_join(imd2025, by = "LSOA21CD") # join IMD 2025 data via LSOA21 code
 
 # remove any records missing upn or date of birth
 denom <- denom |> filter(!is.na(upn) & nchar(upn) > 0) |>
@@ -299,7 +305,6 @@ denom_consent <- denom |> select(aow_person_id, aow_recruitment_id, BiBPersonID,
                                  all_of(consent_cols))
 denom <- denom |> select(-all_of(consent_cols))
 denom_pseudo <- denom_pseudo |> select(-all_of(consent_cols))
-
 
 
 # export

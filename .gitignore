@@ -4,6 +4,7 @@
 
 # Session Data files
 .RData
+.RDataTmp*
 
 # User-specific files
 .Ruserdata
@@ -42,6 +43,13 @@ vignettes/*.pdf
 *.Rdata
 *.rda
 *.dta
+data_restructure/
+
+# unzipped postcode lookups (produced by unzipping resources/*.zip)
+resources/PCD_*.csv
+
+# stray package installs
+measures/rlang/
 
 # config
 config/
@@ -53,4 +61,3 @@ reports/
 .vs/
 
 measures/stata/DO NOT MAKE CHANGES IN THIS FOLDER
-
