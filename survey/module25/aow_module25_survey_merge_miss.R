@@ -16,9 +16,9 @@ min_offline_version <- min(offline$mod1_version, na.rm = TRUE)
 max_offline_version <- max(offline$mod1_version, na.rm = TRUE)
 
 # data dictionary
-online_dict <- read_csv("survey/redcap/AoWModule24OnlineSurvey_DataDictionary_2025-06-26.csv",
+online_dict <- read_csv("survey/redcap/AoWModule25OnlineSurvey_DataDictionary_2026-06-18.csv",
                         col_names = aow_dict_colnames(), skip = 1)
-offline_dict <- read_csv("survey/redcap/AoWModule24OfflineSurvey_DataDictionary_2025-06-26.csv",
+offline_dict <- read_csv("survey/redcap/AoWModule25OfflineSurvey_DataDictionary_2026-06-18.csv",
                          col_names = aow_dict_colnames(), skip = 1)
 
 # drop validation columns that have unpredictable value types
@@ -52,9 +52,8 @@ offline <- offline %>% mutate(survey_mode = 2) # 2=offline
 
 
 # add missing/changed question indicators to data dictionaries
-online_dict <- online_dict |> aow_add_dict_cols()
+online_dict <- online_dict |> aow_add_dict_cols() 
 offline_dict <- offline_dict |> aow_add_dict_cols() 
-
 
 # trim data down to match in-version data dict vars
 online <- online |> aow_trim_var_versions_data(online_dict, min_online_version, max_online_version)
@@ -91,24 +90,23 @@ mod_allcols <- mod_allcols |> left_join(yrgp_lkup)
 mod_allcols <- mod_allcols |> left_join(timestamps)
 
 # use record_id to remove some many-to-many dupes we get in the offline data
-
-
 mod_allcols <- mod_allcols |> filter(survey_mode != 2 | record_id == record)
+
+# check if duplicates persist for offline
+mod_allcols |> filter(survey_mode == 2) |> count(record_id) |> filter(n > 1)
+mod_allcols |> filter(survey_mode == 2, is.na(record)) |> nrow()
 
 # check conflicting value labels
 warnings()
 
-
 # add checkbox options to value labels
-
 checkboxes <- offline_dict |> bind_rows(online_dict) |>
-  select(variable, type, categories)
+  select(variable, type, categories) 
 checkboxes <- checkboxes |> filter(type %in% aow_redcap_chk_type()) |>
   select(variable, categories) |> unique()
 
-
 # loop through variables
-if(nrow(checkboxes > 0)) {
+if(nrow(checkboxes) > 0) {
   
   # parse category labels
   chk_labels <- str_split(checkboxes$categories, fixed("|"))
@@ -121,16 +119,6 @@ if(nrow(checkboxes > 0)) {
     mod_allcols <- mod_allcols |> aow_label_chk(v, chk_labels[[v]])
   }
 }
-
-
-# get revised/added column names
-rev_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("rev_cat"), online_dict$variable, value = TRUE))
-rev_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("rev_cat"), offline_dict$variable, value = TRUE))
-add_offline <- offline_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), online_dict$variable, value = TRUE))
-add_online <- online_dict |> filter(variable %in% grep(aow_srv_regexp("add_cat"), offline_dict$variable, value = TRUE))
-
-
-
 
 # add version when added missing vars
 added <- offline_dict |> bind_rows(online_dict) |>
@@ -155,7 +143,6 @@ if(nrow(added_txt > 0)) {
     mod_allcols <- mod_allcols |> aow_miss_txt_added(added_txt$variable[v], added_txt$added[v])
   }
 }
-
 
 # add version when revised missing vars
 revised <- offline_dict |> bind_rows(online_dict) |>

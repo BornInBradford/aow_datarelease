@@ -1,4 +1,4 @@
-# Module 24 survey administrative variables
+# Module 25 survey administrative variables
 
 source("tools/aow_survey_functions.R")
 
@@ -20,7 +20,8 @@ denom <- denom |> select(aow_person_id,
                          form_tutor_id,
                          gender,
                          ethnicity_1,
-                         ethnicity_2)
+                         ethnicity_2
+                         )
 
 data_not_in_denom <- mod_allcols |> anti_join(denom, by = "aow_recruitment_id")
 
@@ -29,7 +30,7 @@ mod_allcols <- mod_allcols |> inner_join(denom, by = "aow_recruitment_id") |>
                                 as.Date(ifelse(module_1_timestamp == "[not completed]", NA, module_1_timestamp)),
                                 as.Date(survey_date)),
          age_survey_y = (birth_date %--% survey_date) %/% years(1),
-         age_survey_m = (birth_date %--% survey_date) %/% months(1))
+         age_survey_m = (birth_date %--% survey_date) %/% months(1)) 
 
 # how many are missing a survey date?
 missdate <- length(which(is.na(mod_allcols$survey_date)))
