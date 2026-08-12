@@ -1,0 +1,130 @@
+---
+title: "AoW CONSORT planning"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Age of Wonder Y8/9/10 CONSORT: Recruitment pathway
+
+The recruitment pathway has five stages, moving from the total possible denominator down to pupils who actually contributed data:
+
+1.  **Eligible**: a school targeted for inclusion in the study.
+2.  **Headteacher agreed**: the school's leadership consented to participate that year.
+3.  **DSA signed**: a formal data sharing agreement was in place that year, giving legal basis to share pupil data.
+4.  **Setup completed**: the delivery team completed setup with the school and we received pupil-level details from the school.
+5.  **Data obtained**: pupils who actually provided data (survey, measurement, or sample).
+
+## CONSORT breakdowns: Waves and years
+
+Year 8, Year 9, and Year 10 are three waves of pupils moving through the same set of schools over time, taken one year apart.
+
+The BiB cohort is accounted for, being part of 1, 2 or 3 of these follow-up waves over the 4 years of the study.
+
+Entry and exit points for the pupils in year group cohorts differ: a pupil who was in Year 8 in the study's first year (2022–23) can potentially be followed into Year 9 and Year 10. A pupil who enters year 8 in the final year of the study (2025-26) is only seen in that year and not followed up.
+
+However, the year group cohorts in each wave largely overlap because schools and roll counts don't change quickly across adjacent years.
+
+Our approach separates year group "waves" from data collection "years". As the year group waves overlap, a single pupil can contribute to the denominator and the numerator on 1, 2 or 3 occasions over the study period. Pathways for individual pupils can be illustrated by breakdowns by wave or year.
+
+**CONSORT combined:** Pools records for all 3 year group waves across all 4 years of data collection to give estimates of retention and repsonse rates across the whole study.
+
+**CONSORT breakdown by wave:** This treats Year 8, 9, and 10 as three separate recruitment pathways, each pooling data over 4 years of data collection.
+
+**CONSORT breakdown by year:** Treats each academic year as a single activity snapshot combining three different cohorts consisting of whoever happened to be in Y8, Y9 or Y10 that year.
+
+## Definitions and assumptions
+
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Term               | What it means                                        | Computation and assumptions                                                                                                                                                                                                           |
++:===================+:=====================================================+:======================================================================================================================================================================================================================================+
+| Eligible           | Pupils on roll in an eligible school/year/year-group | -   School census roll count is recorded in each year group in each year of data collection.                                                                                                                                          |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | <!-- -->                                                                                                                                                                                                                              |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   A school is assumed to be eligible for inclusion in all 4 study years if it appears at all in the dataset, even if some year rows are missing from our records.                                                                   |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | <!-- -->                                                                                                                                                                                                                              |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Missing roll counts are imputed using same-cohort values from adjacent years.                                                                                                                                                     |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   If more pupils' records were received than the roll indicated, roll count is adjusted upwards to equal the number of pupils received. Final eligible denominator is therefore an underestimate, which will inflate overall yield. |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Headteacher agreed | School leadership consented that year                | -   If missing, consent is presumed where a DSA is signed or data/received records exist that year                                                                                                                                    |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Treated as school-within-year attribute i.e. consent is presumed to apply to all year groups within school/year                                                                                                                   |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DSA signed         | Legal data-sharing agreement in place that year      | -   If data is missing, DSA is presumed where any data or received records exist that year                                                                                                                                            |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Treated as school-within-year attribute, i.e. DSA is presumed to apply to all year groups within school/year.                                                                                                                     |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   If recorded as agreed in one year then not agreed in a subsequent year, agreement status is imputed forward if data was received in the later year.                                                                               |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   If no data received in a later year, DSA presumed not agreed that year if the record indicates it or is missing.                                                                                                                  |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Setup completed    | Delivery team completed setup                        | -   If any pupil details are held, assume setup was completed this year.                                                                                                                                                              |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Pupil count is based on roll numbers for schools with completed setup                                                                                                                                                             |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   If no pupil details were received, assume setup did not complete, even if we have a DSA this year.                                                                                                                                |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   If any pupil details are held in a year but any single year group has zero received records, that year group is presumed to have been excluded for that year due to resource constraints.                                         |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Not excluded       | Pupils available for data collection                 | -   Following setup completion, two reasons for pupil exclusion are distinguished:                                                                                                                                                    |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      |     -   Full year group exclusion due to capacity constraints                                                                                                                                                                         |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      |     -   Pupil opt-out by parent                                                                                                                                                                                                       |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Retained pupil count is the number of pupils for whom details are received from the school, indicating availability for data colection                                                                                            |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Data collected     | Pupils who actually provided data                    | -   The number of pupils for whom any data is obtained during the study: in any year group, any year, and any data type.                                                                                                              |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Retention rate     | Proportion of pupils retained after setup            | -   `not_excluded / setup_completed`                                                                                                                                                                                                  |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Proportion of pupils in schools with completed setup whose details were actually passed on (i.e. not in a year group excluded due to resource constraints and not opted out by parents).                                          |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Response rate      | Proportion of retained pupils with data              | -   `data_obtained / not_excluded`                                                                                                                                                                                                    |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   Proportion of retained pupils with details provided by the school who went on to provide data.                                                                                                                                    |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Overall yield      | Proportion of eligible denominator with data         | -   `data_obtained / eligible`                                                                                                                                                                                                        |
+|                    |                                                      |                                                                                                                                                                                                                                       |
+|                    |                                                      | -   End-to-end proportion of the total eligible denominator of pupils in targeted schools that ultimately provided data.                                                                                                              |
++--------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+## Known issues
+
+-   A number of roll values are missing and are imputed from adjacent years rather than observed. This data should be reviewed and completed where possible.
+-   Records received is exceeding roll counts in a small number of cases. Roll count is adjusted upwards in these cases, but retention rate for these rolls will appear to be 100%. On the whole, we are underestimating the denominator and inflating rates. According to a simple sensitivity analysis (comparing rates when dropping imputed roll counts) the rates are being inflated by \~2%. Reviewing observed roll count data, as above, could mitigate.
+-   `retention_rate` is currently computed as `not_excluded / setup_completed` - but should we remove the excluded year groups from the denominator? e.g. so computed this as ``` not_exclude``/ (setup_completed - year_group_excluded) ```
+
+```{r}
+
+output_dir <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/school_onboarding/data/"
+
+load(paste0(output_dir, "consort_tables.RData"))
+
+print(ct_by_wave)
+print(ct_by_year)
+print(ct_combined)
+print(ct_yr_wave)
+
+```
+
+```{r}
+
+output_dir <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/school_onboarding/data/"
+
+load(paste0(output_dir, "qc_rates.RData"))
+
+print(roll_qc$n_schools_affected)
+print(roll_qc$sessions)
+print(roll_qc$affected_rows)
+print(rate_ovr)
+print(rate_yr)
+print(rate_yg)
+print(rate_session)
+
+```
