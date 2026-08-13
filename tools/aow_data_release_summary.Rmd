@@ -1,6 +1,6 @@
 ---
 title: "Age of Wonder data summary"
-subtitle: "Recruitment and data collection to end of July 2025"
+subtitle: "Recruitment and data collection to end of July 2026"
 output:
   html_document:
     toc: true
@@ -26,7 +26,7 @@ bp <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\
 sk <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_sk.rds")
 htwt <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\measures\\data\\aow_heightweight.rds")
 bld <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\bloods\\data\\aow_bloods.rds")
-srv24 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module24_labelled.rds")
+srv25 <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\survey\\data\\aow_survey_module25_labelled.rds")
 
 fmt_is_bib <- function(df) df |> mutate(is_bib = ifelse(is_bib == 1, "BiB", "Not BiB"))
 fmt_has_event <- function(x) ifelse(!is.na(x) & !is.null(x), "Yes", "-")
@@ -67,7 +67,7 @@ bp <- bp |> fmt_is_bib()
 sk <- sk |> fmt_is_bib()
 htwt <- htwt |> fmt_is_bib()
 bld <- bld |> fmt_is_bib()
-srv24 <- srv24 |> fmt_is_bib()
+srv25 <- srv25 |> fmt_is_bib()
 
 # couple of bioimpedance measures in year 8?
 bioimp <- bioimp |> filter(year_group == 9)
@@ -105,7 +105,8 @@ repeat_counter <- function(df) {
   df |>
     mutate(year_group_2022 = case_when(recruitment_era == "2022-23" ~ year_group,
                                        recruitment_era == "2023-24" ~ year_group - 1,
-                                       recruitment_era == "2024-25" ~ year_group - 2)) |>
+                                       recruitment_era == "2024-25" ~ year_group - 2,
+                                       recruitment_era == "2025-26" ~ year_group - 3)) |>
     select(aow_person_id, year_group_2022, is_bib, year_group, has_event) |>
     unique() |>
     pivot_wider(names_from = c(year_group),
@@ -176,6 +177,7 @@ head_denom <- denom |> filter(recruitment_era != "2021-22") |>
             has_survey = max(has_survey),
             has_measure = max(has_measure))
 
+
 head_denom_bib <- head_denom |> filter(is_bib == "BiB")
 
 head_tab <- data.frame(count = character(0), all_aow = integer(0), bib = integer(0))
@@ -186,6 +188,7 @@ head_tab <- head_tab |>
   add_row(count = "Number with a survey at any time", all_aow = sum(head_denom$has_survey), bib = sum(head_denom_bib$has_survey)) |>
   add_row(count = "Number with a health measure at any time", all_aow = sum(head_denom$has_measure), bib = sum(head_denom_bib$has_measure))
 
+
 options(DT.options = list(pageLength = 25,
                           dom = "t"))
 
@@ -193,17 +196,17 @@ options(DT.options = list(pageLength = 25,
 
 ```
 
-The following report gives a breakdown of Age of Wonder (AoW) recruitment volumes and patterns over the years of the study, with counts of completed datasets of each type. 
+The following report gives a breakdown of Age of Wonder (AoW) recruitment volumes and patterns over the years of the study, with counts of completed datasets of each type.
 
 Please note the following omissions:
 
-  - Surveys have not been processed for the pilot year (2021-22) so are not counted here.
-  - CKAT is not included as work to prepare this dataset is ongoing.
-  - Only recruitment and data collection from Y8 to Y10 is included. Data collected in older age groups will be released separately after the 2025-26 academic year.
+-   Surveys have not been processed for the pilot year (2021-22) so are not counted here.
+-   CKAT is not included as work to prepare this dataset is ongoing.
+-   Only recruitment and data collection from Y8 to Y10 is included. Data collected in older age groups will be released separately after the 2025-26 academic year.
 
 # Headline counts of individuals
 
-Number of individuals recruited to Age of Wonder and those with some data. Additionally, how many of those are in the original BiB cohort. 
+Number of individuals recruited to Age of Wonder and those with some data. Additionally, how many of those are in the original BiB cohort.
 
 *Note these numbers exclude the pilot year 2021-22 as we have limited data from this year. If this year were to be included we would have 22853 total individuals in AoW, 5984 of which in BiB*
 
@@ -228,7 +231,6 @@ head_tab |>
 
 ```
 
-
 # All AoW recruits
 
 ### AoW Y8-10 class lists received
@@ -241,18 +243,15 @@ denom |> yg_plot("All AoW recruited: complete class lists")
 
 ```
 
-
-
 ### Participants with data
 
-Number of participants with completed datasets of each type across Y8-10 in each recruitment year. The plot below reflects data in the module 24 dataset released in 2025. This incorporates survey responses from all years excluding the pilot year where questions were carried forward. In other words, it contains responses to all questions from module 24 and all responses to matching questions from previous modules in previous years, creating a longitudinal survey dataset.
+Number of participants with completed datasets of each type across Y8-10 in each recruitment year. The plot below reflects data in the module 25 dataset released in 2026. This includes survey responses from all years where questions were carried forward. So, it is a longitudinal dataset containing responses to all questions from module 25 and all responses to matching questions from previous modules in previous years.
 
 ```{r survey_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-srv24 |> yg_plot("AoW surveys")
+srv25 |> yg_plot("AoW surveys")
 
 ```
-
 
 ```{r measures_plots, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
@@ -266,7 +265,7 @@ bld |> yg_plot("AoW school visit: blood tests")
 
 ### Repeat recruits
 
-The following tables break down the number of participants recruited in each year by whether or not they are recruited in more than one year ("repeat recruits"). The second table "Broken down by recruitment year" gives counts by specific pattern of repeat recruitments over a participant's year group at recruitment. 
+The following tables break down the number of participants recruited in each year by whether or not they are recruited in more than one year ("repeat recruits"). The second table "Broken down by recruitment year" gives counts by specific pattern of repeat recruitments over a participant's year group at recruitment.
 
 The cohort is split by their 2022 year group. We are excluding the pilot year in these counts (2021-22).
 
@@ -326,11 +325,9 @@ recruits_2223 |>
 
 ```
 
-
-
 ### Repeat survey responses
 
-The following tables break down the number of participants with survey responses in each year by whether or not they have a survey response in more than one year ("repeat surveys"). The second table "Broken down by response year" gives counts by specific pattern of repeat survey reponses over a participant's year group at recruitment. 
+The following tables break down the number of participants with survey responses in each year by whether or not they have a survey response in more than one year ("repeat surveys"). The second table "Broken down by response year" gives counts by specific pattern of repeat survey reponses over a participant's year group at recruitment.
 
 The cohort is split by their 2022 year group. We are excluding the pilot year in these counts (2021-22).
 
@@ -390,7 +387,6 @@ surveys_2223 |>
 
 ```
 
-
 # BiB participants only
 
 ### BiB participants in AoW with Growing Up surveys
@@ -403,19 +399,158 @@ recruited_gu |> yg_plot_gu("AoW recruits with Growing Up surveys")
 
 ```
 
-
-
 # Detailed tables
 
 The following tables give detailed counts of participants with completed datasets of each type, split by the academic year of recruitment (which we call `recruitment_era`) and the year group they were in at the time.
 
-### Participants with data
+
+### Participants received (total) and with data
 
 ```{r summary_tbl, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df <- denom |> group_by(recruitment_era, year_group) |>
+summ_df <- denom |> filter(recruitment_era != "2021-22") |>
   summarise(total = n(),
-            across(starts_with("has_"), ~sum(.))) |>
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df,
+          rownames = FALSE)
+
+```
+
+### Participants received (total) and with data, BiB only
+
+```{r summary_tbl_bib, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df_bib,
+          rownames = FALSE)
+
+```
+
+
+
+### Participants received (unique) and with data
+
+```{r summary_tbl_u, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df <- denom |> filter(recruitment_era != "2021-22") |>
+  group_by(aow_person_id) |>
+  summarise(across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
+  ungroup() |>
+  unique() |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df,
+          rownames = FALSE)
+
+```
+
+### Participants received (unique) and with data, BiB only
+
+```{r summary_tbl_bib_u, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df_bib <- denom |> filter(is_bib == "BiB") |> filter(recruitment_era != "2021-22") |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df_bib,
+          rownames = FALSE)
+
+```
+
+
+### Participants received (total) and with data by year group
+
+```{r summary_tbl_yg, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(year_group) |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  mutate(year_group = as.integer(year_group)) |>
+  select(year_group, everything()) |>
+  arrange(year_group) |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df,
+          rownames = FALSE)
+
+```
+
+### Participants received (total) and with data by year group, BiB only
+
+```{r summary_tbl_bib_yg, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+  group_by(year_group) |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  mutate(year_group = as.integer(year_group)) |>
+  select(year_group, everything()) |>
+  arrange(year_group) |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df_bib,
+          rownames = FALSE)
+
+```
+
+
+### Participants received (total) and with data by recruitment year
+
+```{r summary_tbl_ry, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(recruitment_era) |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  select(recruitment_era, everything()) |>
+  arrange(recruitment_era) |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df,
+          rownames = FALSE)
+
+```
+
+### Participants received (total) and with data by recruitment year, BiB only
+
+```{r summary_tbl_bib_ry, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+  group_by(recruitment_era) |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+  ungroup() |>
+  select(recruitment_era, everything()) |>
+  arrange(recruitment_era) |>
+  relocate(has_data, .after = total)
+
+datatable(summ_df_bib,
+          rownames = FALSE)
+
+```
+
+### Participants received (total) and with data by subcohort
+
+```{r summary_tbl_sc, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
+
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(recruitment_era, year_group) |>
+  summarise(total = n(),
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(recruitment_era, year_group, everything()) |>
@@ -427,22 +562,21 @@ datatable(summ_df,
 
 ```
 
+### Participants received (total) and with data by subcohort, BiB only
 
-### Participants with data, split by BiB membership
+```{r summary_tbl_bib_sc, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-```{r summary_tbl_bib, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
-
-summ_df_bib <- denom |> group_by(is_bib, recruitment_era, year_group) |>
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+  group_by(recruitment_era, year_group) |>
   summarise(total = n(),
-            across(starts_with("has_"), ~sum(.))) |>
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
-  select(recruitment_era, year_group, is_bib, everything()) |>
-  arrange(recruitment_era, year_group, is_bib) |>
+  select(recruitment_era, year_group, everything()) |>
+  arrange(recruitment_era, year_group) |>
   relocate(has_data, .after = total)
 
 datatable(summ_df_bib,
           rownames = FALSE)
 
 ```
-
