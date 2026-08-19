@@ -50,10 +50,9 @@ pre_merged <- pre_mod_admin |>
 integrated <- pre_merged |> bind_rows(new_module) |>
   set_variable_labels(.labels = aow_denom_col_labels(full = FALSE)) |>
   set_variable_labels(.labels = aow_survey_process_labels())
-
+ 
 # restore column order
 integrated <- integrated |> select(starts_with(new_names_stems))
 
 # export
 saveRDS(integrated, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module25_integrated.rds")
-

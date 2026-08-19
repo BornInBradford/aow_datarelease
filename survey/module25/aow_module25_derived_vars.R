@@ -117,8 +117,8 @@ module <- module %>%
          TMPVAR_awb2_4_loneliness_3 = awb2_4_loneliness_3 - 1,
          TMPVAR_awb2_4_loneliness_4 = awb2_4_loneliness_4 - 1) %>%
   mutate(TMPVAR_awb2_9_resil2_a5 = case_match(awb2_9_resil2_a5, 1~5, 2~4, 3~3, 4~2, 5~1),
-         TMPVAR_awb2_9_resil4_a5 = case_match(awb2_9_resil2_a5, 1~5, 2~4, 3~3, 4~2, 5~1),
-         TMPVAR_awb2_9_resil6_a5 = case_match(awb2_9_resil2_a5, 1~5, 2~4, 3~3, 4~2, 5~1)) %>%
+         TMPVAR_awb2_9_resil4_a5 = case_match(awb2_9_resil4_a5, 1~5, 2~4, 3~3, 4~2, 5~1),
+         TMPVAR_awb2_9_resil6_a5 = case_match(awb2_9_resil6_a5, 1~5, 2~4, 3~3, 4~2, 5~1)) %>%
   mutate(TMPVAR_awb2_11_psychosis_3_r4 = ifelse(awb2_11_psychosis_3_r4 == 3, 0, awb2_11_psychosis_3_r4),
          TMPVAR_awb2_11_psychosis_5_r4 = ifelse(awb2_11_psychosis_5_r4 == 3, 0, awb2_11_psychosis_5_r4),
          TMPVAR_awb2_11_psychosis_2_r4 = ifelse(awb2_11_psychosis_2_r4 == 3, 0, awb2_11_psychosis_2_r4),
@@ -238,13 +238,13 @@ module <-
          rcad_md = ifelse(rcad_md_miss == 10, NA, rcad_md),
          rcad_total = ifelse(rcad_missing == 1, NA, rcad_total)) %>%
   mutate(rcad_ga = ifelse(rcad_ga_miss <= 3, rcad_ga/(15-rcad_ga_miss)*15, NA),
-         rcad_ga = as.integer(rcad_ga),
+         rcad_ga = round(rcad_ga),
          rcad_md = ifelse(rcad_md_miss <= 2, rcad_md/(10-rcad_md_miss)*10, NA),
-         rcad_md = as.integer(rcad_md),
+         rcad_md = round(rcad_md),
          rcad_total = ifelse(rcad_nas <= 4, rcad_total/(25-rcad_nas)*25, NA),
-         rcad_total = as.integer(rcad_total)) %>%
+         rcad_total = round(rcad_total)) %>%
   left_join(rcads_lookup, by = c(year_group = "year_group", gender = "gender")) %>%
-  mutate(rcad_md_t = ((rcad_md- depression_int)*10)/depression_factor + 50,
+  mutate(rcad_md_t = ((rcad_md - depression_int)*10)/depression_factor + 50,
          rcad_ga_t = ((rcad_ga - anxiety_int)*10)/anxiety_factor + 50,
          rcad_total_t = ((rcad_total - total_int)*10)/total_factor + 50,
          rcad_md_cat = ifelse(rcad_md_t < 65, 1,
@@ -311,15 +311,15 @@ module <-
            is.na(awb2_1_sdq_20_a10)) %>%
   #scale missing scores if at least 3 completed
   mutate(sdq_emotion = case_when(sdq_emotion_miss <= 2 ~ round((5/(5-sdq_emotion_miss))*sdq_emotion),
-                                 sdq_emotion_miss < 2 ~ NA),
+                                 TRUE ~ NA_real_),
          sdq_conduct = case_when(sdq_conduct_miss <= 2 ~ round((5/(5-sdq_conduct_miss))*sdq_conduct),
-                                 sdq_conduct_miss < 2 ~ NA),
+                                 TRUE ~ NA_real_),
          sdq_hyperact = case_when(sdq_hyperact_miss <= 2 ~ round((5/(5-sdq_hyperact_miss))*sdq_hyperact),
-                                  sdq_hyperact_miss < 2 ~ NA),
+                                  TRUE ~ NA_real_),
          sdq_peer = case_when(sdq_peer_miss <= 2 ~ round((5/(5-sdq_peer_miss))*sdq_peer),
-                              sdq_peer_miss < 2 ~ NA),
+                              TRUE ~ NA_real_),
          sdq_prosoc = case_when(sdq_prosoc_miss <= 2 ~ round((5/(5-sdq_prosoc_miss))*sdq_prosoc),
-                                sdq_prosoc_miss < 2 ~ NA)) %>%
+                                TRUE ~ NA_real_)) %>%
   #calculate total and externalising/internalising (note should be NA if any subscale missing hence no removal of NAs)
   mutate(sdq_total = sdq_emotion+
            sdq_conduct+
@@ -367,23 +367,23 @@ module <-
            remove_na(awb2_2_problems_4_a4) +
            remove_na(awb2_2_think_clr_5_a4) +
            remove_na(awb2_2_close_othrs_6_a4) +
-           remove_na(awb2_2_own_mnd_7_a4) +
-           remove_na(awb2_3_self_effccy),
+           remove_na(awb2_2_own_mnd_7_a4), #+
+           #remove_na(awb2_3_self_effccy),
          wellbeing_nas = is.na(awb2_2_optmstc_1_a4) +
            is.na(awb2_2_useful_2_a4) +
            is.na(awb2_2_relxed_3_a4) +
            is.na(awb2_2_problems_4_a4) +
            is.na(awb2_2_think_clr_5_a4) +
            is.na(awb2_2_close_othrs_6_a4) +
-           is.na(awb2_2_own_mnd_7_a4) +
-           is.na(awb2_3_self_effccy),
+           is.na(awb2_2_own_mnd_7_a4), #+
+           #is.na(awb2_3_self_effccy),
          wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0),
          wellbeing = ifelse(wellbeing_missing == 1, NA, wellbeing))%>%
   #compute scores
   left_join(swemwbs_lookup) %>%
   mutate(swemwbs_cat = ifelse(swemwbs_total <= 19.5, 1, 
                               ifelse(swemwbs_total < 27.5, 2, 3))) %>%
-  set_value_labels(swemwbs_cat = labs_lnh) %>%
+  set_value_labels(swemwbs_cat = labs_lnh) %>% # Why no rescaling of partial responses for swemwbs as done with sdq, rcads.
   
   #ULS-4
   #sum scores
@@ -396,7 +396,7 @@ module <-
            is.na(TMPVAR_awb2_4_loneliness_3) +
            is.na(TMPVAR_awb2_4_loneliness_4),
          loneliness_missing = ifelse(loneliness_nas == 4, 1, 0),
-         loneliness = ifelse(loneliness_missing == 1, NA, loneliness)) %>%
+         loneliness = ifelse(loneliness_missing == 1, NA, loneliness))  %>% # again no rescaling
   #GHSQ
   #emotional subscales
   mutate(emo_inf = remove_na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
@@ -420,13 +420,14 @@ module <-
            is.na(awb2_9_seek_hlp_ppl_6) +
            is.na(awb2_9_seek_hlp_ppl_7) +
            is.na(awb2_9_seek_hlp_ppl_8) +
-           is.na(awb2_9_seek_hlp_ppl_9_a_4) +
-           is.na(awb2_9_seek_hlp_ppl_10),
-         emo_missing = ifelse(emo_nas == 10, 1, 0),
+           is.na(awb2_9_seek_hlp_ppl_9_a_4), #+ # For this particular variable, should it not be a4 as oppossed to a_4
+           #is.na(awb2_9_seek_hlp_ppl_10),
+         emo_missing = ifelse(emo_nas == 9, 1, 0),
          emo_inf = ifelse(emo_missing == 1, NA, emo_inf),
          emo_form = ifelse(emo_missing == 1, NA, emo_form),
          emo_sch = ifelse(emo_missing == 1, NA, emo_sch),
-         emo_total = ifelse(emo_missing == 1, NA, emo_total)) %>%
+         emo_total = ifelse(emo_missing == 1, NA, emo_total)) %>% # There are newer seeking help variables added at version 20 and 30 including chatgpt, mental health website etc
+
   #BRS
   #sum scores
   mutate(brs_total = remove_na(awb2_9_resil1_a5) +
@@ -447,7 +448,7 @@ module <-
   mutate(brs_mean = brs_total/6,
          brs_cat = ifelse(brs_mean < 3, 1,
                           ifelse(brs_mean <= 4.3, 2, 3))) %>%
-  set_value_labels(brs_cat = labs_lnh)
+  set_value_labels(brs_cat = labs_lnh) # Same question around rescaling for partial responses
 
 
 
@@ -508,7 +509,7 @@ module <-
   mutate(edeqs_cat = ifelse(edeqs_total < 15, 
                             1, # normal
                             2)) |> # possible disorder
-  set_value_labels(edeqs_cat = c("normal" = 1, "possible disorder" = 2))
+  set_value_labels(edeqs_cat = c("normal" = 1, "possible disorder" = 2)) # Same rescaling issue
 
                             
 
@@ -535,12 +536,11 @@ module <- module %>%
          paqa_missing = ifelse(paqa_nas == 8, 1, 0),
          paqa_total = ifelse(paqa_missing == 1, NA, paqa_total)) %>%
   #compute score
-  mutate(paqa_mean = paqa_total/8) 
+  mutate(paqa_mean = paqa_total/8)  # same sentinel issue
 
 module <- module %>%
   
   #YAP (sedentary scale)
-  #Own Financial Resources - Bespoke
   #sum scores
   mutate(yapsed_total = remove_na(awb4_2_outside_schl_1_r7) +
            remove_na(awb4_2_outside_schl_2_r7) +
@@ -555,7 +555,7 @@ module <- module %>%
          yapsed_missing = ifelse(yapsed_nas == 5, 1, 0),
          yapsed_total = ifelse(yapsed_missing == 1, NA, yapsed_total)) %>%
   #compute score
-  mutate(yapsed_mean = yapsed_total/5)
+  mutate(yapsed_mean = yapsed_total/5) # also needs rescale check
 
 
 
@@ -591,7 +591,13 @@ module <-
            is.na(awb8_2_lang_4) +
            is.na(awb8_2_names_7) +
            is.na(awb8_2_threat_11),
-         addi_missing = ifelse(addi_nas == 11, 1, 0))
+         addi_missing = ifelse(addi_nas == 11, 1, 0)) %>%
+  
+  # Condition for missing values applied
+  mutate(addi_inst_exp = ifelse(addi_missing == 1, NA, addi_inst_exp),
+         addi_peer_exp = ifelse(addi_missing == 1, NA, addi_peer_exp),
+         addi_total = ifelse(addi_missing == 1, NA, addi_total))
+  
 
 
 
@@ -638,4 +644,7 @@ derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols), 
 
 # export
 saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module25_derived.rds")
+
+
+
 

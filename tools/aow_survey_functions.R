@@ -32,7 +32,7 @@ aow_miss_label <- function(type) {
                    type == "added_5" ~ c("Added in version 5" = -1),
                    type == "added_6" ~ c("Added in version 6" = -1),
                    type == "added_7" ~ c("Added in version 7" = -1),
-                   type == "added-8" ~ c("Added in version 8" = -1),
+                   type == "added_8" ~ c("Added in version 8" = -1),
                    type == "added_9" ~ c("Added in version 9" = -1),
                    type == "added_10" ~ c("Added in version 10" = -1),
                    type == "added_11" ~ c("Added in version 11" = -1),
@@ -83,7 +83,7 @@ aow_miss_label <- function(type) {
 
 aow_srv_var_stems <- function(varnames) {
   
-  vars_df <- str_locate(varnames, "_[r|a][0-9]{1,2}") |>
+  vars_df <- str_locate(varnames, "_[ra][0-9]{1,2}") |>
     as.data.frame() |>
     add_column(varnames) |>
     mutate(match_name = ifelse(!is.na(start), substr(varnames, 1, start - 1), varnames))

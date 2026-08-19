@@ -132,13 +132,13 @@ added_txt <- added |> filter(type %in% aow_redcap_txt_type()) |>
 
 
 # loop through variables - categorical
-if(nrow(added_cat > 0)) {
+if(nrow(added_cat) > 0) {
   for(v in 1:nrow(added_cat)) {
     mod_allcols <- mod_allcols |> aow_miss_cat_added(added_cat$variable[v], added_cat$added[v])
   }
 }
 # loop through variables - text
-if(nrow(added_txt > 0)) {
+if(nrow(added_txt) > 0) {
   for(v in 1:nrow(added_txt)) {
     mod_allcols <- mod_allcols |> aow_miss_txt_added(added_txt$variable[v], added_txt$added[v])
   }
@@ -156,13 +156,13 @@ revised_txt <- revised |> filter(type %in% aow_redcap_txt_type()) |>
 
 
 # loop through variables - categorical
-if(nrow(revised_cat > 0)) {
+if(nrow(revised_cat) > 0) {
   for(v in 1:nrow(revised_cat)) {
     mod_allcols <- mod_allcols |> aow_miss_cat_revised(revised_cat$variable[v], revised_cat$revised[v])
   }
 }
 # loop through variables - text
-if(nrow(revised_txt > 0)) {
+if(nrow(revised_txt) > 0) {
   for(v in 1:nrow(revised_txt)) {
     mod_allcols <- mod_allcols |> aow_miss_txt_revised(revised_txt$variable[v], revised_txt$revised[v])
   }
@@ -182,13 +182,13 @@ removed_txt <- removed |> filter(type %in% aow_redcap_txt_type()) |>
 
 
 # loop through variables - categorical
-if(nrow(removed_cat > 0)) {
+if(nrow(removed_cat) > 0) {
   for(v in 1:nrow(removed_cat)) {
     mod_allcols <- mod_allcols |> aow_miss_cat_removed(removed_cat$variable[v], removed_cat$removed[v])
   }
 }
 # loop through variables - text
-if(nrow(removed_txt > 0)) {
+if(nrow(removed_txt) > 0) {
   for(v in 1:nrow(removed_txt)) {
     mod_allcols <- mod_allcols |> aow_miss_txt_removed(removed_txt$variable[v], removed_txt$removed[v])
   }
