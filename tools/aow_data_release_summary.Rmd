@@ -459,7 +459,11 @@ datatable(summ_df,
 
 ```{r summary_tbl_bib_u, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df_bib <- denom |> filter(is_bib == "BiB") |> filter(recruitment_era != "2021-22") |>
+summ_df_bib <- denom |> filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+  group_by(aow_person_id) |>
+  summarise(across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
+  ungroup() |>
+  unique() |>
   summarise(total = n(),
             across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
