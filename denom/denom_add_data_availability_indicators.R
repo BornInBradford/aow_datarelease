@@ -11,6 +11,27 @@ library(haven)
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
 
 
+occurrence_count <- function(df) {
+  
+  df <- df |> select(-any_of(starts_with(c("tot_", "rep_"))))
+  
+  df <- df |> group_by(aow_person_id) |>
+    arrange(recruitment_date) |>
+    mutate(rep_received = row_number(),
+           rep_has_data = cumsum(has_data),
+           tot_received = n(),
+           tot_has_data = sum(has_data)) |>
+    ungroup() |>
+    arrange(recruitment_date)
+  
+  df <- df |> set_variable_labels(rep_received = "Times so far participant has been included in recruitment denominator",
+                                  rep_has_data = "Times so far participant has provided any AoW data",
+                                  tot_received = "Total times participant included in recruitment denominator",
+                                  tot_has_data = "Total times participant has provided any AoW data")
+  
+}
+
+
 # load data frames
 
 denom_pseudo <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\denom\\data\\denom_pseudo.rds")
@@ -117,6 +138,8 @@ has_cols <- names(dat_df |> select(starts_with("has_")))
 denom <- denom |> select(-any_of(has_cols)) |> left_join(dat_df)
 denom_pseudo <- denom_pseudo |> select(-any_of(has_cols)) |> left_join(dat_df)
 
+denom <- denom |> occurrence_count()
+denom_pseudo <- denom_pseudo |> occurrence_count()
 
 # export
 if(getOption("aow_export_denom")) {
