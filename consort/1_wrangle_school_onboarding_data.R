@@ -157,15 +157,20 @@ sch_data <- denom |> transmute(id = school_establishment_no,
                                year_group = year_group,
                                year = recruitment_era,
                                received = 1,
-                               data = has_data) |>
+                               received_new = ifelse(received == 1 & rep_received == 1, 1, 0),
+                               data = has_data,
+                               data_new = ifelse(has_data == 1 & rep_has_data == 1, 1, 0)) |>
   filter(year != "2021-22") |> # ignore data collected in pilot year
   group_by(id, year_group, year) |>
-  summarise(received = sum(received), data = sum(data)) |>
+  summarise(received = sum(received), 
+            received_new = sum(received_new),
+            data = sum(data),
+            data_new = sum(data_new)) |>
   ungroup() |>
   mutate(id = as.numeric(id)) |>
   pivot_wider(names_from = "year_group", 
               names_prefix = c("y"), 
-              values_from = c("received", "data"), 
+              values_from = c("received", "received_new", "data", "data_new"), 
               values_fill = 0)
 
 sch_rec <- sch_rec |> full_join(sch_data, by = c("id", "year")) |>
