@@ -11,23 +11,31 @@ library(haven)
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
 
 
-occurrence_count <- function(df) {
+occurrence_count <- function(df, inc_pilot = FALSE) {
+  
+  if(inc_pilot) {
+    exyr <- "dummy"
+    exlab <- ""
+  } else {
+    exyr <- "2021-22"
+    exlab <- " (excl. pilot)"
+  }
   
   df <- df |> select(-any_of(starts_with(c("tot_", "rep_"))))
   
   df <- df |> group_by(aow_person_id) |>
     arrange(recruitment_date) |>
-    mutate(rep_received = row_number(),
-           rep_has_data = cumsum(has_data),
-           tot_received = n(),
-           tot_has_data = sum(has_data)) |>
+    mutate(rep_received = cumsum(ifelse(recruitment_era != exyr, 1, 0)),
+           rep_has_data = cumsum(ifelse(has_data == 1 & recruitment_era != exyr, 1, 0)),
+           tot_received = sum(recruitment_era != exyr),
+           tot_has_data = sum(has_data == 1 & recruitment_era != exyr)) |>
     ungroup() |>
     arrange(recruitment_date)
   
-  df <- df |> set_variable_labels(rep_received = "Times so far participant has been included in recruitment denominator",
-                                  rep_has_data = "Times so far participant has provided any AoW data",
-                                  tot_received = "Total times participant included in recruitment denominator",
-                                  tot_has_data = "Total times participant has provided any AoW data")
+  df <- df |> set_variable_labels(rep_received = paste0("Times so far participant has been included in recruitment denominator", exlab),
+                                  rep_has_data = paste0("Times so far participant has provided any AoW data", exlab),
+                                  tot_received = paste0("Total times participant included in recruitment denominator", exlab),
+                                  tot_has_data = paste0("Total times participant has provided any AoW data", exlab))
   
 }
 
