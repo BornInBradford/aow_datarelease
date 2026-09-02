@@ -26,11 +26,13 @@ table_col_order <- function() {
                  "schools_yr_yg_exclusions",
                  "year_group_excluded_n",
                  "received_n_total",
+                 "received_new_total",
                  "retention_rate",
                  "schools_yr_exclusions",
                  "ch_excluded",
                  "schools_with_data",
                  "data_obtained_n",
+                 "data_obtained_new_n",
                  "response_rate",
                  "overall_yield",
                  "ch_no_data"
@@ -100,10 +102,12 @@ consort_by_wave <- function(wave_data) {
       setup_completed_n = sum(roll[setup_completed == TRUE], na.rm = TRUE),
       year_group_excluded_n = sum(roll[setup_completed == TRUE & year_group_excluded == TRUE], na.rm = TRUE),
       received_n_total = sum(received_n, na.rm = TRUE),
+      received_new_total = sum(received_new_n, na.rm = TRUE),
       schools_received = n_distinct(id[!is.na(received_n) & received_n > 0]),
       schools_yr_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & !year_group_excluded & received_n < roll]),
       schools_yr_yg_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & year_group_excluded & received_n < roll]),
       data_obtained_n = sum(data_n, na.rm = TRUE),
+      data_obtained_new_n = sum(data_new_n, na.rm = TRUE),
       schools_with_data = n_distinct(id[!is.na(data_n) & data_n > 0]),
       .groups = "drop"
     ) |>
@@ -151,10 +155,12 @@ consort_by_year <- function(wave_data) {
       setup_completed_n = sum(roll[setup_completed == TRUE], na.rm = TRUE),
       year_group_excluded_n = sum(roll[setup_completed == TRUE & year_group_excluded == TRUE], na.rm = TRUE),
       received_n_total = sum(received_n, na.rm = TRUE),
+      received_new_total = sum(received_new_n, na.rm = TRUE),
       schools_received = n_distinct(id[!is.na(received_n) & received_n > 0]),
       schools_yr_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & !year_group_excluded & received_n < roll]),
       schools_yr_yg_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & year_group_excluded & received_n < roll]),
       data_obtained_n = sum(data_n, na.rm = TRUE),
+      data_obtained_new_n = sum(data_new_n, na.rm = TRUE),
       schools_with_data = n_distinct(id[!is.na(data_n) & data_n > 0]),
       .groups = "drop"
     ) |>
@@ -202,10 +208,12 @@ consort_by_year_and_wave <- function(wave_data) {
       setup_completed_n = sum(roll[setup_completed == TRUE], na.rm = TRUE),
       year_group_excluded_n = sum(roll[setup_completed == TRUE & year_group_excluded == TRUE], na.rm = TRUE),
       received_n_total = sum(received_n, na.rm = TRUE),
+      received_new_total = sum(received_new_n, na.rm = TRUE),
       schools_received = n_distinct(id[!is.na(received_n) & received_n > 0]),
       schools_yr_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & !year_group_excluded & received_n < roll]),
       schools_yr_yg_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & year_group_excluded & received_n < roll]),
       data_obtained_n = sum(data_n, na.rm = TRUE),
+      data_obtained_new_n = sum(data_new_n, na.rm = TRUE),
       schools_with_data = n_distinct(id[!is.na(data_n) & data_n > 0]),
       .groups = "drop"
     )
@@ -252,10 +260,12 @@ consort_combined <- function(wave_data) {
       setup_completed_n = sum(roll[setup_completed == TRUE], na.rm = TRUE),
       year_group_excluded_n = sum(roll[setup_completed == TRUE & year_group_excluded == TRUE], na.rm = TRUE),
       received_n_total = sum(received_n, na.rm = TRUE),
+      received_new_total = sum(received_new_n, na.rm = TRUE),
       schools_received = n_distinct(id[!is.na(received_n) & received_n > 0]),
       schools_yr_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & !year_group_excluded & received_n < roll]),
       schools_yr_yg_exclusions = n_distinct(id[!is.na(received_n) & setup_completed & year_group_excluded & received_n < roll]),
       data_obtained_n = sum(data_n, na.rm = TRUE),
+      data_obtained_new_n = sum(data_new_n, na.rm = TRUE),
       schools_with_data = n_distinct(id[!is.na(data_n) & data_n > 0])
     ) |>
     mutate(
@@ -285,10 +295,9 @@ output_dir <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/school
 
 wave_data <- readRDS(paste0(output_dir, "aow_wave_data.rds"))
 
-
+ct_combined <- consort_combined(wave_data)
 ct_by_wave <- consort_by_wave(wave_data)
 ct_by_year <- consort_by_year(wave_data)
-ct_combined <- consort_combined(wave_data)
 ct_yr_wave <- consort_by_year_and_wave(wave_data)
 chk <- check_dsa_roll_gap(wave_data)
 
