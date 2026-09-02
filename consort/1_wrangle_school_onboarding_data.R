@@ -171,7 +171,27 @@ sch_data <- denom |> transmute(id = school_establishment_no,
   pivot_wider(names_from = "year_group", 
               names_prefix = c("y"), 
               values_from = c("received", "received_new", "data", "data_new"), 
-              values_fill = 0)
+              values_fill = 0) |>
+  mutate(err_received_new_y8 = ifelse(received_new_y8 > received_y8, TRUE, FALSE),
+         err_received_new_y9 = ifelse(received_new_y9 > received_y9, TRUE, FALSE),
+         err_received_new_y10 = ifelse(received_new_y10 > received_y10, TRUE, FALSE),
+         err_data_new_y8 = ifelse(data_new_y8 > data_y8, TRUE, FALSE),
+         err_data_new_y9 = ifelse(data_new_y9 > data_y9, TRUE, FALSE),
+         err_data_new_y10 = ifelse(data_new_y10 > data_y10, TRUE, FALSE)
+  )
+
+# qc check
+if(any(sch_data$err_received_new_y8,
+       sch_data$err_received_new_y9,
+       sch_data$err_received_new_y10,
+       sch_data$err_data_new_y8,
+       sch_data$err_data_new_y9,
+       sch_data$err_data_new_y10
+)) {
+  stop("Some new entrant counts are higher than total received counts.")
+}
+
+sch_data <- sch_data |> select(-any_of(starts_with("err_")))
 
 sch_rec <- sch_rec |> full_join(sch_data, by = c("id", "year")) |>
   relocate(starts_with(c("received", "data")), .after = "dsa")

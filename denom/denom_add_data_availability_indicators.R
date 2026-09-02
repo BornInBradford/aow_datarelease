@@ -27,8 +27,8 @@ occurrence_count <- function(df, inc_pilot = FALSE) {
     arrange(recruitment_date) |>
     mutate(rep_received = cumsum(ifelse(recruitment_era != exyr, 1, 0)),
            rep_has_data = cumsum(ifelse(has_data == 1 & recruitment_era != exyr, 1, 0)),
-           tot_received = sum(recruitment_era != exyr),
-           tot_has_data = sum(has_data == 1 & recruitment_era != exyr)) |>
+           tot_received = sum(ifelse(recruitment_era != exyr, 1, 0)),
+           tot_has_data = sum(ifelse(has_data == 1 & recruitment_era != exyr, 1, 0))) |>
     ungroup() |>
     arrange(recruitment_date)
   

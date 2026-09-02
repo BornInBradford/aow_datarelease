@@ -86,7 +86,8 @@ build_wave_data <- function(raw_df) {
         TRUE ~ FALSE
       ),
       received_exceeds_roll = FALSE, # no longer used
-      data_exceeds_received = !is.na(received_n) & !is.na(data_n) & data_n > received_n
+      data_exceeds_received = !is.na(received_n) & !is.na(data_n) & data_n > received_n,
+      new_data_exceeds_received = !is.na(received_new_n) & !is.na(data_new_n) & data_new_n > received_new_n
     ) |>
     ungroup()
   

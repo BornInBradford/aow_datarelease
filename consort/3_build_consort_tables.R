@@ -27,12 +27,14 @@ table_col_order <- function() {
                  "year_group_excluded_n",
                  "received_n_total",
                  "received_new_total",
+                 "received_rpt_total",
                  "retention_rate",
                  "schools_yr_exclusions",
                  "ch_excluded",
                  "schools_with_data",
                  "data_obtained_n",
                  "data_obtained_new_n",
+                 "data_obtained_rpt_n",
                  "response_rate",
                  "overall_yield",
                  "ch_no_data"
@@ -117,6 +119,8 @@ consort_by_wave <- function(wave_data) {
       ch_no_setup = dsa_n - setup_completed_n,
       ch_excluded = (setup_completed_n - year_group_excluded_n) - received_n_total,
       ch_no_data = received_n_total - data_obtained_n,
+      received_rpt_total = received_n_total - received_new_total,
+      data_obtained_rpt_n = data_obtained_n - data_obtained_new_n,
       retention_rate = received_n_total / setup_completed_n,
       response_rate = data_obtained_n / received_n_total,
       overall_yield = data_obtained_n / eligible
@@ -170,6 +174,8 @@ consort_by_year <- function(wave_data) {
       ch_no_setup = dsa_n - setup_completed_n,
       ch_excluded = (setup_completed_n - year_group_excluded_n) - received_n_total,
       ch_no_data = received_n_total - data_obtained_n,
+      received_rpt_total = received_n_total - received_new_total,
+      data_obtained_rpt_n = data_obtained_n - data_obtained_new_n,
       retention_rate = received_n_total / setup_completed_n,
       response_rate = data_obtained_n / received_n_total,
       overall_yield = data_obtained_n / eligible
@@ -226,6 +232,8 @@ consort_by_year_and_wave <- function(wave_data) {
       ch_no_setup = dsa_n - setup_completed_n,
       ch_excluded = (setup_completed_n - year_group_excluded_n) - received_n_total,
       ch_no_data = received_n_total - data_obtained_n,
+      received_rpt_total = received_n_total - received_new_total,
+      data_obtained_rpt_n = data_obtained_n - data_obtained_new_n,
       retention_rate = received_n_total / setup_completed_n,
       response_rate = data_obtained_n / received_n_total,
       overall_yield = data_obtained_n / eligible
@@ -274,6 +282,8 @@ consort_combined <- function(wave_data) {
       ch_no_setup = dsa_n - setup_completed_n,
       ch_excluded = (setup_completed_n - year_group_excluded_n) - received_n_total,
       ch_no_data = received_n_total - data_obtained_n,
+      received_rpt_total = received_n_total - received_new_total,
+      data_obtained_rpt_n = data_obtained_n - data_obtained_new_n,
       retention_rate = received_n_total / setup_completed_n,
       response_rate = data_obtained_n / received_n_total,
       overall_yield = data_obtained_n / eligible
