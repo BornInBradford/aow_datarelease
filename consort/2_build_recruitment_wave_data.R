@@ -5,6 +5,7 @@ build_wave_data <- function(raw_df) {
   years <- c("2022-23", "2023-24", "2024-25", "2025-26")
   skeleton <- expand_grid(id = unique(raw_df$id), year = years)
   
+  # imputing dsa and ht_agreed from downstream indicators
   full_df <- skeleton |>
     left_join(raw_df, by = c("id", "year")) |>
     mutate(
@@ -23,20 +24,25 @@ build_wave_data <- function(raw_df) {
     ) |>
     select(-any_data_collected, -any_received)
   
+  # reshape long
   long_df <- full_df |>
     pivot_longer(
-      cols = c(n_y8, n_y9, n_y10, received_y8, received_y9, received_y10, data_y8, data_y9, data_y10),
+      cols = c(n_y8, n_y9, n_y10, 
+               received_y8, received_y9, received_y10,
+               received_new_y8, received_new_y9, received_new_y10,
+               data_y8, data_y9, data_y10,
+               data_new_y8, data_new_y9, data_new_y10),
       names_to = c(".value", "year_group"),
-      names_pattern = "(n|received|data)_y(\\d+)"
+      names_pattern = "(n|received|received_new|data|data_new)_y(\\d+)"
     ) |>
-    rename(roll = n, received_n = received, data_n = data) |>
+    rename(roll = n, received_n = received, received_new_n = received_new, data_n = data, data_new_n = data_new) |>
     mutate(
       year_group = as.integer(year_group),
       year_start = as.integer(str_sub(year, 1, 4)),
       cohort_id  = year_start - year_group
     )
   
-  # cohort-based roll fill (unchanged logic)
+  # cohort-based roll imputation
   long_df <- long_df |>
     arrange(id, cohort_id, year_group) |>
     group_by(id, cohort_id) |>
@@ -79,12 +85,12 @@ build_wave_data <- function(raw_df) {
         sum(received_n, na.rm = TRUE) > 0 ~ TRUE,
         TRUE ~ FALSE
       ),
-      received_exceeds_roll = FALSE, 
+      received_exceeds_roll = FALSE, # no longer used
       data_exceeds_received = !is.na(received_n) & !is.na(data_n) & data_n > received_n
     ) |>
     ungroup()
   
-  # year_group_excluded: school sent details for at least one year group this year, but at least one other was zero
+  # year_group_excluded: school sent details for at least one year group this year, but this one was zero
   long_df <- long_df |>
     group_by(id, year) |> 
     mutate(year_group_excluded = !is.na(dsa) & !is.na(received_n) & any(dsa == 1) & received_n == 0 & !all(received_n == 0)) |>
