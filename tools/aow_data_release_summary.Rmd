@@ -442,11 +442,12 @@ datatable(summ_df_bib,
 
 summ_df <- denom |> filter(recruitment_era != "2021-22") |>
   group_by(aow_person_id) |>
-  summarise(across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
+  summarise(multi_survey = ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0),
+         across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
   ungroup() |>
   unique() |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, multi_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   relocate(has_data, .after = total)
 
@@ -461,11 +462,12 @@ datatable(summ_df,
 
 summ_df_bib <- denom |> filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
   group_by(aow_person_id) |>
-  summarise(across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
+  summarise(multi_survey = ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0),,
+            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
   ungroup() |>
   unique() |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, multi_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   relocate(has_data, .after = total)
 
@@ -479,9 +481,12 @@ datatable(summ_df_bib,
 
 ```{r summary_tbl_yg, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(year_group) |>
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |> group_by(year_group) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(year_group, everything()) |>
@@ -497,10 +502,14 @@ datatable(summ_df,
 
 ```{r summary_tbl_bib_yg, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |> 
+  group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |>
   group_by(year_group) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(year_group, everything()) |>
@@ -517,9 +526,13 @@ datatable(summ_df_bib,
 
 ```{r summary_tbl_ry, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(recruitment_era) |>
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> 
+  group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |> group_by(recruitment_era) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   select(recruitment_era, everything()) |>
   arrange(recruitment_era) |>
@@ -534,10 +547,14 @@ datatable(summ_df,
 
 ```{r summary_tbl_bib_ry, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |> 
+  group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |>
   group_by(recruitment_era) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   select(recruitment_era, everything()) |>
   arrange(recruitment_era) |>
@@ -552,9 +569,12 @@ datatable(summ_df_bib,
 
 ```{r summary_tbl_sc, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(recruitment_era, year_group) |>
+summ_df <- denom |>  filter(recruitment_era != "2021-22") |> group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |> group_by(recruitment_era, year_group) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(recruitment_era, year_group, everything()) |>
@@ -570,10 +590,14 @@ datatable(summ_df,
 
 ```{r summary_tbl_bib_sc, echo=FALSE, fig.height=7, fig.width=9, message=FALSE, warning=FALSE}
 
-summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
+summ_df_bib <- denom |>  filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |> 
+  group_by(aow_person_id) |> arrange(recruitment_date) |>
+  mutate(previous_survey = ifelse(cumsum(has_survey) > 1 & has_survey == 1, 1, 0)) |>
+  ungroup() |>
+  unique() |>
   group_by(recruitment_era, year_group) |>
   summarise(total = n(),
-            across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
+            across(c(has_data, has_survey, previous_survey, has_measure, has_bloods, has_ckcog), ~sum(.))) |>
   ungroup() |>
   mutate(year_group = as.integer(year_group)) |>
   select(recruitment_era, year_group, everything()) |>
