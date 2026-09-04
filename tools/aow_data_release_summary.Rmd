@@ -442,7 +442,7 @@ datatable(summ_df_bib,
 
 summ_df <- denom |> filter(recruitment_era != "2021-22") |>
   group_by(aow_person_id) |>
-  summarise(multi_survey = ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0),
+  summarise(multi_survey = max(ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0)),
          across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
   ungroup() |>
   unique() |>
@@ -462,7 +462,7 @@ datatable(summ_df,
 
 summ_df_bib <- denom |> filter(recruitment_era != "2021-22") |> filter(is_bib == "BiB") |>
   group_by(aow_person_id) |>
-  summarise(multi_survey = ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0),,
+  summarise(multi_survey = max(ifelse(sum(has_survey, na.rm = TRUE) > 1 & has_survey == 1, 1, 0)),
             across(c(has_data, has_survey, has_measure, has_bloods, has_ckcog), ~max(.))) |>
   ungroup() |>
   unique() |>
