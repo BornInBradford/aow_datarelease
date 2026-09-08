@@ -64,6 +64,9 @@ If a summary report of all data outputs is required, run `tools/aow_data_release
 
 The `survey/redcap` directory contains the REDCap data dictionary .csv files used to generate the survey data collection instruments, and used in processing of the raw REDCap survey data.
 
+The `consort` directory contains scripts for transforming and reporting CONSORT diagram counts, tracking the process of bringing schools on board through to recruiting pupils and collecting data.
+
+Output reports go in the `reports` directory, which is excluded from the repository.
 
 
 

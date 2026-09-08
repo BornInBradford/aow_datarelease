@@ -11,6 +11,35 @@ library(haven)
 output_path <- "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/"
 
 
+occurrence_count <- function(df, inc_pilot = FALSE) {
+  
+  if(inc_pilot) {
+    exyr <- "dummy"
+    exlab <- ""
+  } else {
+    exyr <- "2021-22"
+    exlab <- " (excl. pilot)"
+  }
+  
+  df <- df |> select(-any_of(starts_with(c("tot_", "rep_"))))
+  
+  df <- df |> group_by(aow_person_id) |>
+    arrange(recruitment_date) |>
+    mutate(rep_received = cumsum(ifelse(recruitment_era != exyr, 1, 0)),
+           rep_has_data = cumsum(ifelse(has_data == 1 & recruitment_era != exyr, 1, 0)),
+           tot_received = sum(ifelse(recruitment_era != exyr, 1, 0)),
+           tot_has_data = sum(ifelse(has_data == 1 & recruitment_era != exyr, 1, 0))) |>
+    ungroup() |>
+    arrange(recruitment_date)
+  
+  df <- df |> set_variable_labels(rep_received = paste0("Times so far participant has been included in recruitment denominator", exlab),
+                                  rep_has_data = paste0("Times so far participant has provided any AoW data", exlab),
+                                  tot_received = paste0("Total times participant included in recruitment denominator", exlab),
+                                  tot_has_data = paste0("Total times participant has provided any AoW data", exlab))
+  
+}
+
+
 # load data frames
 
 denom_pseudo <- readRDS("U:\\Born In Bradford - Confidential\\Data\\BiB\\processing\\AoW\\denom\\data\\denom_pseudo.rds")
@@ -117,6 +146,8 @@ has_cols <- names(dat_df |> select(starts_with("has_")))
 denom <- denom |> select(-any_of(has_cols)) |> left_join(dat_df)
 denom_pseudo <- denom_pseudo |> select(-any_of(has_cols)) |> left_join(dat_df)
 
+denom <- denom |> occurrence_count()
+denom_pseudo <- denom_pseudo |> occurrence_count()
 
 # export
 if(getOption("aow_export_denom")) {
