@@ -72,7 +72,11 @@ aow_miss_label <- function(type) {
                    type == "year_gp_9" ~ c("Only shown to year 9" = -4),
                    type == "year_gp_10" ~ c("Only shown to year 10" = -4),
                    type == "on_only" ~ c("Not present in offline version" = -5),
-                   type == "off_only" ~ c("Not present in online version" = -5)
+                   type == "off_only" ~ c("Not present in online version" = -5),
+                   type == "implausible" ~ c("Implausible value removed in cleaning" = -6) # some variables such as awb4_4y_gendersex_y_f_2,awb5_2y_alcohol_age, 
+                                                                                           # awb5_2_y, alcohol_y_qntty_age were identified as having implausible
+                                                                                           # values within their age bounds. This sentinel is therefore put in place
+                                                                                           # for any value with out of bound values.
   )
                    
   if(is.na(lab)) stop(paste0("AoW missing value label type not found: ", type))
@@ -147,8 +151,11 @@ aow_denom_col_labels <- function(full = TRUE) {
                         birth_date = "Date of birth",
                         postcode = "Home postcode",
                         LSOA11CD = "Home LSOA code, 2011 boundaries",
+                        LSOA21CD = "Home LSOA code, 2021 boundaries",
                         IMD_2019_score = "Home IMD 2019 score",
+                        IMD_2025_score = "Home IMD 2025 score",
                         IMD_2019_decile = "Home IMD 2019 decile, national scale",
+                        IMD_2025_decile = "Home IMD 2025 decile, national scale",
                         recruitment_date = "Recruitment date (import of class list)",
                         recruitment_year = "Recruitment year",
                         recruitment_month = "Recruitment month",
@@ -315,6 +322,8 @@ aow_pre_mod_admin_data <- function(pre_mod_admin) {
                                         "v18" = 18,
                                         "v19" = 19,
                                         "v20" = 20,
+                                        "v21" = 21,
+                                        "v30" = 30,
                                         "various - see module specific data" = -1)
     ) |>
     set_variable_labels(.labels = aow_denom_col_labels(full = FALSE)) 
@@ -662,5 +671,61 @@ aow_output_varlabels <- function(df, output = c("clip", "cat", "c")) {
 }
 
 
+# Extracting valid ranges for numeric variables from the data dictionary
+aow_valid_ranges <- function(dict_paths, numeric_types = c("integer", "number")) {
+  
+  ranges <- map_dfr(dict_paths, function(path) {
+    read_csv(path,
+             col_names = aow_dict_colnames(),
+             skip = 1,
+             col_types = cols(.default = col_character())) |>
+      select(variable, validation_type, validation_min, validation_max)
+  })
+  
+  ranges <- ranges |>
+    filter(validation_type %in% numeric_types) |>
+    mutate(min_valid = suppressWarnings(as.numeric(validation_min)),
+           max_valid = suppressWarnings(as.numeric(validation_max))) |>
+    filter(!is.na(min_valid) | !is.na(max_valid)) |>
+    mutate(min_valid = coalesce(min_valid, -Inf),
+           max_valid = coalesce(max_valid, Inf)) |>
+    select(variable, min_valid, max_valid) |>
+    distinct()
+  
+  conflicts <- ranges |> count(variable) |> filter(n > 1)
+  
+  if(nrow(conflicts) > 0) {
+    stop("Validation ranges differ between dictionaries for: ",
+         paste(conflicts$variable, collapse = ", "))
+  }
+  
+  return(ranges)
+}
 
-
+# Converting implausible values to the default sentinel value -6
+aow_range_check <- function(df, var, min_valid, max_valid) {
+  
+  range_lab <- aow_miss_label("implausible")
+  
+  var_name <- var
+  var <- sym(var)
+  
+  parsed <- suppressWarnings(as.numeric(as.character(df[[var_name]])))
+  breach <- !is.na(parsed) & parsed >= 0 &
+    (parsed < min_valid | parsed > max_valid)
+  
+  message(paste0("Count of implausible values for ",var_name, ": ",  sum(breach == TRUE, na.rm = TRUE)))
+  
+  if(is.character(df[[var_name]]) || is.factor(df[[var_name]])) {
+    
+    df[[var_name]][breach] <- paste0("[", names(range_lab), "]")
+    
+  } else {
+    
+    df <- df |> mutate(!!var := case_when(.env$breach ~ range_lab, TRUE ~ !!var))
+    df <- df |> add_value_labels(!!var := range_lab)
+    
+  }
+  
+  return(df)
+}

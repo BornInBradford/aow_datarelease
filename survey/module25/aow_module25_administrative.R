@@ -6,6 +6,10 @@ mod_allcols <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/A
 
 denom <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/denom/data/denom_identifiable.rds")
 
+# Set expected survey start and end date to prevent survey period from going out of bounds
+collection_start <- as.Date("2025-09-01")
+collection_end <- as.Date("2026-08-31")
+
 denom <- denom |> select(aow_person_id,
                          BiBPersonID,
                          is_bib,
@@ -25,12 +29,32 @@ denom <- denom |> select(aow_person_id,
 
 data_not_in_denom <- mod_allcols |> anti_join(denom, by = "aow_recruitment_id")
 
-mod_allcols <- mod_allcols |> inner_join(denom, by = "aow_recruitment_id") |>
-  mutate(survey_date = coalesce(as.Date(date_time_collection), 
-                                as.Date(ifelse(module_1_timestamp == "[not completed]", NA, module_1_timestamp)),
-                                as.Date(survey_date)),
+# Function to remove survey collection date outliers
+rm_survey_date_outlier <- function(x) {
+  x <- as.Date(x)
+  if_else(is.na(x) | x < collection_start | x > collection_end, as.Date(NA), x)
+}
+
+mod_allcols <- mod_allcols |> 
+  inner_join(denom, by = "aow_recruitment_id") |>
+  mutate(date_collection = as.Date(date_time_collection),
+         date_timestamp = as.Date(na_if(module_1_timestamp, "[not completed]")),
+         date_existing = as.Date(survey_date),
+         survey_date = coalesce(rm_survey_date_outlier(date_collection),
+                                rm_survey_date_outlier(date_timestamp),
+                                rm_survey_date_outlier(date_existing)),
          age_survey_y = (birth_date %--% survey_date) %/% years(1),
-         age_survey_m = (birth_date %--% survey_date) %/% months(1)) 
+         age_survey_m = (birth_date %--% survey_date) %/% months(1))
+
+# Check the records with any survey date outlier
+survey_date_outlier <- mod_allcols |>
+  filter((!is.na(date_collection) & is.na(rm_survey_date_outlier(date_collection))) |
+           (!is.na(date_timestamp) & is.na(rm_survey_date_outlier(date_timestamp))) |
+           (!is.na(date_existing) & is.na(rm_survey_date_outlier(date_existing)))) |>
+  select(aow_recruitment_id, survey_mode, date_collection, date_timestamp,
+         date_existing, survey_date)
+
+message(nrow(survey_date_outlier), " records had at least one date outside the collection period")
 
 # how many are missing a survey date?
 missdate <- length(which(is.na(mod_allcols$survey_date)))

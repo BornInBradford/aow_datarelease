@@ -4,6 +4,8 @@ source("tools/aow_survey_functions.R")
 
 module <- readRDS("U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module25_integrated.rds")
 
+dict_paths <- c("survey/redcap/AoWModule25OnlineSurvey_DataDictionary_2026-06-18.csv",
+                "survey/redcap/AoWModule25OfflineSurvey_DataDictionary_2026-06-18.csv")
 
 # drop some variables we don't want to keep
 module <- module |> select(-aw1_2_name_a4,
@@ -19,6 +21,34 @@ module <- module |> select(-awb5_2_gambling_chk_a10,
 module <- module |> select(-awb6_1_social_media_r10,
                            -awb6_1_negative_exp_r5)
 
+# these are empty checkbox parent columns. The value responses are contained in each individual checkbox sub question. 
+module <- module |> select(-awb3_1y_save_mny_r20,
+                           -bank_acc_behav_a20,
+                           -alc_reason_a20,
+                           -mh_kooth_years_r30)
+
+# Extract variables with Text Validation Max and Text Validation Min from the data dictionary
+ranges <- aow_valid_ranges(dict_paths) |> filter(variable %in% names(module))
+
+# Check which variables have implausible values
+range_breaches <- ranges |>
+  filter(variable %in% names(module)) |>
+  mutate(values = map(variable,
+                      function(v) {suppressWarnings(as.numeric(module[[v]]))}),
+    n_below = map2_int(values,min_valid,
+                       function(v, lo) {sum(v >= 0 & v < lo, na.rm = TRUE)}),
+    n_above = map2_int(values, max_valid, function(v, hi) {sum(v > hi, na.rm = TRUE)})
+  ) |>
+  select(variable, min_valid, max_valid, n_below, n_above)
+
+range_breaches |> filter(n_below > 0 | n_above > 0)
+
+# Appropriate the sentinel -6 to values that that fall out of Text Validation Max and Text Validation Min
+for(v in seq_len(nrow(ranges))) {
+  module <- module |> aow_range_check(ranges$variable[v],
+                                      ranges$min_valid[v],
+                                      ranges$max_valid[v])
+}
 
 # 80 chars:            # 80 chars:            # 80 chars:                           
 ################################################################################
@@ -595,7 +625,8 @@ module <- module %>%
                       job_sm_place_a20 = "In what place does your step mother work?",
                       job_sf_place_a20 = "In what place does your step father work?",
                       job_mp_place_a20 = "In what place does your mother's partner work?",
-                      job_fp_place_a20 = "In what place does your father's partner work?",
+                      job_fp_place_a20 = "In what place does your father's partner work?", 
+                      # variables labelled for 2025/26 update
                       awb2_9_seek_hlp_ppl_15_a20 = "Mental health website or app (e.g., Childline, Kooth)",
                       awb2_9_seek_hlp_ppl_16_a20 = "Online Community (e.g, Reddit)",
                       awb2_9_seek_hlp_ppl_16_a30 = "AI chatbot (e.g., ChatGPT)",
@@ -687,4 +718,3 @@ module <- module %>%
 
 # export
 saveRDS(module, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module25_labelled.rds")
-

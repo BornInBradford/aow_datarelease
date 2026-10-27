@@ -20,7 +20,8 @@ rcads_lookup <- rcads_lookup %>%
 
 swemwbs_lookup <- read_csv("resources/SWEMWBS_lookup_table.csv")
 
-remove_na <- function(x) ifelse(is.na(x), 0, x)
+remove_na <- function(x) ifelse(is.na(x) | x < 0, 0, x)
+is_missing_item <- function(x) is.na(x) | x < 0
 
 # CHANGES from mod 1
 #
@@ -59,11 +60,11 @@ module <-
            remove_na(awb3_4_personal_assts_3) + 
            remove_na(awb3_4_personal_assts_4) +
            remove_na(awb3_4_personal_assts_5),
-         own_fin_nas = is.na(awb3_4_personal_assts_1) +
-                             is.na(awb3_4_personal_assts_2) +
-                             is.na(awb3_4_personal_assts_3) +
-                             is.na(awb3_4_personal_assts_4) +
-                             is.na(awb3_4_personal_assts_5),
+         own_fin_nas = is_missing_item(awb3_4_personal_assts_1) +
+                             is_missing_item(awb3_4_personal_assts_2) +
+                             is_missing_item(awb3_4_personal_assts_3) +
+                             is_missing_item(awb3_4_personal_assts_4) +
+                             is_missing_item(awb3_4_personal_assts_5),
          own_fin_missing = ifelse(own_fin_nas == 5, 1, 0),
          own_fin_total = ifelse(own_fin_missing == 1, NA, own_fin_total)) %>%
   #recode inconsistent responses
@@ -74,11 +75,11 @@ module <-
            remove_na(aw3_5_food_3) + 
            remove_na(aw3_5_food_4) + 
            remove_na(aw3_5_food_5),
-         food_avail_nas = is.na(aw3_5_food_1) +
-                                is.na(aw3_5_food_2) +
-                                is.na(aw3_5_food_3) +
-                                is.na(aw3_5_food_4) +
-                                is.na(aw3_5_food_5),
+         food_avail_nas = is_missing_item(aw3_5_food_1) +
+                                is_missing_item(aw3_5_food_2) +
+                                is_missing_item(aw3_5_food_3) +
+                                is_missing_item(aw3_5_food_4) +
+                                is_missing_item(aw3_5_food_5),
          food_avail_missing = ifelse(food_avail_nas == 5, 1, 0),
          food_avail_total = ifelse(food_avail_missing == 1, NA, food_avail_total))
            
@@ -116,6 +117,9 @@ module <- module %>%
          TMPVAR_awb2_4_loneliness_2 = awb2_4_loneliness_2 - 1,
          TMPVAR_awb2_4_loneliness_3 = awb2_4_loneliness_3 - 1,
          TMPVAR_awb2_4_loneliness_4 = awb2_4_loneliness_4 - 1) %>%
+  # An error occurred in previous releases. The reverse scoring for two of the BRS variables
+  # (awb2_9_resil4_a5 and awb2_9_resil6_a5) were taken from awb2_9_resil2_a5 instead of their own columns.
+  # This has now been corrected for the 2025/26 release. 
   mutate(TMPVAR_awb2_9_resil2_a5 = case_match(awb2_9_resil2_a5, 1~5, 2~4, 3~3, 4~2, 5~1),
          TMPVAR_awb2_9_resil4_a5 = case_match(awb2_9_resil4_a5, 1~5, 2~4, 3~3, 4~2, 5~1),
          TMPVAR_awb2_9_resil6_a5 = case_match(awb2_9_resil6_a5, 1~5, 2~4, 3~3, 4~2, 5~1)) %>%
@@ -183,56 +187,56 @@ module <-
            remove_na(TMPVAR_awb2_1_illhealth_21) +
            remove_na(TMPVAR_awb2_1_illhealth_24),
          rcad_total = rcad_ga +  rcad_md,
-         rcad_nas = is.na(TMPVAR_awb2_1_illhealth_1) +
-           is.na(TMPVAR_awb2_1_illhealth_2) +
-           is.na(TMPVAR_awb2_1_illhealth_3) +
-           is.na(TMPVAR_awb2_1_illhealth_4) +
-           is.na(TMPVAR_awb2_1_illhealth_5) +
-           is.na(TMPVAR_awb2_1_illhealth_6) +
-           is.na(TMPVAR_awb2_1_illhealth_7) +
-           is.na(TMPVAR_awb2_1_illhealth_8) +
-           is.na(TMPVAR_awb2_1_illhealth_9) +
-           is.na(TMPVAR_awb2_1_illhealth_10) +
-           is.na(TMPVAR_awb2_1_illhealth_11) +
-           is.na(TMPVAR_awb2_1_illhealth_12) +
-           is.na(TMPVAR_awb2_1_illhealth_13) +
-           is.na(TMPVAR_awb2_1_illhealth_14) +
-           is.na(TMPVAR_awb2_1_illhealth_15) +
-           is.na(TMPVAR_awb2_1_illhealth_16) +
-           is.na(TMPVAR_awb2_1_illhealth_17) +
-           is.na(TMPVAR_awb2_1_illhealth_18) +
-           is.na(TMPVAR_awb2_1_illhealth_19) +
-           is.na(TMPVAR_awb2_1_illhealth_20) +
-           is.na(TMPVAR_awb2_1_illhealth_21) +
-           is.na(TMPVAR_awb2_1_illhealth_22) +
-           is.na(TMPVAR_awb2_1_illhealth_23) +
-           is.na(TMPVAR_awb2_1_illhealth_24) +
-           is.na(TMPVAR_awb2_1_illhealth_25),
-         rcad_ga_miss = is.na(TMPVAR_awb2_1_illhealth_2) +                     
-           is.na(TMPVAR_awb2_1_illhealth_3) +                    
-           is.na(TMPVAR_awb2_1_illhealth_5) +
-           is.na(TMPVAR_awb2_1_illhealth_6) +                    
-           is.na(TMPVAR_awb2_1_illhealth_7) +
-           is.na(TMPVAR_awb2_1_illhealth_9) +
-           is.na(TMPVAR_awb2_1_illhealth_11) +                    
-           is.na(TMPVAR_awb2_1_illhealth_12) +
-           is.na(TMPVAR_awb2_1_illhealth_14) +
-           is.na(TMPVAR_awb2_1_illhealth_17) +                    
-           is.na(TMPVAR_awb2_1_illhealth_18) +
-           is.na(TMPVAR_awb2_1_illhealth_20) +
-           is.na(TMPVAR_awb2_1_illhealth_22) +                    
-           is.na(TMPVAR_awb2_1_illhealth_23) +
-           is.na(TMPVAR_awb2_1_illhealth_25),
-         rcad_md_miss = is.na(TMPVAR_awb2_1_illhealth_1) +
-           is.na(TMPVAR_awb2_1_illhealth_4) +
-           is.na(TMPVAR_awb2_1_illhealth_8) +
-           is.na(TMPVAR_awb2_1_illhealth_10) +
-           is.na(TMPVAR_awb2_1_illhealth_13) +
-           is.na(TMPVAR_awb2_1_illhealth_15) +
-           is.na(TMPVAR_awb2_1_illhealth_16) +
-           is.na(TMPVAR_awb2_1_illhealth_19) +
-           is.na(TMPVAR_awb2_1_illhealth_21) +
-           is.na(TMPVAR_awb2_1_illhealth_24),
+         rcad_nas = is_missing_item(TMPVAR_awb2_1_illhealth_1) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_2) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_3) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_4) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_5) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_6) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_7) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_8) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_9) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_10) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_11) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_12) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_13) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_14) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_15) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_16) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_17) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_18) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_19) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_20) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_21) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_22) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_23) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_24) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_25),
+         rcad_ga_miss = is_missing_item(TMPVAR_awb2_1_illhealth_2) +                     
+           is_missing_item(TMPVAR_awb2_1_illhealth_3) +                    
+           is_missing_item(TMPVAR_awb2_1_illhealth_5) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_6) +                    
+           is_missing_item(TMPVAR_awb2_1_illhealth_7) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_9) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_11) +                    
+           is_missing_item(TMPVAR_awb2_1_illhealth_12) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_14) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_17) +                    
+           is_missing_item(TMPVAR_awb2_1_illhealth_18) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_20) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_22) +                    
+           is_missing_item(TMPVAR_awb2_1_illhealth_23) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_25),
+         rcad_md_miss = is_missing_item(TMPVAR_awb2_1_illhealth_1) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_4) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_8) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_10) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_13) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_15) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_16) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_19) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_21) +
+           is_missing_item(TMPVAR_awb2_1_illhealth_24),
          rcad_missing = ifelse(rcad_nas == 25, 1, 0),
          rcad_ga = ifelse(rcad_ga_miss == 15, NA, rcad_ga),
          rcad_md = ifelse(rcad_md_miss == 10, NA, rcad_md),
@@ -264,51 +268,51 @@ module <-
            remove_na(awb2_1_sdq_13_a10)+
            remove_na(awb2_1_sdq_16_a10)+
            remove_na(awb2_1_sdq_24_a10),
-         sdq_emotion_miss = is.na(awb2_1_sdq_3_a10)+
-           is.na(awb2_1_sdq_8_a10)+
-           is.na(awb2_1_sdq_13_a10)+
-           is.na(awb2_1_sdq_16_a10)+
-           is.na(awb2_1_sdq_24_a10),
+         sdq_emotion_miss = is_missing_item(awb2_1_sdq_3_a10)+
+           is_missing_item(awb2_1_sdq_8_a10)+
+           is_missing_item(awb2_1_sdq_13_a10)+
+           is_missing_item(awb2_1_sdq_16_a10)+
+           is_missing_item(awb2_1_sdq_24_a10),
          sdq_conduct = remove_na(awb2_1_sdq_5_a10)+
            remove_na(TMPVAR_awb2_1_sdq_7_a10)+
            remove_na(awb2_1_sdq_12_a10)+
            remove_na(awb2_1_sdq_18_a10)+
            remove_na(awb2_1_sdq_22_a10),
-         sdq_conduct_miss = is.na(awb2_1_sdq_5_a10)+
-           is.na(TMPVAR_awb2_1_sdq_7_a10)+
-           is.na(awb2_1_sdq_12_a10)+
-           is.na(awb2_1_sdq_18_a10)+
-           is.na(awb2_1_sdq_22_a10),
+         sdq_conduct_miss = is_missing_item(awb2_1_sdq_5_a10)+
+           is_missing_item(TMPVAR_awb2_1_sdq_7_a10)+
+           is_missing_item(awb2_1_sdq_12_a10)+
+           is_missing_item(awb2_1_sdq_18_a10)+
+           is_missing_item(awb2_1_sdq_22_a10),
          sdq_hyperact = remove_na(awb2_1_sdq_2_a10)+
            remove_na(awb2_1_sdq_10_a10)+
            remove_na(awb2_1_sdq_15_a10)+
            remove_na(TMPVAR_awb2_1_sdq_21_a10)+
            remove_na(TMPVAR_awb2_1_sdq_25_a10),
-         sdq_hyperact_miss = is.na(awb2_1_sdq_2_a10)+
-           is.na(awb2_1_sdq_10_a10)+
-           is.na(awb2_1_sdq_15_a10)+
-           is.na(TMPVAR_awb2_1_sdq_21_a10)+
-           is.na(TMPVAR_awb2_1_sdq_25_a10),
+         sdq_hyperact_miss = is_missing_item(awb2_1_sdq_2_a10)+
+           is_missing_item(awb2_1_sdq_10_a10)+
+           is_missing_item(awb2_1_sdq_15_a10)+
+           is_missing_item(TMPVAR_awb2_1_sdq_21_a10)+
+           is_missing_item(TMPVAR_awb2_1_sdq_25_a10),
          sdq_peer = remove_na(awb2_1_sdq_6_a10)+
            remove_na(TMPVAR_awb2_1_sdq_11_a10)+
            remove_na(TMPVAR_awb2_1_sdq_14_a10)+
            remove_na(awb2_1_sdq_19_a10)+
            remove_na(awb2_1_sdq_23_a10),
-         sdq_peer_miss = is.na(awb2_1_sdq_6_a10)+
-           is.na(TMPVAR_awb2_1_sdq_11_a10)+
-           is.na(TMPVAR_awb2_1_sdq_14_a10)+
-           is.na(awb2_1_sdq_19_a10)+
-           is.na(awb2_1_sdq_23_a10),
+         sdq_peer_miss = is_missing_item(awb2_1_sdq_6_a10)+
+           is_missing_item(TMPVAR_awb2_1_sdq_11_a10)+
+           is_missing_item(TMPVAR_awb2_1_sdq_14_a10)+
+           is_missing_item(awb2_1_sdq_19_a10)+
+           is_missing_item(awb2_1_sdq_23_a10),
          sdq_prosoc = remove_na(awb2_1_sdq_1_a10)+
            remove_na(awb2_1_sdq_4_a10)+
            remove_na(awb2_1_sdq_9_a10)+
            remove_na(awb2_1_sdq_17_a10)+
            remove_na(awb2_1_sdq_20_a10),
-         sdq_prosoc_miss = is.na(awb2_1_sdq_1_a10)+
-           is.na(awb2_1_sdq_4_a10)+
-           is.na(awb2_1_sdq_9_a10)+
-           is.na(awb2_1_sdq_17_a10)+
-           is.na(awb2_1_sdq_20_a10)) %>%
+         sdq_prosoc_miss = is_missing_item(awb2_1_sdq_1_a10)+
+           is_missing_item(awb2_1_sdq_4_a10)+
+           is_missing_item(awb2_1_sdq_9_a10)+
+           is_missing_item(awb2_1_sdq_17_a10)+
+           is_missing_item(awb2_1_sdq_20_a10)) %>%
   #scale missing scores if at least 3 completed
   mutate(sdq_emotion = case_when(sdq_emotion_miss <= 2 ~ round((5/(5-sdq_emotion_miss))*sdq_emotion),
                                  TRUE ~ NA_real_),
@@ -368,22 +372,23 @@ module <-
            remove_na(awb2_2_think_clr_5_a4) +
            remove_na(awb2_2_close_othrs_6_a4) +
            remove_na(awb2_2_own_mnd_7_a4), #+
+         # The variable awb2_3_self_efficay is not part of the SWEMWBS variables. 
            #remove_na(awb2_3_self_effccy),
-         wellbeing_nas = is.na(awb2_2_optmstc_1_a4) +
-           is.na(awb2_2_useful_2_a4) +
-           is.na(awb2_2_relxed_3_a4) +
-           is.na(awb2_2_problems_4_a4) +
-           is.na(awb2_2_think_clr_5_a4) +
-           is.na(awb2_2_close_othrs_6_a4) +
-           is.na(awb2_2_own_mnd_7_a4), #+
-           #is.na(awb2_3_self_effccy),
+         wellbeing_nas = is_missing_item(awb2_2_optmstc_1_a4) +
+           is_missing_item(awb2_2_useful_2_a4) +
+           is_missing_item(awb2_2_relxed_3_a4) +
+           is_missing_item(awb2_2_problems_4_a4) +
+           is_missing_item(awb2_2_think_clr_5_a4) +
+           is_missing_item(awb2_2_close_othrs_6_a4) +
+           is_missing_item(awb2_2_own_mnd_7_a4), #+
+           #is_missing_item(awb2_3_self_effccy),
          wellbeing_missing = ifelse(wellbeing_nas == 7, 1, 0),
          wellbeing = ifelse(wellbeing_missing == 1, NA, wellbeing))%>%
   #compute scores
   left_join(swemwbs_lookup) %>%
   mutate(swemwbs_cat = ifelse(swemwbs_total <= 19.5, 1, 
                               ifelse(swemwbs_total < 27.5, 2, 3))) %>%
-  set_value_labels(swemwbs_cat = labs_lnh) %>% # Why no rescaling of partial responses for swemwbs as done with sdq, rcads.
+  set_value_labels(swemwbs_cat = labs_lnh) %>% 
   
   #ULS-4
   #sum scores
@@ -391,12 +396,12 @@ module <-
            remove_na(TMPVAR_awb2_4_loneliness_2) +
            remove_na(TMPVAR_awb2_4_loneliness_3) +
            remove_na(TMPVAR_awb2_4_loneliness_4),
-         loneliness_nas = is.na(TMPVAR_awb2_4_loneliness_1) +
-           is.na(TMPVAR_awb2_4_loneliness_2) +
-           is.na(TMPVAR_awb2_4_loneliness_3) +
-           is.na(TMPVAR_awb2_4_loneliness_4),
+         loneliness_nas = is_missing_item(TMPVAR_awb2_4_loneliness_1) +
+           is_missing_item(TMPVAR_awb2_4_loneliness_2) +
+           is_missing_item(TMPVAR_awb2_4_loneliness_3) +
+           is_missing_item(TMPVAR_awb2_4_loneliness_4),
          loneliness_missing = ifelse(loneliness_nas == 4, 1, 0),
-         loneliness = ifelse(loneliness_missing == 1, NA, loneliness))  %>% # again no rescaling
+         loneliness = ifelse(loneliness_missing == 1, NA, loneliness))  %>% 
   #GHSQ
   #emotional subscales
   mutate(emo_inf = remove_na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
@@ -412,21 +417,24 @@ module <-
                              TRUE ~ emo_sch),
          #totals
          emo_total = emo_inf + emo_form + emo_sch,
-         emo_nas = is.na(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
-           is.na(awb2_9_seek_hlp_ppl_2) +
-           is.na(awb2_9_seek_hlp_ppl_3) +
-           is.na(awb2_9_seek_hlp_ppl_4) +
-           is.na(awb2_9_seek_hlp_ppl_5) +
-           is.na(awb2_9_seek_hlp_ppl_6) +
-           is.na(awb2_9_seek_hlp_ppl_7) +
-           is.na(awb2_9_seek_hlp_ppl_8) +
-           is.na(awb2_9_seek_hlp_ppl_9_a_4), #+ # For this particular variable, should it not be a4 as oppossed to a_4
-           #is.na(awb2_9_seek_hlp_ppl_10),
+         emo_nas = is_missing_item(TMPVAR_awb2_9_seek_hlp_ppl_1_r4) +
+           is_missing_item(awb2_9_seek_hlp_ppl_2) +
+           is_missing_item(awb2_9_seek_hlp_ppl_3) +
+           is_missing_item(awb2_9_seek_hlp_ppl_4) +
+           is_missing_item(awb2_9_seek_hlp_ppl_5) +
+           is_missing_item(awb2_9_seek_hlp_ppl_6) +
+           is_missing_item(awb2_9_seek_hlp_ppl_7) +
+           is_missing_item(awb2_9_seek_hlp_ppl_8) +
+           is_missing_item(awb2_9_seek_hlp_ppl_9_a_4), #+
+         # awb2_9_seek_hlp_ppl_10 was not counted among the emo_nas nine items that fed the
+         # subscales and total.Therefore, awb2_9_seek_hlp_ppl_10 should be excluded.
+         # it is also reverse-worded relative to the other items. 
+         #is_missing_item(awb2_9_seek_hlp_ppl_10),
          emo_missing = ifelse(emo_nas == 9, 1, 0),
          emo_inf = ifelse(emo_missing == 1, NA, emo_inf),
          emo_form = ifelse(emo_missing == 1, NA, emo_form),
          emo_sch = ifelse(emo_missing == 1, NA, emo_sch),
-         emo_total = ifelse(emo_missing == 1, NA, emo_total)) %>% # There are newer seeking help variables added at version 20 and 30 including chatgpt, mental health website etc
+         emo_total = ifelse(emo_missing == 1, NA, emo_total)) %>% 
 
   #BRS
   #sum scores
@@ -436,24 +444,19 @@ module <-
            remove_na(TMPVAR_awb2_9_resil4_a5) +
            remove_na(awb2_9_resil5_a5) +
            remove_na(TMPVAR_awb2_9_resil6_a5),
-         brs_nas = is.na(awb2_9_resil1_a5) +
-           is.na(TMPVAR_awb2_9_resil2_a5) +
-           is.na(awb2_9_resil3_a5) +
-           is.na(TMPVAR_awb2_9_resil4_a5) +
-           is.na(awb2_9_resil5_a5) +
-           is.na(TMPVAR_awb2_9_resil6_a5),
-         brs_missing = ifelse(brs_nas == 6, 1, 0),
-         brs_total = ifelse(brs_missing == 1, NA, brs_total)) %>%
+         brs_nas = is_missing_item(awb2_9_resil1_a5) +
+           is_missing_item(TMPVAR_awb2_9_resil2_a5) +
+           is_missing_item(awb2_9_resil3_a5) +
+           is_missing_item(TMPVAR_awb2_9_resil4_a5) +
+           is_missing_item(awb2_9_resil5_a5) +
+           is_missing_item(TMPVAR_awb2_9_resil6_a5),
+         brs_missing = ifelse(brs_nas == 6, 1, 0)) %>%
   #compute_scores %>%
-  mutate(brs_mean = brs_total/6,
+  mutate(brs_mean = ifelse(brs_nas <= 5, brs_total/(6 - brs_nas), NA),
+         brs_total = ifelse(brs_nas <= 5, brs_mean*6, NA),
          brs_cat = ifelse(brs_mean < 3, 1,
                           ifelse(brs_mean <= 4.3, 2, 3))) %>%
-  set_value_labels(brs_cat = labs_lnh) # Same question around rescaling for partial responses
-
-
-
-
-
+  set_value_labels(brs_cat = labs_lnh) 
 
 ################################################################################
 # dvs inherited from module 3 in 2023 release
@@ -491,18 +494,18 @@ module <-
            remove_na(TMPVAR_awb2_12_eat_hbt_10_a5) +
            remove_na(TMPVAR_awb2_12_wght_1_a5) +
            remove_na(TMPVAR_awb2_12_wght_2_a5),
-         edeqs_nas = is.na(TMPVAR_awb2_12_eat_hbt_1_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_2_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_3_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_4_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_5_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_6_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_7_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_8_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_9_a5) +
-           is.na(TMPVAR_awb2_12_eat_hbt_10_a5) +
-           is.na(TMPVAR_awb2_12_wght_1_a5) +
-           is.na(TMPVAR_awb2_12_wght_2_a5),
+         edeqs_nas = is_missing_item(TMPVAR_awb2_12_eat_hbt_1_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_2_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_3_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_4_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_5_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_6_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_7_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_8_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_9_a5) +
+           is_missing_item(TMPVAR_awb2_12_eat_hbt_10_a5) +
+           is_missing_item(TMPVAR_awb2_12_wght_1_a5) +
+           is_missing_item(TMPVAR_awb2_12_wght_2_a5),
          edeqs_missing = ifelse(edeqs_nas == 12, 1, 0),
          edeqs_total = ifelse(edeqs_missing == 1, NA, edeqs_total)) %>%
   #categorise
@@ -525,18 +528,18 @@ module <- module %>%
            remove_na(awb4_1_physical_actvty_6_a5) +
            remove_na(awb4_1_physical_actvty_7_a5) +
            remove_na(awb4_1_physical_actvty_8_a5),
-         paqa_nas = is.na(awb4_1_physical_actvty_1_a5) +
-           is.na(awb4_1_physical_actvty_2_a5) +
-           is.na(awb4_1_physical_actvty_3_a5) +
-           is.na(awb4_1_physical_actvty_4_a5) +
-           is.na(awb4_1_physical_actvty_5_a5) +
-           is.na(awb4_1_physical_actvty_6_a5) +
-           is.na(awb4_1_physical_actvty_7_a5) +
-           is.na(awb4_1_physical_actvty_8_a5),
-         paqa_missing = ifelse(paqa_nas == 8, 1, 0),
-         paqa_total = ifelse(paqa_missing == 1, NA, paqa_total)) %>%
+         paqa_nas = is_missing_item(awb4_1_physical_actvty_1_a5) +
+           is_missing_item(awb4_1_physical_actvty_2_a5) +
+           is_missing_item(awb4_1_physical_actvty_3_a5) +
+           is_missing_item(awb4_1_physical_actvty_4_a5) +
+           is_missing_item(awb4_1_physical_actvty_5_a5) +
+           is_missing_item(awb4_1_physical_actvty_6_a5) +
+           is_missing_item(awb4_1_physical_actvty_7_a5) +
+           is_missing_item(awb4_1_physical_actvty_8_a5),
+         paqa_missing = ifelse(paqa_nas == 8, 1, 0)) %>%
   #compute score
-  mutate(paqa_mean = paqa_total/8)  # same sentinel issue
+  mutate(paqa_mean = ifelse(paqa_nas <= 7, paqa_total/(8 - paqa_nas), NA),
+         paqa_total = ifelse(paqa_nas <= 7, paqa_mean*8, NA))  
 
 module <- module %>%
   
@@ -547,15 +550,15 @@ module <- module %>%
            remove_na(awb4_2_outside_schl_3_r7) +
            remove_na(awb4_2_outside_schl_4_r7) +
            remove_na(awb4_2_overall_a5),
-         yapsed_nas = is.na(awb4_2_outside_schl_1_r7) +
-           is.na(awb4_2_outside_schl_2_r7) +
-           is.na(awb4_2_outside_schl_3_r7) +
-           is.na(awb4_2_outside_schl_4_r7) +
-           is.na(awb4_2_overall_a5),
-         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0),
-         yapsed_total = ifelse(yapsed_missing == 1, NA, yapsed_total)) %>%
+         yapsed_nas = is_missing_item(awb4_2_outside_schl_1_r7) +
+           is_missing_item(awb4_2_outside_schl_2_r7) +
+           is_missing_item(awb4_2_outside_schl_3_r7) +
+           is_missing_item(awb4_2_outside_schl_4_r7) +
+           is_missing_item(awb4_2_overall_a5),
+         yapsed_missing = ifelse(yapsed_nas == 5, 1, 0)) %>%
   #compute score
-  mutate(yapsed_mean = yapsed_total/5) # also needs rescale check
+  mutate(yapsed_mean = ifelse(yapsed_nas <= 4, yapsed_total/(5 - yapsed_nas), NA),
+         yapsed_total = ifelse(yapsed_nas <= 4, yapsed_mean*5, NA))
 
 
 
@@ -580,17 +583,17 @@ module <-
            remove_na(awb8_2_names_7) +
            remove_na(awb8_2_threat_11),
          addi_total = addi_inst_exp + addi_peer_exp,
-         addi_nas = is.na(awb8_2_age_3) +
-           is.na(awb8_2_police_5) +
-           is.na(awb8_2_shop_6) +
-           is.na(awb8_2_service_8) +
-           is.na(awb8_2_int_9) +
-           is.na(awb8_2_afraid_10) +
-           is.na(awb8_2_club_1) +
-           is.na(awb8_2_excl_2) +
-           is.na(awb8_2_lang_4) +
-           is.na(awb8_2_names_7) +
-           is.na(awb8_2_threat_11),
+         addi_nas = is_missing_item(awb8_2_age_3) +
+           is_missing_item(awb8_2_police_5) +
+           is_missing_item(awb8_2_shop_6) +
+           is_missing_item(awb8_2_service_8) +
+           is_missing_item(awb8_2_int_9) +
+           is_missing_item(awb8_2_afraid_10) +
+           is_missing_item(awb8_2_club_1) +
+           is_missing_item(awb8_2_excl_2) +
+           is_missing_item(awb8_2_lang_4) +
+           is_missing_item(awb8_2_names_7) +
+           is_missing_item(awb8_2_threat_11),
          addi_missing = ifelse(addi_nas == 11, 1, 0)) %>%
   
   # Condition for missing values applied
@@ -644,7 +647,3 @@ derived_vars <- module |> select(-starts_with("TMPVAR_"), -all_of(survey_cols), 
 
 # export
 saveRDS(derived_vars, "U:/Born In Bradford - Confidential/Data/BiB/processing/AoW/survey/data/aow_survey_module25_derived.rds")
-
-
-
-

@@ -33,7 +33,7 @@ postcode_lsoa_lookup_21 <- read_csv(file.path(resources_path, "postcode_lsoa_loo
 
 # read IMD 2019 variables 
 imd2019 <- read.csv(file.path(resources_path, "imd2019_for_aow.csv"))
-imd2025 <- read.csv(file.path(resources_path, "imd2025_for_aow.csv"))
+imd2025 <- read.csv(file.path(resources_path, "imd2025_for_aow.csv")) |> select(-X)
 
 # check duplicates
 consent$AoWRecruitmentID[duplicated(consent$AoWRecruitmentID) |> which()]
